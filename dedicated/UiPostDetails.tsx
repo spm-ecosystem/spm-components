@@ -1,6 +1,6 @@
 import { UiTagBadge } from './UiTagBadge';
 import { UiSearchBar } from './UiSearchBar';
-import { triggerProxyClick } from '../../content/engine';
+import { triggerProxyClick } from '../../../content/engine';
 
 export interface TagItem {
   name: string;
