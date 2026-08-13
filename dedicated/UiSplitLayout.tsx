@@ -1,7 +1,7 @@
 import React from 'react';
 import { UiImageViewer } from './UiImageViewer';
 import { UiScrollPanel } from './UiScrollPanel';
-import { triggerProxyClick } from '../../../content/engine';
+import { triggerProxyClick } from '../../content/engine';
 
 export interface ImageSlotItem {
   src?: string;
