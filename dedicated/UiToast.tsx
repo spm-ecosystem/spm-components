@@ -224,7 +224,9 @@ export function UiToastContainer() {
 
     const handleCrossFrameMessage = (e: MessageEvent) => {
       if (e.data && typeof e.data === 'object' && e.data.type === 'spm-show-toast') {
-        showToast(e.data.message, e.data.toastType || 'info');
+        window.dispatchEvent(new CustomEvent('spm-show-toast', {
+          detail: { message: e.data.message, type: e.data.toastType || 'info' }
+        }));
       }
     };
     window.addEventListener('message', handleCrossFrameMessage);
