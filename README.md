@@ -1,5 +1,7 @@
 # spm-components
 
+[![Documentation Portal](https://img.shields.io/badge/docs-spm--portal-blue?style=for-the-badge)](https://spm-ecosystem.github.io/spm-portal/)
+
 The official shared React UI component library for the Site Package Manager (SPM) ecosystem.
 
 ---
@@ -35,6 +37,7 @@ When building or extending components in this library:
 
 ## Documentation
 
+- [🌐 Interactive Documentation Portal](https://spm-ecosystem.github.io/spm-portal/)
 - [Component API & Props Guide](docs/components.md)
 
 ---
