@@ -5,6 +5,8 @@ export interface UiSearchBarProps {
   defaultValue?: string;
   submitUrl?: string;
   queryParamName?: string;
+  method?: 'get' | 'post' | 'GET' | 'POST';
+  hiddenFields?: { name: string; value: string }[] | string;
   className?: string;
   style?: React.CSSProperties;
   onSearch?: (value: string) => void;
@@ -15,6 +17,8 @@ export function UiSearchBar({
   defaultValue = '',
   submitUrl,
   queryParamName = 'tags',
+  method = 'GET',
+  hiddenFields = [],
   className = '',
   style = {},
   onSearch,
@@ -23,22 +27,25 @@ export function UiSearchBar({
   const [focused, setFocused] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
     if (onSearch) {
+      e.preventDefault();
       onSearch(value);
     } else if (submitUrl) {
-      try {
-        const url = new URL(submitUrl, window.location.href);
-        url.searchParams.set(queryParamName, value);
-        window.location.href = url.toString();
-      } catch (err) {
-        console.error('Invalid submitUrl configured:', err);
-      }
+      // Allow browser to perform native form submission to submitUrl
+    } else {
+      e.preventDefault();
     }
   };
 
+  const parsedFields: { name: string; value: string }[] =
+    typeof hiddenFields === 'string'
+      ? JSON.parse(hiddenFields)
+      : (hiddenFields || []);
+
   return (
     <form
+      action={submitUrl}
+      method={method}
       onSubmit={handleSubmit}
       className={className}
       style={{
@@ -49,6 +56,10 @@ export function UiSearchBar({
         ...style,
       }}
     >
+      {parsedFields.map((field, idx) => (
+        <input key={idx} type="hidden" name={field.name} value={field.value} />
+      ))}
+
       <div
         style={{
           flex: 1,
@@ -86,6 +97,7 @@ export function UiSearchBar({
 
         <input
           type="text"
+          name={queryParamName}
           value={value}
           onChange={e => setValue(e.target.value)}
           onFocus={() => setFocused(true)}
