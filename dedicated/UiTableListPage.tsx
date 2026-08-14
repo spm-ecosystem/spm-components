@@ -30,7 +30,7 @@ export interface UiTableListPageProps {
 }
 
 export function UiTableListPage({
-  pageTitle = 'Wiki Pages',
+  pageTitle = 'List',
   tableRows = [],
   columns: columnsProp,
   pageLinks = [],

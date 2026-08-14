@@ -17,7 +17,7 @@ export interface UiDashboardPageProps {
 }
 
 export function UiDashboardPage({
-  pageTitle = 'Account Control Panel',
+  pageTitle = 'Dashboard',
   subTitle,
   cards = [],
   height = '100vh',
