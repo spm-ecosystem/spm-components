@@ -222,9 +222,17 @@ export function UiToastContainer() {
     window.addEventListener('spm-show-toast', handleShowToast);
     window.addEventListener('spm-show-confirm-dialog', handleShowConfirm);
 
+    const handleCrossFrameMessage = (e: MessageEvent) => {
+      if (e.data && typeof e.data === 'object' && e.data.type === 'spm-show-toast') {
+        showToast(e.data.message, e.data.toastType || 'info');
+      }
+    };
+    window.addEventListener('message', handleCrossFrameMessage);
+
     return () => {
       window.removeEventListener('spm-show-toast', handleShowToast);
       window.removeEventListener('spm-show-confirm-dialog', handleShowConfirm);
+      window.removeEventListener('message', handleCrossFrameMessage);
     };
   }, []);
 
