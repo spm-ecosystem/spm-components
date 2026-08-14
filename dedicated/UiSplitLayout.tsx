@@ -39,6 +39,8 @@ export interface UiSplitLayoutProps {
   searchPlaceholder?: string;
   searchSubmitUrl?: string;
   searchParamName?: string;
+  // Support generic HTML content slot instead of purely images
+  mainHtml?: string;
   // Overrides
   className?: string;
   style?: React.CSSProperties;
@@ -58,6 +60,7 @@ export function UiSplitLayout({
   searchPlaceholder = 'Search…',
   searchSubmitUrl,
   searchParamName = 'q',
+  mainHtml,
   className = '',
   style = {},
 }: UiSplitLayoutProps) {
@@ -102,12 +105,19 @@ export function UiSplitLayout({
       style={{ flex: 1, height: '100%', overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column' }}
     >
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-        <UiImageViewer
-          src={image?.src}
-          alt={image?.alt}
-          fit={imageFit}
-          style={{ height: '100%' }}
-        />
+        {mainHtml ? (
+          <div
+            dangerouslySetInnerHTML={{ __html: mainHtml }}
+            style={{ height: '100%', overflowY: 'auto', boxSizing: 'border-box', padding: '24px' }}
+          />
+        ) : (
+          <UiImageViewer
+            src={image?.src}
+            alt={image?.alt}
+            fit={imageFit}
+            style={{ height: '100%' }}
+          />
+        )}
       </div>
 
       {imageButtons.length > 0 && (
