@@ -50,9 +50,33 @@ export function UiMyComponent({
 - **Named Exports Only**: Never use `export default`. The registry generator relies on named exports.
 - **Style Spreading**: Always accept `className` and `style` in the properties, and apply them directly to the root element. Spread `style` last to allow external layout properties (like width, padding, margins) to overwrite component styles at mount time.
 
+## 2. Component Documentation Index
+
+For detailed specifications, Props API tables, design tokens, and `.vnr` (Veneer Spec) usage examples for each component, consult the dedicated documentation files below:
+
+| Component | Category | Documentation File | Description |
+| :--- | :--- | :--- | :--- |
+| `LayoutPrimitives` | Primitives | [`LayoutPrimitives.md`](components/LayoutPrimitives.md) | Generic layout building blocks (`UiBox`, `UiFlexRow`, `UiFlexColumn`, `UiGrid`, `UiText`, `UiImage`, `UiLink`, `UiScrollBox`). |
+| `UiNavHeader` | Dedicated | [`UiNavHeader.md`](components/UiNavHeader.md) | Navigation header with logo, site title, primary/secondary links, and responsive layouts. |
+| `UiHeroLanding` | Dedicated | [`UiHeroLanding.md`](components/UiHeroLanding.md) | Full viewport landing hero with logo, tagline, CTA button, search bar, and primary links. |
+| `UiSearchBar` | Dedicated | [`UiSearchBar.md`](components/UiSearchBar.md) | Form search input with GET/POST form target, query binding, and hidden field forwarding. |
+| `UiImageCard` | Dedicated | [`UiImageCard.md`](components/UiImageCard.md) | Thumbnail image card with title caption, aspect ratio controls, link, and hover effects. |
+| `UiTagBadge` | Dedicated | [`UiTagBadge.md`](components/UiTagBadge.md) | Category/tag pill badge with item count and remove/add filter action links. |
+| `UiPaginationBar` | Dedicated | [`UiPaginationBar.md`](components/UiPaginationBar.md) | Page navigation links bar for paginated feeds with active page detection. |
+| `UiModernGridPage` | Dedicated | [`UiModernGridPage.md`](components/UiModernGridPage.md) | Gallery grid page layout with optional tag sidebar slot and mobile column controls. |
+| `UiImageViewer` | Dedicated | [`UiImageViewer.md`](components/UiImageViewer.md) | Responsive image viewer with fit options (`contain`/`cover`) and background fallback. |
+| `UiScrollPanel` | Dedicated | [`UiScrollPanel.md`](components/UiScrollPanel.md) | Scrollable sidebar panel with search input, tag lists, buttons, and statistics HTML. |
+| `UiSplitLayout` | Dedicated | [`UiSplitLayout.md`](components/UiSplitLayout.md) | Two-column layout shell supporting image viewer/main HTML content and scroll panel sidebar. |
+| `UiCommentListPage` | Dedicated | [`UiCommentListPage.md`](components/UiCommentListPage.md) | Comment thread list with post thumbnails, speech bubble replies, and metadata. |
+| `UiDashboardPage` | Dedicated | [`UiDashboardPage.md`](components/UiDashboardPage.md) | Card panel dashboard layout for user account options, settings, and actions. |
+| `UiStatsDashboard` | Dedicated | [`UiStatsDashboard.md`](components/UiStatsDashboard.md) | Ranking metrics and analytics tables dashboard with date range badges. |
+| `UiTable` | Dedicated | [`UiTable.md`](components/UiTable.md) | Tabular grid layout with row click callbacks, custom cell renderers, and column configs. |
+| `UiTableListPage` | Dedicated | [`UiTableListPage.md`](components/UiTableListPage.md) | Search results table page inside a `UiTable` container with pagination and infinite scroll. |
+| `UiToastContainer` | Dedicated | [`UiToastContainer.md`](components/UiToastContainer.md) | Global toast notifications stack and modal confirm portal listener. |
+
 ---
 
-## 2. Layout Primitives
+## 3. Layout Primitives
 
 Primitives are generic, lightweight building blocks located in `src/components/primitives/LayoutPrimitives.tsx`. They are used inside reconstructs to structure content without introducing visual overrides.
 
@@ -70,7 +94,7 @@ Primitives are generic, lightweight building blocks located in `src/components/p
 
 ---
 
-## 3. Dedicated Layout Components
+## 4. Dedicated Layout Components
 
 Dedicated components are complex, pre-styled views located in `src/components/dedicated/`. They are designed to modernize major sections of the legacy page (such as full feeds, split image views, navigation headers, or comment boards).
 
@@ -191,7 +215,7 @@ Dedicated components are complex, pre-styled views located in `src/components/de
 
 ---
 
-## 4. Design & Styling Conventions
+## 5. Design & Styling Conventions
 
 Components are mounted inside an isolated **Shadow DOM** to prevent the host site's legacy styles from polluting the modern UI.
 - **Strict CSS Variables**: Never write hardcoded color or spacing values (like `#ffffff` or `12px`). Use predefined SPM theme variables (e.g. `var(--spm-bg-primary)`, `var(--spm-border)`, `var(--spm-radius)`).
@@ -199,7 +223,7 @@ Components are mounted inside an isolated **Shadow DOM** to prevent the host sit
 
 ---
 
-## 5. Auto-Registration Mechanics
+## 6. Auto-Registration Mechanics
 
 You do **not** need to register your new components in registry files manually. SPM features an automated build step:
 
@@ -212,7 +236,7 @@ You do **not** need to register your new components in registry files manually. 
 
 ---
 
-## 6. Running & Writing Tests
+## 7. Running & Writing Tests
 
 To run the component unit tests:
 ```bash
@@ -228,7 +252,7 @@ For component unit tests that query DOM elements or interact with shadow roots, 
 
 ---
 
-## 7. Component Design Checklist (Agnostic Guidelines)
+## 8. Component Design Checklist (Agnostic Guidelines)
 
 To keep the component library generic and portable across any host website or domain, all components must follow this design checklist:
 
