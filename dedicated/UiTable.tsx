@@ -14,9 +14,21 @@ export interface UiTableProps<T> {
   onRowClick?: (item: T) => void;
   className?: string;
   style?: React.CSSProperties;
+  sortKey?: string;
+  sortDirection?: 'asc' | 'desc';
+  onSort?: (key: string) => void;
 }
 
-export function UiTable<T>({ columns, data, onRowClick, className = '', style = {} }: UiTableProps<T>) {
+export function UiTable<T>({
+  columns,
+  data,
+  onRowClick,
+  className = '',
+  style = {},
+  sortKey,
+  sortDirection,
+  onSort,
+}: UiTableProps<T>) {
   return (
     <div
       className={className}
@@ -46,23 +58,44 @@ export function UiTable<T>({ columns, data, onRowClick, className = '', style = 
               background: 'var(--spm-bg-tertiary)',
             }}
           >
-            {columns.map((col, idx) => (
-              <th
-                key={idx}
-                style={{
-                  padding: '12px 16px',
-                  fontWeight: 600,
-                  fontSize: '12px',
-                  color: 'var(--spm-text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  width: col.width,
-                  textAlign: col.align || 'left',
-                }}
-              >
-                {col.header}
-              </th>
-            ))}
+            {columns.map((col, idx) => {
+              const isSortable = !!onSort && !!col.key;
+              const isSorted = sortKey === col.key;
+              return (
+                <th
+                  key={idx}
+                  onClick={() => isSortable && onSort(col.key as string)}
+                  style={{
+                    padding: '12px 16px',
+                    fontWeight: 600,
+                    fontSize: '12px',
+                    color: isSorted ? 'var(--spm-accent)' : 'var(--spm-text-muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    width: col.width,
+                    textAlign: col.align || 'left',
+                    cursor: isSortable ? 'pointer' : 'default',
+                    userSelect: 'none',
+                    transition: 'color 0.15s',
+                  }}
+                  onMouseEnter={e => {
+                    if (isSortable) e.currentTarget.style.color = 'var(--spm-accent)';
+                  }}
+                  onMouseLeave={e => {
+                    if (isSortable) {
+                      e.currentTarget.style.color = isSorted ? 'var(--spm-accent)' : 'var(--spm-text-muted)';
+                    }
+                  }}
+                >
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    {col.header}
+                    {isSorted && (
+                      <span>{sortDirection === 'asc' ? ' ▲' : ' ▼'}</span>
+                    )}
+                  </div>
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
