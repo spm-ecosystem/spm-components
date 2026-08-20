@@ -23,7 +23,9 @@
 - `header`: `string` - Table column header title text.
 - `width`: `string` (optional) - Width constraint for column.
 - `align`: `'left' | 'center' | 'right'` (optional) - Alignment of cell content.
-- `type`: `'text' | 'link' | 'html' | 'badge' | 'checkbox'` (optional) - Cell renderer type.
+- `type`: `'text' | 'link' | 'html' | 'badge' | 'checkbox' | 'date' | 'currency'` (optional) - Cell renderer type.
+  - `'date'` - Renders a locale-aware date string from date strings or timestamps, supporting correct chronological sorting.
+  - `'currency'` - Renders numbers as formatted USD currency values (e.g. `$1,200.00`), supporting correct numerical sorting.
 - `urlKey`: `string` (optional) - Row property key containing hyperlink URL (used when `type` is `'link'`).
 - `badgeStyleKey`: `string` (optional) - Row property key containing badge style identifier (used when `type` is `'badge'`).
 
