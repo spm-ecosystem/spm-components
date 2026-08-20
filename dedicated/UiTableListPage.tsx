@@ -8,7 +8,7 @@ export interface TableColumnConfig {
   header: string;
   width?: string;
   align?: 'left' | 'center' | 'right';
-  type?: 'text' | 'link' | 'html' | 'badge' | 'checkbox';
+  type?: 'text' | 'link' | 'html' | 'badge' | 'checkbox' | 'date' | 'currency';
   urlKey?: string;
   badgeStyleKey?: string;
 }
@@ -41,6 +41,69 @@ export function UiTableListPage({
 }: UiTableListPageProps) {
   const [rows, setRows] = React.useState(tableRows);
   const [loadingMore, setLoadingMore] = React.useState(false);
+  const [sortConfig, setSortConfig] = React.useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (prev && prev.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
+  const sortedRows = React.useMemo(() => {
+    if (!sortConfig) return rows;
+
+    const { key, direction } = sortConfig;
+    const col = columnsProp?.find((c) => c.key === key);
+    const colType = col?.type;
+
+    return [...rows].sort((a, b) => {
+      let valA = a[key];
+      let valB = b[key];
+
+      const isValAEmpty = valA === undefined || valA === null || valA === '';
+      const isValBEmpty = valB === undefined || valB === null || valB === '';
+
+      if (isValAEmpty && isValBEmpty) return 0;
+      if (isValAEmpty) return 1;
+      if (isValBEmpty) return -1;
+
+      if (colType === 'currency') {
+        const parseCurrency = (v: any) => {
+          if (typeof v === 'number') return v;
+          const cleaned = String(v).replace(/[^0-9.-]/g, '');
+          const parsed = parseFloat(cleaned);
+          return isNaN(parsed) ? 0 : parsed;
+        };
+        const numA = parseCurrency(valA);
+        const numB = parseCurrency(valB);
+        return direction === 'asc' ? numA - numB : numB - numA;
+      }
+
+      if (colType === 'date') {
+        const parseDate = (v: any) => {
+          const parsed = new Date(v).getTime();
+          return isNaN(parsed) ? 0 : parsed;
+        };
+        const dateA = parseDate(valA);
+        const dateB = parseDate(valB);
+        return direction === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+
+      if (typeof valA === 'string' || typeof valB === 'string') {
+        return direction === 'asc'
+          ? String(valA).localeCompare(String(valB))
+          : String(valB).localeCompare(String(valA));
+      }
+
+      return direction === 'asc'
+        ? (valA > valB ? 1 : valA < valB ? -1 : 0)
+        : (valB > valA ? 1 : valB < valA ? -1 : 0);
+    });
+  }, [rows, sortConfig, columnsProp]);
+
   const prevLink = pageLinks?.find(link => link.label === '<' || link.label === '‹' || link.label.toLowerCase().includes('prev') || link.label.toLowerCase().includes('previous'));
   const nextLink = pageLinks?.find(link => link.label === '>' || link.label === '›' || link.label.toLowerCase().includes('next'));
   const mainRef = React.useRef<HTMLElement>(null);
@@ -133,6 +196,22 @@ export function UiTableListPage({
                 }}
               />
             );
+          }
+          if (col.type === 'date') {
+            if (val === undefined || val === null || val === '') return <span>-</span>;
+            const d = new Date(val);
+            const formatted = !isNaN(d.getTime()) 
+              ? d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) 
+              : String(val);
+            return <span>{formatted}</span>;
+          }
+          if (col.type === 'currency') {
+            if (val === undefined || val === null || val === '') return <span>-</span>;
+            const parsed = typeof val === 'number' ? val : parseFloat(String(val).replace(/[^0-9.-]/g, ''));
+            const formatted = !isNaN(parsed)
+              ? parsed.toLocaleString(undefined, { style: 'currency', currency: 'USD' })
+              : String(val);
+            return <span>{formatted}</span>;
           }
           return <span>{val || '-'}</span>;
         },
@@ -299,7 +378,13 @@ export function UiTableListPage({
             boxSizing: 'border-box',
           }}
         >
-          <UiTable columns={columns} data={rows} />
+          <UiTable
+            columns={columns}
+            data={sortedRows}
+            sortKey={sortConfig?.key}
+            sortDirection={sortConfig?.direction}
+            onSort={handleSort}
+          />
           {loadingMore && (
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
               <div style={{
