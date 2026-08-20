@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 export interface NavLink {
   label: string;
-  url: string;
+  url?: string;
+  href?: string;
 }
 
 export interface UiNavHeaderProps {
@@ -11,11 +12,13 @@ export interface UiNavHeaderProps {
   logoHref?: string;
   primaryLinks?: NavLink[];
   secondaryLinks?: NavLink[];
+  items?: NavLink[];
   layout?: 'standard' | 'stacked' | 'minimal';
   hideOnMobile?: boolean;
   mobileBreakpoint?: number;
   className?: string;
   style?: React.CSSProperties;
+  sticky?: boolean;
 }
 
 function isLinkActive(url: string): boolean {
@@ -37,15 +40,18 @@ export function UiNavHeader({
   logoHref = '/',
   primaryLinks = [],
   secondaryLinks = [],
+  items = [],
   layout = 'standard',
   hideOnMobile = false,
   mobileBreakpoint = 720,
   className = '',
   style = {},
+  sticky = false,
 }: UiNavHeaderProps) {
   const [isMobile, setIsMobile] = useState(false);
   const isMinimal = layout === 'minimal';
   const isStacked = layout === 'stacked';
+  const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const media = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`);
@@ -55,10 +61,49 @@ export function UiNavHeader({
     return () => media.removeEventListener('change', update);
   }, [mobileBreakpoint]);
 
+  useEffect(() => {
+    try {
+      const root = headerRef.current?.getRootNode();
+      if (root && 'host' in root) {
+        const host = root.host as HTMLElement;
+        if (host) {
+          if (sticky) {
+            host.setAttribute('sticky', 'true');
+            host.style.position = 'sticky';
+            host.style.top = '0';
+            host.style.zIndex = '1000';
+            host.style.display = 'block';
+          } else {
+            host.removeAttribute('sticky');
+            host.style.position = '';
+            host.style.top = '';
+            host.style.zIndex = '';
+            host.style.display = '';
+          }
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [sticky]);
+
   if (hideOnMobile && isMobile) return null;
+
+  // Consolidate primary links and items (supporting url/href fallback)
+  const rawLinks = items.length > 0 ? items : primaryLinks;
+  const resolvedPrimaryLinks = rawLinks.map(link => ({
+    label: link.label,
+    url: link.url || link.href || '',
+  }));
+
+  const resolvedSecondaryLinks = secondaryLinks.map(link => ({
+    label: link.label,
+    url: link.url || link.href || '',
+  }));
 
   return (
     <header
+      ref={headerRef}
       className={className}
       style={{
         width: '100%',
@@ -66,6 +111,29 @@ export function UiNavHeader({
         ...style,
       }}
     >
+      <style>{`
+        :host {
+          box-sizing: border-box;
+        }
+        :host([sticky="true"]) {
+          position: sticky !important;
+          top: 0 !important;
+          z-index: 1000 !important;
+          display: block !important;
+        }
+        ${sticky ? `
+          :host {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 1000 !important;
+            display: block !important;
+          }
+        ` : ''}
+        .spm-nav-container::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
+
       {/* Primary Bar */}
       <div
         style={{
@@ -114,13 +182,20 @@ export function UiNavHeader({
         {/* Primary nav links */}
         {!isMinimal && (
           <div
+            className="spm-nav-container"
             style={{
               display: 'flex',
-              flexWrap: 'wrap',
+              flexWrap: 'nowrap',
               gap: '4px',
+              overflowX: 'auto',
+              flexGrow: 1,
+              minWidth: 0,
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              WebkitOverflowScrolling: 'touch',
             }}
           >
-            {primaryLinks.map((link, i) => {
+            {resolvedPrimaryLinks.map((link, i) => {
               const active = isLinkActive(link.url);
               return (
                 <a
@@ -166,7 +241,7 @@ export function UiNavHeader({
       </div>
 
       {/* Secondary Bar */}
-      {!isMinimal && secondaryLinks.length > 0 && (
+      {!isMinimal && resolvedSecondaryLinks.length > 0 && (
         <div
           style={{
             display: 'flex',
@@ -179,7 +254,7 @@ export function UiNavHeader({
             minHeight: '32px',
           }}
         >
-          {secondaryLinks.map((link, i) => (
+          {resolvedSecondaryLinks.map((link, i) => (
             <a
               key={i}
               href={link.url}
