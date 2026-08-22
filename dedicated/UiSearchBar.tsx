@@ -34,13 +34,21 @@ export function UiSearchBar({
       // Allow browser to perform native form submission to submitUrl
     } else {
       e.preventDefault();
+      console.warn('[UiSearchBar] Form submitted without onSearch handler or submitUrl prop.');
     }
   };
 
-  const parsedFields: { name: string; value: string }[] =
-    typeof hiddenFields === 'string'
-      ? JSON.parse(hiddenFields)
-      : (hiddenFields || []);
+  let parsedFields: { name: string; value: string }[] = [];
+  if (typeof hiddenFields === 'string') {
+    try {
+      parsedFields = JSON.parse(hiddenFields);
+    } catch (err) {
+      console.warn('[UiSearchBar] Failed to parse hiddenFields JSON string:', err);
+      parsedFields = [];
+    }
+  } else if (Array.isArray(hiddenFields)) {
+    parsedFields = hiddenFields;
+  }
 
   return (
     <form
