@@ -60,7 +60,7 @@ export interface UiModernGridPageProps {
 
 export function UiModernGridPage({
   pageTitle,
-  items,
+  items = [],
   pageLinks,
   sidebarHtml,
   tags = [],
