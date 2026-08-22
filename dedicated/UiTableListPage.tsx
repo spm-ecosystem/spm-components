@@ -182,7 +182,8 @@ export function UiTableListPage({
           }
           if (col.type === 'badge') {
             const url = col.urlKey ? item[col.urlKey] : undefined;
-            return <UiTagBadge label={val || ''} href={url} />;
+            const badgeStyleVal = col.badgeStyleKey ? item[col.badgeStyleKey] : undefined;
+            return <UiTagBadge label={val || ''} href={url} variant={badgeStyleVal} />;
           }
           if (col.type === 'checkbox') {
             return (

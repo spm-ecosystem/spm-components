@@ -6,15 +6,51 @@ export interface UiTagBadgeProps {
   href?: string;
   addUrl?: string;
   removeUrl?: string;
+  variant?: 'default' | 'success' | 'danger' | 'warning' | 'info' | 'active' | 'error' | string;
+  style?: React.CSSProperties;
 }
 
-export function UiTagBadge({ label, count, href, addUrl, removeUrl }: UiTagBadgeProps) {
+export function UiTagBadge({ label, count, href, addUrl, removeUrl, variant = 'default', style: customStyle = {} }: UiTagBadgeProps) {
+  const getVariantStyles = (): React.CSSProperties => {
+    const v = String(variant).toLowerCase();
+    if (v === 'success' || v === 'active') {
+      return {
+        background: 'rgba(34, 197, 94, 0.12)',
+        color: '#4ade80',
+        border: '1px solid rgba(34, 197, 94, 0.3)',
+      };
+    }
+    if (v === 'danger' || v === 'error') {
+      return {
+        background: 'rgba(239, 68, 68, 0.12)',
+        color: '#f87171',
+        border: '1px solid rgba(239, 68, 68, 0.3)',
+      };
+    }
+    if (v === 'warning') {
+      return {
+        background: 'rgba(245, 158, 11, 0.12)',
+        color: '#fbbf24',
+        border: '1px solid rgba(245, 158, 11, 0.3)',
+      };
+    }
+    if (v === 'info') {
+      return {
+        background: 'rgba(59, 130, 246, 0.12)',
+        color: '#60a5fa',
+        border: '1px solid rgba(59, 130, 246, 0.3)',
+      };
+    }
+    return {
+      background: 'var(--spm-bg-tertiary)',
+      color: 'var(--spm-text-primary)',
+      border: '1px solid var(--spm-border)',
+    };
+  };
+
   const badgeStyle: React.CSSProperties = {
     display: 'inline-flex',
     alignItems: 'center',
-    background: 'var(--spm-bg-tertiary)',
-    color: 'var(--spm-text-primary)',
-    border: '1px solid var(--spm-border)',
     borderRadius: '16px',
     padding: '3px 10px',
     fontSize: '11px',
@@ -22,6 +58,8 @@ export function UiTagBadge({ label, count, href, addUrl, removeUrl }: UiTagBadge
     transition: 'all 0.15s ease',
     textDecoration: 'none',
     gap: '6px',
+    ...getVariantStyles(),
+    ...customStyle,
   };
 
   const actionStyle: React.CSSProperties = {
