@@ -57,7 +57,7 @@ describe('UiPostDetails', () => {
     const img = container.querySelector('img') as HTMLImageElement;
     expect(img).toBeTruthy();
     expect(img.src).toBe(imageUrl);
-    expect(img.alt).toBe('Booru Post');
+    expect(img.alt).toBe('Post image');
 
     // 2. Assert Sidebar Search
     const searchBar = container.querySelector('input[type="text"]') as HTMLInputElement;
@@ -178,5 +178,20 @@ describe('UiPostDetails', () => {
     );
     await waitForUpdate();
     expect(container.querySelector('input[type="text"]')).toBeNull();
+  });
+
+  it('renders custom imageAlt when provided', async () => {
+    const root = createRoot(container);
+    root.render(
+      <UiPostDetails
+        imageUrl="https://example.com/image.jpg"
+        imageAlt="Custom Post Alt"
+      />
+    );
+    await waitForUpdate();
+
+    const img = container.querySelector('img') as HTMLImageElement;
+    expect(img).toBeTruthy();
+    expect(img.alt).toBe('Custom Post Alt');
   });
 });
