@@ -72,6 +72,7 @@ For detailed specifications, Props API tables, design tokens, and `.vnr` (Veneer
 | `UiStatsDashboard` | Dedicated | [`UiStatsDashboard.md`](components/UiStatsDashboard.md) | Ranking metrics and analytics tables dashboard with date range badges. |
 | `UiTable` | Dedicated | [`UiTable.md`](components/UiTable.md) | Tabular grid layout with row click callbacks, custom cell renderers, and column configs. |
 | `UiTableListPage` | Dedicated | [`UiTableListPage.md`](components/UiTableListPage.md) | Search results table page inside a `UiTable` container with pagination and infinite scroll. |
+| `UiPostDetails` | Dedicated | [`UiPostDetails.md`](components/UiPostDetails.md) | Split layout for post/item detail pages with sidebar, tags, search bar, buttons, and image viewport. |
 | `UiToastContainer` | Dedicated | [`UiToastContainer.md`](components/UiToastContainer.md) | Global toast notifications stack and modal confirm portal listener. |
 
 ---
@@ -117,6 +118,7 @@ Dedicated components are complex, pre-styled views located in `src/components/de
 | `UiStatsDashboard` | Metric tables/rankings blocks dashboard | `pageTitle`, `dateRangeText`, `navLinks`, `sections`, `height` |
 | `UiTable` | Isolated tabular grid with row callback | `columns`, `data`, `onRowClick` |
 | `UiTableListPage` | Search results page layout inside a `UiTable` | `pageTitle`, `tableRows`, `columns`, `pageLinks`, `height`, `onLoadMore` |
+| `UiPostDetails` | Split view post/item detail page | `imageUrl`, `imageAlt`, `tags`, `tagGroups`, `statisticsHtml`, `buttons`, `showSearch`, `searchPlaceholder`, `searchSubmitUrl`, `searchParamName` |
 | `UiToastContainer` | Toast feedback overlays & confirmation portals | - |
 
 ---
@@ -212,6 +214,21 @@ Dedicated components are complex, pre-styled views located in `src/components/de
 | `searchSubmitUrl` | `string` | - | If set, renders a search bar |
 | `searchParamName` | `string` | `'q'` | Search param name |
 | `primaryLinks` | `{label, url}[]` | `[]` | Pill nav links below CTA |
+
+#### `UiPostDetails`
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `imageUrl` | `string` | - | Image source URL |
+| `imageAlt` | `string` | `'Post image'` | Alt text description for image |
+| `tags` | `TagItem[]` | `[]` | Tags list (`name`, `count`, `type`, `url`, `addUrl`, `removeUrl`) |
+| `tagGroups` | `TagGroupConfig[]` | - | Optional tag group ordering configurations (`title`, `typeKey`) |
+| `statisticsHtml` | `string` | `''` | Raw HTML content rendered in sidebar statistics block |
+| `buttons` | `GenericButtonItem[]` | `[]` | Action buttons (`label`, `url`, `targetSelector`, `iconSvg`) |
+| `showSearch` | `boolean` | `true` | Show search bar in sidebar |
+| `searchPlaceholder` | `string` | `'Search…'` | Placeholder text for search bar |
+| `searchSubmitUrl` | `string` | `''` | Form action URL for search bar submission |
+| `searchParamName` | `string` | `'tags'` | Query parameter key for search bar |
 
 ---
 

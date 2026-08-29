@@ -27,6 +27,7 @@ export interface TagGroupConfig {
 
 export interface UiPostDetailsProps {
   imageUrl: string;
+  imageAlt?: string;
   tags?: TagItem[];
   tagGroups?: TagGroupConfig[];
   statisticsHtml?: string;
@@ -41,6 +42,7 @@ export interface UiPostDetailsProps {
 
 export function UiPostDetails({
   imageUrl,
+  imageAlt,
   tags = [],
   tagGroups,
   statisticsHtml = '',
@@ -318,7 +320,7 @@ export function UiPostDetails({
         >
           <img
             src={imageUrl}
-            alt="Booru Post"
+            alt={imageAlt || 'Post image'}
             style={{
               maxWidth: '100%',
               maxHeight: '70vh',
