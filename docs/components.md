@@ -73,6 +73,8 @@ For detailed specifications, Props API tables, design tokens, and `.vnr` (Veneer
 | `UiTable` | Dedicated | [`UiTable.md`](components/UiTable.md) | Tabular grid layout with row click callbacks, custom cell renderers, and column configs. |
 | `UiTableListPage` | Dedicated | [`UiTableListPage.md`](components/UiTableListPage.md) | Search results table page inside a `UiTable` container with pagination and infinite scroll. |
 | `UiPostDetails` | Dedicated | [`UiPostDetails.md`](components/UiPostDetails.md) | Split layout for post/item detail pages with sidebar, tags, search bar, buttons, and image viewport. |
+| `UiNestedTreeTable` | Dedicated | [`UiNestedTreeTable.md`](components/UiNestedTreeTable.md) | Hierarchical tree table with collapsible/expandable rows for structured data. |
+| `UiTerminalConsole` | Dedicated | [`UiTerminalConsole.md`](components/UiTerminalConsole.md) | Dark monospace live terminal log console with level filtering. |
 | `UiToastContainer` | Dedicated | [`UiToastContainer.md`](components/UiToastContainer.md) | Global toast notifications stack and modal confirm portal listener. |
 
 ---
@@ -119,6 +121,8 @@ Dedicated components are complex, pre-styled views located in `src/components/de
 | `UiTable` | Isolated tabular grid with row callback | `columns`, `data`, `onRowClick` |
 | `UiTableListPage` | Search results page layout inside a `UiTable` | `pageTitle`, `tableRows`, `columns`, `pageLinks`, `height`, `onLoadMore` |
 | `UiPostDetails` | Split view post/item detail page | `imageUrl`, `imageAlt`, `tags`, `tagGroups`, `statisticsHtml`, `buttons`, `showSearch`, `searchPlaceholder`, `searchSubmitUrl`, `searchParamName` |
+| `UiNestedTreeTable` | Hierarchical expandable tree table | `title`, `columns`, `data`, `expandedDepth` |
+| `UiTerminalConsole` | Monospace live terminal log viewer with level filtering | `title`, `logs`, `filterLevel`, `autoScroll`, `maxLines` |
 | `UiToastContainer` | Toast feedback overlays & confirmation portals | - |
 
 ---
@@ -229,6 +233,25 @@ Dedicated components are complex, pre-styled views located in `src/components/de
 | `searchPlaceholder` | `string` | `'Search…'` | Placeholder text for search bar |
 | `searchSubmitUrl` | `string` | `''` | Form action URL for search bar submission |
 | `searchParamName` | `string` | `'tags'` | Query parameter key for search bar |
+
+#### `UiNestedTreeTable`
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `title` | `string` | - | Header title text for the tree table |
+| `columns` | `TreeColumn[]` | `[]` | Column definitions (`key`, `title`, `width`) |
+| `data` | `TreeNode[]` | `[]` | Hierarchical tree node dataset (`id`, `label`, `values`, `children`, `icon`) |
+| `expandedDepth` | `number` | `1` | Default expansion depth for tree nodes |
+
+#### `UiTerminalConsole`
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `title` | `string` | `'Console Output'` | Header title text |
+| `logs` | `LogEntry[]` | `[]` | Array of log entries (`id`, `timestamp`, `level`, `message`) |
+| `filterLevel` | `'all' \| 'info' \| 'warn' \| 'error'` | `'all'` | Initial log level filter |
+| `autoScroll` | `boolean` | - | Auto-scroll to latest log entries |
+| `maxLines` | `number` | - | Maximum line count to retain |
 
 ---
 
