@@ -4,6 +4,10 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { UiPostDetails } from '../dedicated/UiPostDetails';
 import { triggerProxyClick } from './mocks/engine-mock';
 
+vi.mock('../../content/engine', () => ({
+  triggerProxyClick: (...args: any[]) => triggerProxyClick(...args),
+}));
+
 const waitForUpdate = () => new Promise(resolve => setTimeout(resolve, 50));
 
 describe('UiPostDetails', () => {

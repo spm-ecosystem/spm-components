@@ -20,3 +20,4 @@ export * from './dedicated/UiTagBadge';
 export * from './dedicated/UiTerminalConsole';
 export * from './dedicated/UiToast';
 export * from './dedicated/UiTabs';
+export * from './dedicated/UiDevDiagnosticPanel';
