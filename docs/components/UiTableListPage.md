@@ -12,7 +12,7 @@
 | `tableRows` | `any[]` | `[]` | Data row list array. |
 | `columns` | `TableColumnConfig[]` | `undefined` | Column formatting configurations (`{ key, header, width, align, type, urlKey, badgeStyleKey }`). |
 | `pageLinks` | `PageLink[]` | `[]` | Pagination links array (`{ label, url }`). |
-| `height` | `string` | `'100vh'` | Height constraint of page container. |
+| `height` | `string` | `'auto'` | Height constraint of page container. Defaults to `'auto'` for natural document page scrolling, or can be set to `'100vh'` / `'calc(100vh - 60px)'` for fixed viewport scrolling. |
 | `className` | `string` | `''` | Custom CSS class name appended to root element. |
 | `style` | `React.CSSProperties` | `{}` | Custom inline style overrides. |
 | `onLoadMore` | `() => Promise<{ tableRows: any[]; hasMore: boolean }>` | `undefined` | Optional async callback executed on reaching page end to load more rows. |
