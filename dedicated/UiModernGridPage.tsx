@@ -85,7 +85,12 @@ export function UiModernGridPage({
   style = {},
   onLoadMore,
 }: UiModernGridPageProps) {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia(`(max-width: ${mobileBreakpoint}px)`).matches;
+    }
+    return false;
+  });
   const [gridItems, setGridItems] = useState(items);
   const [loadingMore, setLoadingMore] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -99,11 +104,15 @@ export function UiModernGridPage({
   }, [items]);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
     const media = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`);
-    const update = () => setIsMobile(media.matches);
+    if (!media) return;
+    const update = () => setIsMobile(!!media.matches);
     update();
-    media.addEventListener('change', update);
-    return () => media.removeEventListener('change', update);
+    if (media.addEventListener) {
+      media.addEventListener('change', update);
+      return () => media.removeEventListener('change', update);
+    }
   }, [mobileBreakpoint]);
 
   useEffect(() => {

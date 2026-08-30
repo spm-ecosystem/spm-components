@@ -34,7 +34,7 @@ export function UiTableListPage({
   tableRows = [],
   columns: columnsProp,
   pageLinks = [],
-  height = '100vh',
+  height = 'auto',
   className = '',
   style = {},
   onLoadMore,
@@ -84,119 +84,62 @@ export function UiTableListPage({
 
       if (colType === 'date') {
         const parseDate = (v: any) => {
-          const parsed = new Date(v).getTime();
-          return isNaN(parsed) ? 0 : parsed;
+          const d = new Date(v);
+          return isNaN(d.getTime()) ? 0 : d.getTime();
         };
         const dateA = parseDate(valA);
         const dateB = parseDate(valB);
         return direction === 'asc' ? dateA - dateB : dateB - dateA;
       }
 
-      if (typeof valA === 'string' || typeof valB === 'string') {
-        return direction === 'asc'
-          ? String(valA).localeCompare(String(valB))
-          : String(valB).localeCompare(String(valA));
-      }
-
-      return direction === 'asc'
-        ? (valA > valB ? 1 : valA < valB ? -1 : 0)
-        : (valB > valA ? 1 : valB < valA ? -1 : 0);
+      const strA = String(valA).toLowerCase();
+      const strB = String(valB).toLowerCase();
+      if (strA < strB) return direction === 'asc' ? -1 : 1;
+      if (strA > strB) return direction === 'asc' ? 1 : -1;
+      return 0;
     });
   }, [rows, sortConfig, columnsProp]);
 
-  const prevLink = pageLinks?.find(link => link.label === '<' || link.label === '‹' || link.label.toLowerCase().includes('prev') || link.label.toLowerCase().includes('previous'));
-  const nextLink = pageLinks?.find(link => link.label === '>' || link.label === '›' || link.label.toLowerCase().includes('next'));
-  const mainRef = React.useRef<HTMLElement>(null);
+  const prevLink = pageLinks.find((l) => l.label.toLowerCase().includes('prev'));
+  const nextLink = pageLinks.find((l) => l.label.toLowerCase().includes('next'));
 
-  React.useEffect(() => {
-    setRows(tableRows);
-  }, [tableRows]);
-
-  React.useEffect(() => {
-    const mainEl = mainRef.current;
-    if (!mainEl || !onLoadMore) return;
-
-    let isLoading = false;
-    let localHasMore = true;
-
-    const handleScroll = async () => {
-      if (isLoading || !localHasMore) return;
-
-      const threshold = 200; // px threshold from bottom
-      const offset = mainEl.scrollHeight - mainEl.scrollTop - mainEl.clientHeight;
-
-      if (offset <= threshold) {
-        isLoading = true;
-        setLoadingMore(true);
-        try {
-          const res = await onLoadMore();
-          if (res && res.tableRows && res.tableRows.length > 0) {
-            setRows((prev) => {
-              // Deduplicate table rows by titleUrl, aliasName or creator key
-              const uniqueKeys = new Set(prev.map(x => x.titleUrl || x.aliasUrl || x.url || x.nameUrl || JSON.stringify(x)));
-              const newRows = res.tableRows.filter(x => !uniqueKeys.has(x.titleUrl || x.aliasUrl || x.url || x.nameUrl || JSON.stringify(x)));
-              return [...prev, ...newRows];
-            });
-          }
-          localHasMore = res.hasMore;
-        } catch (err) {
-          console.error('[SPM Table Layout] Failed to load more:', err);
-        } finally {
-          isLoading = false;
-          setLoadingMore(false);
-        }
-      }
-    };
-
-    mainEl.addEventListener('scroll', handleScroll);
-    return () => mainEl.removeEventListener('scroll', handleScroll);
-  }, [onLoadMore]);
-  // Build columns configuration dynamically or fall back to default wiki columns
-  const columns: ColumnConfig<any>[] = columnsProp
-    ? columnsProp.map((col) => ({
+  const columns: ColumnConfig<any>[] = React.useMemo(() => {
+    if (columnsProp && columnsProp.length > 0) {
+      return columnsProp.map((col) => ({
         key: col.key,
         header: col.header,
         width: col.width,
         align: col.align,
-        render: (item) => {
+        sortable: true,
+        render: (item: any) => {
           const val = item[col.key];
           if (col.type === 'link') {
-            const url = item[col.urlKey || ''] || '#';
+            const url = col.urlKey ? item[col.urlKey] : item.url || '#';
             return (
               <a
                 href={url}
                 style={{
-                  fontWeight: 600,
                   color: 'var(--spm-accent)',
+                  fontWeight: 500,
                   textDecoration: 'none',
+                  transition: 'color 0.15s',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--spm-accent-hover)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'var(--spm-accent)')}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--spm-accent-hover)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--spm-accent)')}
               >
-                {val || '-'}
+                {val || 'Link'}
               </a>
             );
           }
-          if (col.type === 'html') {
-            return <div dangerouslySetInnerHTML={{ __html: val || '' }} />;
-          }
           if (col.type === 'badge') {
-            const url = col.urlKey ? item[col.urlKey] : undefined;
-            const badgeStyleVal = col.badgeStyleKey ? item[col.badgeStyleKey] : undefined;
-            return <UiTagBadge label={val || ''} href={url} variant={badgeStyleVal} />;
+            const badgeStyle = col.badgeStyleKey ? item[col.badgeStyleKey] : 'neutral';
+            return <UiTagBadge label={String(val || '')} variant={badgeStyle as any} />;
+          }
+          if (col.type === 'html') {
+            return <span dangerouslySetInnerHTML={{ __html: String(val || '') }} />;
           }
           if (col.type === 'checkbox') {
-            return (
-              <input
-                type="checkbox"
-                checked={!!val}
-                disabled
-                style={{
-                  accentColor: 'var(--spm-accent)',
-                  cursor: 'default',
-                }}
-              />
-            );
+            return <input type="checkbox" checked={Boolean(val)} readOnly style={{ accentColor: 'var(--spm-accent)' }} />;
           }
           if (col.type === 'date') {
             if (val === undefined || val === null || val === '') return <span>-</span>;
@@ -210,112 +153,139 @@ export function UiTableListPage({
             if (val === undefined || val === null || val === '') return <span>-</span>;
             const parsed = typeof val === 'number' ? val : parseFloat(String(val).replace(/[^0-9.-]/g, ''));
             const formatted = !isNaN(parsed)
-              ? parsed.toLocaleString(undefined, { style: 'currency', currency: 'USD' })
+              ? parsed.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
               : String(val);
             return <span>{formatted}</span>;
           }
           return <span>{val || '-'}</span>;
         },
-      }))
-    : [
-        {
-          key: 'icon',
-          header: '',
-          width: '50px',
-          align: 'center',
-          render: (item) => (
-            item.iconUrl ? (
-              <a href={item.iconLink || '#'} style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-                <img
-                  src={item.iconUrl}
-                  alt="icon"
-                  style={{
-                    width: '20px',
-                    height: '20px',
-                    opacity: 0.6,
-                    filter: 'brightness(0) invert(1)',
-                    transition: 'opacity 0.15s',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = '0.6')}
-                />
-              </a>
-            ) : null
-          ),
-        },
-        {
-          key: 'title',
-          header: 'Title / Last Updated',
-          render: (item) => (
-            <div>
-              <a
-                href={item.titleUrl || '#'}
+      }));
+    }
+
+    return [
+      {
+        key: 'icon',
+        header: '',
+        width: '50px',
+        align: 'center',
+        render: (item: any) => (
+          item.iconUrl ? (
+            <a href={item.iconLink || '#'} style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+              <img
+                src={item.iconUrl}
+                alt="icon"
                 style={{
-                  fontWeight: 600,
-                  fontSize: '14px',
-                  color: 'var(--spm-accent)',
-                  textDecoration: 'none',
-                  transition: 'color 0.15s',
+                  width: '20px',
+                  height: '20px',
+                  opacity: 0.6,
+                  filter: 'brightness(0) invert(1)',
+                  transition: 'opacity 0.15s',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--spm-accent-hover)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'var(--spm-accent)')}
-              >
-                {item.title || 'Untitled'}
-              </a>
-              {item.lastUpdatedText && (
-                <div style={{ fontSize: '11px', color: 'var(--spm-text-muted)', marginTop: '4px' }}>
-                  Last updated by{' '}
-                  {item.lastUpdatedUser ? (
-                    <a
-                      href={item.lastUpdatedUserUrl || '#'}
-                      style={{ color: 'var(--spm-text-primary)', fontWeight: 500, textDecoration: 'none' }}
-                    >
-                      {item.lastUpdatedUser}
-                    </a>
-                  ) : (
-                    'System'
-                  )}
-                  {item.lastUpdatedText && item.lastUpdatedText.includes('(') ? (
-                    <span> ({item.lastUpdatedText.split('(')[1]}</span>
-                  ) : null}
-                </div>
-              )}
-            </div>
-          ),
-        },
-        {
-          key: 'version',
-          header: 'Version',
-          width: '150px',
-          align: 'center',
-          render: (item) => (
-            <span
+                onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '0.6')}
+              />
+            </a>
+          ) : null
+        ),
+      },
+      {
+        key: 'title',
+        header: 'Title / Last Updated',
+        render: (item: any) => (
+          <div>
+            <a
+              href={item.titleUrl || '#'}
               style={{
-                fontSize: '11px',
                 fontWeight: 600,
-                padding: '4px 8px',
-                borderRadius: '12px',
-                background: 'var(--spm-bg-tertiary)',
-                border: '1px solid var(--spm-border)',
-                color: 'var(--spm-text-muted)',
+                fontSize: '14px',
+                color: 'var(--spm-accent)',
+                textDecoration: 'none',
+                transition: 'color 0.15s',
               }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--spm-accent-hover)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--spm-accent)')}
             >
-              {item.version || 'Version 1'}
-            </span>
-          ),
-        },
-      ];
+              {item.title || 'Untitled Item'}
+            </a>
+            {item.subtitle && (
+              <div style={{ fontSize: '12px', color: 'var(--spm-text-secondary)', marginTop: '2px' }}>
+                {item.subtitle}
+              </div>
+            )}
+          </div>
+        ),
+      },
+      {
+        key: 'badge',
+        header: 'Status',
+        width: '120px',
+        align: 'center',
+        render: (item: any) => (
+          item.badge ? (
+            <UiTagBadge label={item.badge} variant={(item.badgeVariant as any) || 'neutral'} />
+          ) : null
+        ),
+      },
+      {
+        key: 'version',
+        header: 'Version',
+        width: '100px',
+        align: 'center',
+        render: (item: any) => (
+          <span
+            style={{
+              fontFamily: 'monospace',
+              fontSize: '12px',
+              color: 'var(--spm-text-muted)',
+            }}
+          >
+            {item.version || 'Version 1'}
+          </span>
+        ),
+      },
+    ];
+  }, [columnsProp]);
+
+  const mainRef = React.useRef<HTMLElement>(null);
+
+  React.useEffect(() => {
+    if (!onLoadMore || !mainRef.current) return;
+
+    const el = mainRef.current;
+    const handleScroll = async () => {
+      if (loadingMore) return;
+      if (el.scrollHeight - el.scrollTop - el.clientHeight < 100) {
+        setLoadingMore(true);
+        try {
+          const res = await onLoadMore();
+          if (res.tableRows && res.tableRows.length > 0) {
+            setRows((prev) => [...prev, ...res.tableRows]);
+          }
+        } catch (e) {
+          console.error('Failed to load more items:', e);
+        } finally {
+          setLoadingMore(false);
+        }
+      }
+    };
+
+    el.addEventListener('scroll', handleScroll);
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [onLoadMore, loadingMore]);
+
+  const isFixedHeight = height !== 'auto' && height !== '100%';
 
   return (
     <div
       className={className}
       style={{
         display: 'flex',
-        height,
+        minHeight: isFixedHeight ? height : undefined,
+        height: isFixedHeight ? height : 'auto',
         background: 'var(--spm-bg-primary)',
         color: 'var(--spm-text-primary)',
         fontFamily: 'system-ui, -apple-system, sans-serif',
-        overflow: 'hidden',
+        overflow: isFixedHeight ? 'hidden' : 'visible',
         ...style,
       }}
     >
@@ -340,7 +310,7 @@ export function UiTableListPage({
       />
 
       {/* Main content scroll container */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100%' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: isFixedHeight ? '100%' : 'auto' }}>
         {/* Header */}
         <header
           style={{
@@ -375,7 +345,7 @@ export function UiTableListPage({
           style={{
             padding: '24px',
             flex: 1,
-            overflowY: 'auto',
+            overflowY: isFixedHeight ? 'auto' : 'visible',
             boxSizing: 'border-box',
           }}
         >
