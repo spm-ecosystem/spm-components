@@ -1,33 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { DevDiagnosticCollector, DevDiagnosticCollectorClass, DevDiagnosticItem } from '../../content/devDiagnostics';
+import React, { useState } from 'react';
+
+export interface DevDiagnosticItem {
+  id: string;
+  type: 'MISSING_SELECTOR' | 'BUILD_ERROR' | 'DEV_SERVER_DISCONNECTED' | 'INVALID_PROP' | string;
+  severity: 'warning' | 'error';
+  title: string;
+  message: string;
+  details?: string;
+  timestamp: number;
+  occurrenceCount?: number;
+}
 
 export interface UiDevDiagnosticPanelProps {
-  collector?: DevDiagnosticCollectorClass;
+  items?: DevDiagnosticItem[];
+  onClear?: () => void;
   initialExpanded?: boolean;
   className?: string;
   style?: React.CSSProperties;
 }
 
 export function UiDevDiagnosticPanel({
-  collector = DevDiagnosticCollector,
+  items = [],
+  onClear,
   initialExpanded = false,
   className,
   style,
 }: UiDevDiagnosticPanelProps) {
-  const [items, setItems] = useState<DevDiagnosticItem[]>(() => collector.getItems());
   const [isExpanded, setIsExpanded] = useState<boolean>(initialExpanded);
   const [activeTab, setActiveTab] = useState<'all' | 'error' | 'warning'>('all');
   const [expandedCardIds, setExpandedCardIds] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    setItems(collector.getItems());
-    const unsubscribe = collector.subscribe((newItems) => {
-      setItems([...newItems]);
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, [collector]);
 
   const errorCount = items.filter((i) => i.severity === 'error').length;
   const warningCount = items.filter((i) => i.severity === 'warning').length;
@@ -46,7 +47,7 @@ export function UiDevDiagnosticPanel({
   });
 
   const handleClear = () => {
-    collector.clear();
+    onClear?.();
   };
 
   const toggleDetails = (id: string) => {
@@ -459,9 +460,28 @@ export function UiDevDiagnosticPanel({
                     fontWeight: 600,
                     color: 'var(--spm-text-primary, #f4f4f5)',
                     wordBreak: 'break-word',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
                   }}
                 >
-                  {item.title}
+                  <span>{item.title}</span>
+                  {item.occurrenceCount && item.occurrenceCount > 1 ? (
+                    <span
+                      data-testid={`occurrence-badge-${item.id}`}
+                      style={{
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        padding: '1px 5px',
+                        borderRadius: '9999px',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        color: 'var(--spm-text-secondary, #d4d4d8)',
+                        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                      }}
+                    >
+                      (x{item.occurrenceCount})
+                    </span>
+                  ) : null}
                 </div>
 
                 {/* Monospace Message / Selector */}

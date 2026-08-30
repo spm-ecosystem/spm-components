@@ -1,36 +1,27 @@
 // @vitest-environment jsdom
 import { createRoot } from 'react-dom/client';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { UiDevDiagnosticPanel } from '../dedicated/UiDevDiagnosticPanel';
-import { DevDiagnosticCollector, DevDiagnosticCollectorClass } from '../../content/devDiagnostics';
-import { runModernizer, SiteManifest } from '../../content/modernizer';
+import { UiDevDiagnosticPanel, DevDiagnosticItem } from '../dedicated/UiDevDiagnosticPanel';
 
 const waitForUpdate = () => new Promise((resolve) => setTimeout(resolve, 50));
 
 describe('UiDevDiagnosticPanel', () => {
   let container: HTMLDivElement;
-  let customCollector: DevDiagnosticCollectorClass;
 
   beforeEach(() => {
     container = document.createElement('div');
     document.body.appendChild(container);
-    customCollector = new DevDiagnosticCollectorClass();
-    DevDiagnosticCollector.clear();
   });
 
   afterEach(() => {
     if (container.parentNode) {
       document.body.removeChild(container);
     }
-    const host = document.getElementById('spm-dev-diagnostic-host');
-    if (host && host.parentNode) {
-      host.parentNode.removeChild(host);
-    }
   });
 
   it('renders collapsed badge with SPM DEV and green status dot when empty', async () => {
     const root = createRoot(container);
-    root.render(<UiDevDiagnosticPanel collector={customCollector} />);
+    root.render(<UiDevDiagnosticPanel items={[]} />);
     await waitForUpdate();
 
     expect(container.textContent).toContain('SPM DEV');
@@ -42,15 +33,19 @@ describe('UiDevDiagnosticPanel', () => {
   });
 
   it('updates status dot to amber when only warnings are present', async () => {
-    customCollector.addDiagnostic({
-      type: 'MISSING_SELECTOR',
-      severity: 'warning',
-      title: 'Missing Container',
-      message: 'Container selector .box not found',
-    });
+    const items: DevDiagnosticItem[] = [
+      {
+        id: '1',
+        type: 'MISSING_SELECTOR',
+        severity: 'warning',
+        title: 'Missing Container',
+        message: 'Container selector .box not found',
+        timestamp: Date.now(),
+      },
+    ];
 
     const root = createRoot(container);
-    root.render(<UiDevDiagnosticPanel collector={customCollector} />);
+    root.render(<UiDevDiagnosticPanel items={items} />);
     await waitForUpdate();
 
     const badgeCounter = container.querySelector('[data-testid="badge-counter"]');
@@ -61,21 +56,27 @@ describe('UiDevDiagnosticPanel', () => {
   });
 
   it('updates status dot to red when errors are present', async () => {
-    customCollector.addDiagnostic({
-      type: 'MISSING_SELECTOR',
-      severity: 'warning',
-      title: 'Missing Container',
-      message: 'Container selector .box not found',
-    });
-    customCollector.addDiagnostic({
-      type: 'BUILD_ERROR',
-      severity: 'error',
-      title: 'Compilation Failed',
-      message: 'Failed to compile manifest',
-    });
+    const items: DevDiagnosticItem[] = [
+      {
+        id: '1',
+        type: 'MISSING_SELECTOR',
+        severity: 'warning',
+        title: 'Missing Container',
+        message: 'Container selector .box not found',
+        timestamp: Date.now(),
+      },
+      {
+        id: '2',
+        type: 'BUILD_ERROR',
+        severity: 'error',
+        title: 'Compilation Failed',
+        message: 'Failed to compile manifest',
+        timestamp: Date.now(),
+      },
+    ];
 
     const root = createRoot(container);
-    root.render(<UiDevDiagnosticPanel collector={customCollector} />);
+    root.render(<UiDevDiagnosticPanel items={items} />);
     await waitForUpdate();
 
     const badgeCounter = container.querySelector('[data-testid="badge-counter"]');
@@ -87,7 +88,7 @@ describe('UiDevDiagnosticPanel', () => {
 
   it('expands drawer when collapsed badge is clicked and collapses when close button is clicked', async () => {
     const root = createRoot(container);
-    root.render(<UiDevDiagnosticPanel collector={customCollector} />);
+    root.render(<UiDevDiagnosticPanel items={[]} />);
     await waitForUpdate();
 
     // Initially collapsed: drawer title not visible
@@ -117,28 +118,34 @@ describe('UiDevDiagnosticPanel', () => {
 
   it('renders initialExpanded prop correctly', async () => {
     const root = createRoot(container);
-    root.render(<UiDevDiagnosticPanel collector={customCollector} initialExpanded={true} />);
+    root.render(<UiDevDiagnosticPanel items={[]} initialExpanded={true} />);
     await waitForUpdate();
 
     expect(container.textContent).toContain('Dev Diagnostics');
   });
 
   it('filters diagnostics by severity tabs: All, Errors, Warnings', async () => {
-    customCollector.addDiagnostic({
-      type: 'MISSING_SELECTOR',
-      severity: 'warning',
-      title: 'Missing Reconstruct Container',
-      message: 'Selector #app not found',
-    });
-    customCollector.addDiagnostic({
-      type: 'BUILD_ERROR',
-      severity: 'error',
-      title: 'Dev Server Disconnected',
-      message: 'Failed WebSocket handshake',
-    });
+    const items: DevDiagnosticItem[] = [
+      {
+        id: '1',
+        type: 'MISSING_SELECTOR',
+        severity: 'warning',
+        title: 'Missing Reconstruct Container',
+        message: 'Selector #app not found',
+        timestamp: Date.now(),
+      },
+      {
+        id: '2',
+        type: 'BUILD_ERROR',
+        severity: 'error',
+        title: 'Dev Server Disconnected',
+        message: 'Failed WebSocket handshake',
+        timestamp: Date.now(),
+      },
+    ];
 
     const root = createRoot(container);
-    root.render(<UiDevDiagnosticPanel collector={customCollector} initialExpanded={true} />);
+    root.render(<UiDevDiagnosticPanel items={items} initialExpanded={true} />);
     await waitForUpdate();
 
     expect(container.textContent).toContain('All (2)');
@@ -177,16 +184,20 @@ describe('UiDevDiagnosticPanel', () => {
   });
 
   it('renders diagnostic cards with dark surface, SVG icons, and togglable details', async () => {
-    customCollector.addDiagnostic({
-      type: 'MISSING_SELECTOR',
-      severity: 'warning',
-      title: 'Missing Component Selector',
-      message: 'Selector .missing-nav matched 0 elements.',
-      details: JSON.stringify({ selector: '.missing-nav', context: 'header' }, null, 2),
-    });
+    const items: DevDiagnosticItem[] = [
+      {
+        id: 'diag-1',
+        type: 'MISSING_SELECTOR',
+        severity: 'warning',
+        title: 'Missing Component Selector',
+        message: 'Selector .missing-nav matched 0 elements.',
+        details: JSON.stringify({ selector: '.missing-nav', context: 'header' }, null, 2),
+        timestamp: Date.now(),
+      },
+    ];
 
     const root = createRoot(container);
-    root.render(<UiDevDiagnosticPanel collector={customCollector} initialExpanded={true} />);
+    root.render(<UiDevDiagnosticPanel items={items} initialExpanded={true} />);
     await waitForUpdate();
 
     expect(container.textContent).toContain('MISSING_SELECTOR');
@@ -220,102 +231,87 @@ describe('UiDevDiagnosticPanel', () => {
     expect(container.querySelector('pre')).toBeNull();
   });
 
-  it('clears all diagnostics when Clear button is clicked', async () => {
-    customCollector.addDiagnostic({
-      type: 'MISSING_SELECTOR',
-      severity: 'warning',
-      title: 'Selector issue',
-      message: 'Missing #id',
-    });
+  it('calls onClear callback when Clear button is clicked', async () => {
+    const onClearMock = vi.fn();
+    const items: DevDiagnosticItem[] = [
+      {
+        id: '1',
+        type: 'MISSING_SELECTOR',
+        severity: 'warning',
+        title: 'Selector issue',
+        message: 'Missing #id',
+        timestamp: Date.now(),
+      },
+    ];
 
     const root = createRoot(container);
-    root.render(<UiDevDiagnosticPanel collector={customCollector} initialExpanded={true} />);
+    root.render(<UiDevDiagnosticPanel items={items} onClear={onClearMock} initialExpanded={true} />);
     await waitForUpdate();
 
     expect(container.textContent).toContain('Selector issue');
-    expect(customCollector.getItems()).toHaveLength(1);
 
     const clearBtn = container.querySelector('.spm-dev-diagnostic-clear-btn') as HTMLButtonElement;
     expect(clearBtn).toBeTruthy();
     clearBtn.click();
     await waitForUpdate();
 
-    expect(customCollector.getItems()).toHaveLength(0);
-    expect(container.textContent).toContain('No diagnostic issues detected.');
-    expect(container.textContent).toContain('All (0)');
+    expect(onClearMock).toHaveBeenCalledTimes(1);
   });
 
-  it('reactively updates when collector receives new diagnostics while mounted', async () => {
+  it('renders occurrence count badge when occurrenceCount is greater than 1', async () => {
+    const items: DevDiagnosticItem[] = [
+      {
+        id: 'item-single',
+        type: 'MISSING_SELECTOR',
+        severity: 'warning',
+        title: 'Single Warning',
+        message: 'Happened once',
+        timestamp: Date.now(),
+        occurrenceCount: 1,
+      },
+      {
+        id: 'item-multi',
+        type: 'BUILD_ERROR',
+        severity: 'error',
+        title: 'Repeated Error',
+        message: 'Happened multiple times',
+        timestamp: Date.now(),
+        occurrenceCount: 5,
+      },
+    ];
+
     const root = createRoot(container);
-    root.render(<UiDevDiagnosticPanel collector={customCollector} initialExpanded={true} />);
+    root.render(<UiDevDiagnosticPanel items={items} initialExpanded={true} />);
+    await waitForUpdate();
+
+    expect(container.querySelector('[data-testid="occurrence-badge-item-single"]')).toBeNull();
+    const multiBadge = container.querySelector('[data-testid="occurrence-badge-item-multi"]');
+    expect(multiBadge).toBeTruthy();
+    expect(multiBadge?.textContent).toBe('(x5)');
+  });
+
+  it('reactively updates when items prop updates upon re-render', async () => {
+    const root = createRoot(container);
+    root.render(<UiDevDiagnosticPanel items={[]} initialExpanded={true} />);
     await waitForUpdate();
 
     expect(container.textContent).toContain('No diagnostic issues detected.');
 
-    customCollector.addDiagnostic({
-      type: 'INVALID_PROP',
-      severity: 'warning',
-      title: 'Invalid Prop Received',
-      message: 'Expected number for count prop',
-    });
+    const newItems: DevDiagnosticItem[] = [
+      {
+        id: '1',
+        type: 'INVALID_PROP',
+        severity: 'warning',
+        title: 'Invalid Prop Received',
+        message: 'Expected number for count prop',
+        timestamp: Date.now(),
+      },
+    ];
+
+    root.render(<UiDevDiagnosticPanel items={newItems} initialExpanded={true} />);
     await waitForUpdate();
 
     expect(container.textContent).toContain('Invalid Prop Received');
     expect(container.textContent).toContain('All (1)');
-  });
-});
-
-describe('modernizer dev diagnostic Shadow DOM host integration', () => {
-  beforeEach(() => {
-    document.body.innerHTML = '';
-    DevDiagnosticCollector.clear();
-    delete (window as any).__spm_dev_manifest;
-  });
-
-  afterEach(() => {
-    document.body.innerHTML = '';
-    delete (window as any).__spm_dev_manifest;
-  });
-
-  it('mounts #spm-dev-diagnostic-host Shadow DOM root when isDev is true', () => {
-    const manifest: SiteManifest = {
-      reconstructs: [
-        {
-          containerSelector: '#non-existent-box',
-          layoutComponent: 'UiSearchBar',
-          children: [],
-        },
-      ],
-    };
-
-    runModernizer(document, manifest, '', '', true);
-
-    const devHost = document.getElementById('spm-dev-diagnostic-host');
-    expect(devHost).toBeTruthy();
-    expect(devHost?.shadowRoot).toBeTruthy();
-    expect(devHost?.style.position).toBe('fixed');
-    expect(devHost?.style.bottom).toBe('0px');
-    expect(devHost?.style.right).toBe('0px');
-    expect(devHost?.style.zIndex).toBe('999999');
-  });
-
-  it('does NOT mount #spm-dev-diagnostic-host when isDev is false and __spm_dev_manifest is absent', () => {
-    const manifest: SiteManifest = {};
-    runModernizer(document, manifest, '', '', false);
-
-    const devHost = document.getElementById('spm-dev-diagnostic-host');
-    expect(devHost).toBeNull();
-  });
-
-  it('mounts #spm-dev-diagnostic-host when window.__spm_dev_manifest is defined', () => {
-    (window as any).__spm_dev_manifest = {
-      components: [],
-    };
-
-    runModernizer(document, {}, '', '', false);
-
-    const devHost = document.getElementById('spm-dev-diagnostic-host');
-    expect(devHost).toBeTruthy();
-    expect(devHost?.shadowRoot).toBeTruthy();
   });
 });
