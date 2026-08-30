@@ -230,7 +230,6 @@ export function UiTabs({
           display: 'flex',
           flexDirection: orientation === 'vertical' ? 'column' : 'row',
           alignItems: orientation === 'vertical' ? 'stretch' : 'center',
-          justifyContent: orientation === 'horizontal' ? 'center' : 'flex-start',
           gap: variant === 'boxed' ? '4px' : (variant === 'pill' ? '6px' : '0'),
           borderBottom: (orientation === 'horizontal' && variant === 'underline')
             ? '1px solid var(--spm-border, #334155)'
