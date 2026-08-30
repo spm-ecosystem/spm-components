@@ -75,6 +75,7 @@ For detailed specifications, Props API tables, design tokens, and `.vnr` (Veneer
 | `UiPostDetails` | Dedicated | [`UiPostDetails.md`](components/UiPostDetails.md) | Split layout for post/item detail pages with sidebar, tags, search bar, buttons, and image viewport. |
 | `UiNestedTreeTable` | Dedicated | [`UiNestedTreeTable.md`](components/UiNestedTreeTable.md) | Hierarchical tree table with collapsible/expandable rows for structured data. |
 | `UiTerminalConsole` | Dedicated | [`UiTerminalConsole.md`](components/UiTerminalConsole.md) | Dark monospace live terminal log console with level filtering. |
+| `UiTabs` | Dedicated | [`UiTabs.md`](components/UiTabs.md) | Tabbed navigation and content switcher with underline/pill/boxed variants and URL state sync. |
 | `UiToastContainer` | Dedicated | [`UiToastContainer.md`](components/UiToastContainer.md) | Global toast notifications stack and modal confirm portal listener. |
 
 ---
@@ -123,6 +124,7 @@ Dedicated components are complex, pre-styled views located in `src/components/de
 | `UiPostDetails` | Split view post/item detail page | `imageUrl`, `imageAlt`, `tags`, `tagGroups`, `statisticsHtml`, `buttons`, `showSearch`, `searchPlaceholder`, `searchSubmitUrl`, `searchParamName` |
 | `UiNestedTreeTable` | Hierarchical expandable tree table | `title`, `columns`, `data`, `expandedDepth` |
 | `UiTerminalConsole` | Monospace live terminal log viewer with level filtering | `title`, `logs`, `filterLevel`, `autoScroll`, `maxLines` |
+| `UiTabs` | Tabbed navigation and content panel switcher | `tabs`, `activeParamName`, `variant`, `orientation` |
 | `UiToastContainer` | Toast feedback overlays & confirmation portals | - |
 
 ---
@@ -252,6 +254,15 @@ Dedicated components are complex, pre-styled views located in `src/components/de
 | `filterLevel` | `'all' \| 'info' \| 'warn' \| 'error'` | `'all'` | Initial log level filter |
 | `autoScroll` | `boolean` | - | Auto-scroll to latest log entries |
 | `maxLines` | `number` | - | Maximum line count to retain |
+
+#### `UiTabs`
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `tabs` | `UiTabItem[]` | `[]` | Tab items (`id`, `label`, `href`, `badge`, `contentHtml`, `active`, `disabled`) |
+| `activeParamName` | `string` | - | URL query parameter key to sync active tab selection |
+| `variant` | `'underline' \| 'pill' \| 'boxed'` | `'underline'` | Visual tab styling variant (`'underline'`, `'pill'`, `'boxed'`) |
+| `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | Layout flow orientation (`'horizontal'`, `'vertical'`) |
 
 ---
 
