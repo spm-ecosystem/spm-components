@@ -57,6 +57,7 @@ export function UiDevDiagnosticPanel({
     }));
   };
 
+  // Static SPM Extension System Styles — Isolated from Theme Overrides
   if (!isExpanded) {
     return (
       <div
@@ -79,12 +80,12 @@ export function UiDevDiagnosticPanel({
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '6px 12px',
-            background: 'var(--spm-bg-secondary, #18181b)',
-            color: 'var(--spm-text-primary, #f4f4f5)',
-            border: '1px solid var(--spm-border, rgba(255, 255, 255, 0.12))',
+            padding: '6px 14px',
+            background: '#09090b',
+            color: '#ffffff',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
             borderRadius: '9999px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.45)',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.75)',
             fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
             fontSize: '12px',
             fontWeight: 600,
@@ -93,11 +94,11 @@ export function UiDevDiagnosticPanel({
             transition: 'all 0.15s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'var(--spm-accent, #6366f1)';
+            e.currentTarget.style.borderColor = '#ffffff';
             e.currentTarget.style.transform = 'translateY(-1px)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'var(--spm-border, rgba(255, 255, 255, 0.12))';
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
             e.currentTarget.style.transform = 'translateY(0)';
           }}
         >
@@ -111,29 +112,29 @@ export function UiDevDiagnosticPanel({
           >
             <circle cx="4" cy="4" r="3.5" fill={getStatusColor()} />
           </svg>
-          <span>SPM DEV</span>
+          <span style={{ color: '#ffffff', letterSpacing: '0.02em' }}>SPM DEV</span>
           <span
             data-testid="badge-counter"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '1px 6px',
+              padding: '1px 7px',
               fontSize: '11px',
               fontWeight: 700,
               borderRadius: '9999px',
               background:
                 totalCount > 0
                   ? errorCount > 0
-                    ? 'rgba(239, 68, 68, 0.2)'
-                    : 'rgba(245, 158, 11, 0.2)'
-                  : 'rgba(255, 255, 255, 0.08)',
+                    ? 'rgba(239, 68, 68, 0.25)'
+                    : 'rgba(245, 158, 11, 0.25)'
+                  : 'rgba(255, 255, 255, 0.12)',
               color:
                 totalCount > 0
                   ? errorCount > 0
                     ? '#f87171'
                     : '#fbbf24'
-                  : 'var(--spm-text-muted, #a1a1aa)',
+                  : '#a1a1aa',
             }}
           >
             {totalCount}
@@ -157,12 +158,12 @@ export function UiDevDiagnosticPanel({
         pointerEvents: 'auto',
         display: 'flex',
         flexDirection: 'column',
-        background: 'var(--spm-bg-secondary, #18181b)',
-        border: '1px solid var(--spm-border, rgba(255, 255, 255, 0.12))',
-        borderRadius: 'var(--spm-radius, 8px)',
-        boxShadow: '0 16px 48px rgba(0, 0, 0, 0.65)',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        color: 'var(--spm-text-primary, #f4f4f5)',
+        background: '#09090b',
+        border: '1px solid rgba(255, 255, 255, 0.18)',
+        borderRadius: '8px',
+        boxShadow: '0 20px 50px rgba(0, 0, 0, 0.85)',
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, system-ui, -apple-system, sans-serif',
+        color: '#ffffff',
         overflow: 'hidden',
         boxSizing: 'border-box',
         ...style,
@@ -174,9 +175,9 @@ export function UiDevDiagnosticPanel({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '12px 14px',
-          borderBottom: '1px solid var(--spm-border, rgba(255, 255, 255, 0.08))',
-          background: 'var(--spm-bg-primary, #09090b)',
+          padding: '12px 16px',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
+          background: '#000000',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -190,37 +191,39 @@ export function UiDevDiagnosticPanel({
           >
             <circle cx="4" cy="4" r="3.5" fill={getStatusColor()} />
           </svg>
-          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.02em' }}>
+          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.02em', color: '#ffffff' }}>
             Dev Diagnostics
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
             type="button"
             onClick={handleClear}
             className="spm-dev-diagnostic-clear-btn"
             title="Clear all diagnostics"
             style={{
-              background: 'transparent',
-              border: '1px solid var(--spm-border, rgba(255, 255, 255, 0.1))',
+              background: '#18181b',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
               borderRadius: '4px',
-              color: 'var(--spm-text-muted, #a1a1aa)',
-              padding: '3px 8px',
+              color: '#a1a1aa',
+              padding: '4px 10px',
               fontSize: '11px',
-              fontWeight: 500,
+              fontWeight: 600,
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '4px',
+              gap: '5px',
               transition: 'all 0.15s ease',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'var(--spm-text-primary, #f4f4f5)';
-              e.currentTarget.style.borderColor = 'var(--spm-text-muted, #a1a1aa)';
+              e.currentTarget.style.color = '#ffffff';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+              e.currentTarget.style.background = '#27272a';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--spm-text-muted, #a1a1aa)';
-              e.currentTarget.style.borderColor = 'var(--spm-border, rgba(255, 255, 255, 0.1))';
+              e.currentTarget.style.color = '#a1a1aa';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+              e.currentTarget.style.background = '#18181b';
             }}
           >
             <svg
@@ -248,7 +251,7 @@ export function UiDevDiagnosticPanel({
               background: 'transparent',
               border: 'none',
               borderRadius: '4px',
-              color: 'var(--spm-text-muted, #a1a1aa)',
+              color: '#a1a1aa',
               padding: '4px',
               cursor: 'pointer',
               display: 'inline-flex',
@@ -256,8 +259,8 @@ export function UiDevDiagnosticPanel({
               justifyContent: 'center',
               transition: 'color 0.15s ease',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--spm-text-primary, #f4f4f5)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--spm-text-muted, #a1a1aa)')}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#ffffff')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#a1a1aa')}
           >
             <svg
               width="14"
@@ -276,12 +279,12 @@ export function UiDevDiagnosticPanel({
         </div>
       </div>
 
-      {/* Severity Tabs */}
+      {/* Severity Tabs — Pure White Active Line matching SPM Popup */}
       <div
         style={{
           display: 'flex',
-          borderBottom: '1px solid var(--spm-border, rgba(255, 255, 255, 0.08))',
-          background: 'var(--spm-bg-primary, #09090b)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
+          background: '#000000',
           padding: '0 8px',
         }}
       >
@@ -290,16 +293,16 @@ export function UiDevDiagnosticPanel({
           onClick={() => setActiveTab('all')}
           style={{
             flex: 1,
-            padding: '8px 4px',
+            padding: '10px 4px',
             fontSize: '11px',
-            fontWeight: activeTab === 'all' ? 600 : 500,
+            fontWeight: activeTab === 'all' ? 700 : 500,
             background: 'transparent',
             border: 'none',
-            borderBottom: activeTab === 'all' ? '2px solid var(--spm-accent, #6366f1)' : '2px solid transparent',
-            color: activeTab === 'all' ? 'var(--spm-text-primary, #f4f4f5)' : 'var(--spm-text-muted, #a1a1aa)',
+            borderBottom: activeTab === 'all' ? '2px solid #ffffff' : '2px solid transparent',
+            color: activeTab === 'all' ? '#ffffff' : '#a1a1aa',
             cursor: 'pointer',
             textAlign: 'center',
-            transition: 'color 0.15s ease',
+            transition: 'all 0.15s ease',
           }}
         >
           All ({totalCount})
@@ -309,16 +312,16 @@ export function UiDevDiagnosticPanel({
           onClick={() => setActiveTab('error')}
           style={{
             flex: 1,
-            padding: '8px 4px',
+            padding: '10px 4px',
             fontSize: '11px',
-            fontWeight: activeTab === 'error' ? 600 : 500,
+            fontWeight: activeTab === 'error' ? 700 : 500,
             background: 'transparent',
             border: 'none',
             borderBottom: activeTab === 'error' ? '2px solid #ef4444' : '2px solid transparent',
-            color: activeTab === 'error' ? '#f87171' : 'var(--spm-text-muted, #a1a1aa)',
+            color: activeTab === 'error' ? '#f87171' : '#a1a1aa',
             cursor: 'pointer',
             textAlign: 'center',
-            transition: 'color 0.15s ease',
+            transition: 'all 0.15s ease',
           }}
         >
           Errors ({errorCount})
@@ -328,16 +331,16 @@ export function UiDevDiagnosticPanel({
           onClick={() => setActiveTab('warning')}
           style={{
             flex: 1,
-            padding: '8px 4px',
+            padding: '10px 4px',
             fontSize: '11px',
-            fontWeight: activeTab === 'warning' ? 600 : 500,
+            fontWeight: activeTab === 'warning' ? 700 : 500,
             background: 'transparent',
             border: 'none',
             borderBottom: activeTab === 'warning' ? '2px solid #f59e0b' : '2px solid transparent',
-            color: activeTab === 'warning' ? '#fbbf24' : 'var(--spm-text-muted, #a1a1aa)',
+            color: activeTab === 'warning' ? '#fbbf24' : '#a1a1aa',
             cursor: 'pointer',
             textAlign: 'center',
-            transition: 'color 0.15s ease',
+            transition: 'all 0.15s ease',
           }}
         >
           Warnings ({warningCount})
@@ -350,18 +353,20 @@ export function UiDevDiagnosticPanel({
           display: 'flex',
           flexDirection: 'column',
           gap: '8px',
-          padding: '10px 12px',
+          padding: '12px',
           overflowY: 'auto',
           maxHeight: '420px',
+          background: '#09090b',
         }}
       >
         {filteredItems.length === 0 ? (
           <div
             style={{
-              padding: '24px 12px',
+              padding: '28px 12px',
               textAlign: 'center',
-              color: 'var(--spm-text-muted, #a1a1aa)',
+              color: '#71717a',
               fontSize: '12px',
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
             }}
           >
             No diagnostic issues detected.
@@ -376,11 +381,11 @@ export function UiDevDiagnosticPanel({
                 key={item.id}
                 data-testid={`diagnostic-card-${item.id}`}
                 style={{
-                  background: 'var(--spm-bg-surface, var(--spm-bg-tertiary, #27272a))',
+                  background: '#18181b',
                   border: `1px solid ${
-                    isError ? 'rgba(239, 68, 68, 0.3)' : 'var(--spm-border, rgba(255, 255, 255, 0.08))'
+                    isError ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255, 255, 255, 0.1)'
                   }`,
-                  borderRadius: 'var(--spm-radius, 6px)',
+                  borderRadius: '6px',
                   padding: '10px 12px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -445,7 +450,7 @@ export function UiDevDiagnosticPanel({
                   <span
                     style={{
                       fontSize: '10px',
-                      color: 'var(--spm-text-muted, #71717a)',
+                      color: '#71717a',
                       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
                     }}
                   >
@@ -458,7 +463,7 @@ export function UiDevDiagnosticPanel({
                   style={{
                     fontSize: '12px',
                     fontWeight: 600,
-                    color: 'var(--spm-text-primary, #f4f4f5)',
+                    color: '#ffffff',
                     wordBreak: 'break-word',
                     display: 'flex',
                     alignItems: 'center',
@@ -472,10 +477,10 @@ export function UiDevDiagnosticPanel({
                       style={{
                         fontSize: '10px',
                         fontWeight: 700,
-                        padding: '1px 5px',
+                        padding: '1px 6px',
                         borderRadius: '9999px',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        color: 'var(--spm-text-secondary, #d4d4d8)',
+                        background: 'rgba(255, 255, 255, 0.15)',
+                        color: '#ffffff',
                         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
                       }}
                     >
@@ -489,12 +494,13 @@ export function UiDevDiagnosticPanel({
                   style={{
                     fontSize: '11px',
                     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                    color: 'var(--spm-text-secondary, #d4d4d8)',
+                    color: '#d4d4d8',
                     lineHeight: 1.4,
                     wordBreak: 'break-word',
-                    background: 'rgba(0, 0, 0, 0.25)',
-                    padding: '4px 6px',
+                    background: '#09090b',
+                    padding: '6px 8px',
                     borderRadius: '4px',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
                   }}
                 >
                   {item.message}
@@ -509,14 +515,15 @@ export function UiDevDiagnosticPanel({
                       style={{
                         background: 'transparent',
                         border: 'none',
-                        color: 'var(--spm-accent, #818cf8)',
+                        color: '#ffffff',
                         fontSize: '11px',
                         cursor: 'pointer',
                         padding: '2px 0',
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '4px',
-                        fontWeight: 500,
+                        fontWeight: 600,
+                        textDecoration: 'underline',
                       }}
                     >
                       <svg
@@ -541,14 +548,14 @@ export function UiDevDiagnosticPanel({
                       <pre
                         data-testid={`details-block-${item.id}`}
                         style={{
-                          margin: '4px 0 0 0',
-                          padding: '6px 8px',
-                          background: 'rgba(0, 0, 0, 0.4)',
-                          border: '1px solid var(--spm-border, rgba(255, 255, 255, 0.05))',
+                          margin: '6px 0 0 0',
+                          padding: '8px 10px',
+                          background: '#000000',
+                          border: '1px solid rgba(255, 255, 255, 0.12)',
                           borderRadius: '4px',
                           fontSize: '10px',
                           fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                          color: 'var(--spm-text-muted, #a1a1aa)',
+                          color: '#a1a1aa',
                           whiteSpace: 'pre-wrap',
                           wordBreak: 'break-all',
                           maxHeight: '140px',
