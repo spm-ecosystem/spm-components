@@ -211,12 +211,12 @@ export function UiNavHeader({
                     padding: '0 12px',
                     fontSize: '13px',
                     fontWeight: active ? 600 : 400,
-                    color: active ? 'var(--spm-accent, #ff6600)' : 'var(--spm-text-muted, #a1a1aa)',
+                    color: active ? 'var(--spm-accent)' : 'var(--spm-text-muted)',
                     textDecoration: 'none',
-                    borderBottom: active ? '2px solid var(--spm-accent, #ff6600)' : '2px solid transparent',
+                    borderBottom: active ? '2px solid var(--spm-accent)' : '2px solid transparent',
                     borderRadius: '6px',
-                    background: active ? 'color-mix(in srgb, var(--spm-accent, #ff6600) 15%, transparent)' : 'transparent',
-                    boxShadow: active ? '0 0 10px color-mix(in srgb, var(--spm-accent, #ff6600) 30%, transparent)' : 'none',
+                    background: active ? 'color-mix(in srgb, var(--spm-accent) 15%, transparent)' : 'transparent',
+                    boxShadow: active ? '0 0 10px color-mix(in srgb, var(--spm-accent) 30%, transparent)' : 'none',
                     transition: 'color 0.15s, border-color 0.15s, background-color 0.15s, box-shadow 0.15s',
                     whiteSpace: 'nowrap',
                     boxSizing: 'border-box',
@@ -224,14 +224,14 @@ export function UiNavHeader({
                   onMouseEnter={e => {
                     const el = e.currentTarget as HTMLElement;
                     if (!active) {
-                      el.style.color = 'var(--spm-accent, #ff6600)';
-                      el.style.backgroundColor = 'color-mix(in srgb, var(--spm-accent, #ff6600) 8%, transparent)';
+                      el.style.color = 'var(--spm-accent)';
+                      el.style.backgroundColor = 'color-mix(in srgb, var(--spm-accent) 8%, transparent)';
                     }
                   }}
                   onMouseLeave={e => {
                     const el = e.currentTarget as HTMLElement;
                     if (!active) {
-                      el.style.color = 'var(--spm-text-muted, #a1a1aa)';
+                      el.style.color = 'var(--spm-text-muted)';
                       el.style.backgroundColor = 'transparent';
                     }
                   }}
@@ -266,24 +266,24 @@ export function UiNavHeader({
                     padding: '0 10px',
                     fontSize: '12px',
                     fontWeight: active ? 600 : 500,
-                    color: active ? 'var(--spm-accent, #ff6600)' : 'var(--spm-text-muted, #a1a1aa)',
+                    color: active ? 'var(--spm-accent)' : 'var(--spm-text-muted)',
                     textDecoration: 'none',
                     borderRadius: '6px',
-                    background: active ? 'color-mix(in srgb, var(--spm-accent, #ff6600) 15%, transparent)' : 'transparent',
+                    background: active ? 'color-mix(in srgb, var(--spm-accent) 15%, transparent)' : 'transparent',
                     transition: 'color 0.15s, background-color 0.15s',
                     whiteSpace: 'nowrap',
                   }}
                   onMouseEnter={e => {
                     const el = e.currentTarget as HTMLElement;
                     if (!active) {
-                      el.style.color = 'var(--spm-accent, #ff6600)';
-                      el.style.backgroundColor = 'color-mix(in srgb, var(--spm-accent, #ff6600) 8%, transparent)';
+                      el.style.color = 'var(--spm-accent)';
+                      el.style.backgroundColor = 'color-mix(in srgb, var(--spm-accent) 8%, transparent)';
                     }
                   }}
                   onMouseLeave={e => {
                     const el = e.currentTarget as HTMLElement;
                     if (!active) {
-                      el.style.color = 'var(--spm-text-muted, #a1a1aa)';
+                      el.style.color = 'var(--spm-text-muted)';
                       el.style.backgroundColor = 'transparent';
                     }
                   }}
