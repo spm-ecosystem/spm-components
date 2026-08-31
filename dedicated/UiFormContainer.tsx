@@ -51,11 +51,24 @@ export function UiFormContainer({
   className = '',
   style = {},
 }: UiFormContainerProps) {
+  const resolvedTabs: FormTab[] = React.useMemo(() => {
+    if (Array.isArray(tabs)) return tabs;
+    if (typeof tabs === 'string') {
+      try {
+        const parsed = JSON.parse(tabs);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  }, [tabs]);
+
   const [currentTabId, setCurrentTabId] = React.useState<string>(
-    activeTabId || (tabs.length > 0 ? tabs[0].id : '')
+    activeTabId || (resolvedTabs.length > 0 ? resolvedTabs[0].id : '')
   );
 
-  const activeTab = tabs.find((t) => t.id === currentTabId);
+  const activeTab = resolvedTabs.find((t) => t.id === currentTabId) || (resolvedTabs.length > 0 ? resolvedTabs[0] : undefined);
 
   const title = activeTab?.title !== undefined ? activeTab.title : initialTitle;
   const subTitle = activeTab?.subTitle !== undefined ? activeTab.subTitle : initialSubTitle;
@@ -80,7 +93,7 @@ export function UiFormContainer({
         ...style,
       }}
     >
-      {tabs && tabs.length > 0 && (
+      {resolvedTabs && resolvedTabs.length > 0 && (
         <div
           className="spm-form-tabs"
           style={{
@@ -93,7 +106,7 @@ export function UiFormContainer({
             border: '1px solid var(--spm-border, #334155)',
           }}
         >
-          {tabs.map((t) => {
+          {resolvedTabs.map((t) => {
             const isActive = t.id === (activeTab?.id || currentTabId);
             return (
               <button
