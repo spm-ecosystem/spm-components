@@ -50,7 +50,6 @@ export function UiNavHeader({
 }: UiNavHeaderProps) {
   const [isMobile, setIsMobile] = useState(false);
   const isMinimal = layout === 'minimal';
-  const isStacked = layout === 'stacked';
   const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -89,7 +88,6 @@ export function UiNavHeader({
 
   if (hideOnMobile && isMobile) return null;
 
-  // Consolidate primary links and items (supporting url/href fallback)
   const rawLinks = items.length > 0 ? items : primaryLinks;
   const resolvedPrimaryLinks = rawLinks.map(link => ({
     label: link.label,
@@ -134,24 +132,23 @@ export function UiNavHeader({
         }
       `}</style>
 
-      {/* Primary Bar */}
+      {/* Unified Single Primary Header Bar */}
       <div
         style={{
           display: 'flex',
-          flexDirection: isStacked ? 'column' : 'row',
-          alignItems: isStacked ? 'flex-start' : 'center',
-          gap: isStacked ? '8px' : '4px',
-          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '16px',
           background: 'var(--spm-bg-secondary)',
           border: '1px solid var(--spm-border)',
           borderRadius: 'var(--spm-radius, 8px)',
-          padding: isStacked ? '12px 16px' : '0 16px',
-          minHeight: isStacked ? 'auto' : '48px',
-          boxShadow: '0 4px 16px -2px rgba(0, 0, 0, 0.3)',
+          padding: '0 16px',
+          minHeight: '48px',
+          boxShadow: '0 4px 16px -2px rgba(0, 0, 0, 0.4)',
           boxSizing: 'border-box',
         }}
       >
-        {/* Logo/Site Name */}
+        {/* LEFT: Logo & Site Name */}
         <a
           href={logoHref}
           style={{
@@ -163,9 +160,8 @@ export function UiNavHeader({
             color: 'var(--spm-text-primary)',
             textDecoration: 'none',
             letterSpacing: '-0.03em',
-            marginRight: isStacked ? '0' : '16px',
             flexShrink: 0,
-            height: isStacked ? 'auto' : '48px',
+            height: '48px',
           }}
         >
           {logoUrl && (
@@ -183,20 +179,20 @@ export function UiNavHeader({
           <span>{siteName}</span>
         </a>
 
-        {/* Primary nav links */}
+        {/* CENTER: Primary Navigation Links */}
         {!isMinimal && (
           <div
             className="spm-nav-container"
             style={{
               display: 'flex',
-              flexWrap: 'nowrap',
+              alignItems: 'center',
+              justifyContent: 'center',
               gap: '4px',
-              overflowX: 'auto',
               flexGrow: 1,
               minWidth: 0,
+              overflowX: 'auto',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
-              WebkitOverflowScrolling: 'touch',
             }}
           >
             {resolvedPrimaryLinks.map((link, i) => {
@@ -208,24 +204,77 @@ export function UiNavHeader({
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    height: isStacked ? '32px' : '36px',
+                    height: '36px',
                     padding: '0 12px',
                     fontSize: '13px',
                     fontWeight: active ? 600 : 400,
-                    color: active ? 'var(--spm-text-primary)' : 'var(--spm-text-muted)',
+                    color: active ? 'var(--spm-accent)' : 'var(--spm-text-muted)',
                     textDecoration: 'none',
-                    borderBottom: !isStacked && active ? '2px solid var(--spm-accent)' : '2px solid transparent',
+                    borderBottom: active ? '2px solid var(--spm-accent)' : '2px solid transparent',
                     borderRadius: '6px',
-                    background: active ? 'var(--spm-bg-surface, rgba(255, 255, 255, 0.05))' : 'transparent',
-                    transition: 'color 0.15s, border-color 0.15s, background-color 0.15s',
+                    background: active ? 'color-mix(in srgb, var(--spm-accent) 15%, transparent)' : 'transparent',
+                    boxShadow: active ? '0 0 10px color-mix(in srgb, var(--spm-accent) 30%, transparent)' : 'none',
+                    transition: 'color 0.15s, border-color 0.15s, background-color 0.15s, box-shadow 0.15s',
                     whiteSpace: 'nowrap',
                     boxSizing: 'border-box',
                   }}
                   onMouseEnter={e => {
                     const el = e.currentTarget as HTMLElement;
                     if (!active) {
-                      el.style.color = 'var(--spm-text-primary)';
-                      el.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+                      el.style.color = 'var(--spm-accent)';
+                      el.style.backgroundColor = 'color-mix(in srgb, var(--spm-accent) 8%, transparent)';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    const el = e.currentTarget as HTMLElement;
+                    if (!active) {
+                      el.style.color = 'var(--spm-text-muted)';
+                      el.style.backgroundColor = 'transparent';
+                    }
+                  }}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
+          </div>
+        )}
+
+        {/* RIGHT: Secondary Action Links (e.g. Login) */}
+        {!isMinimal && resolvedSecondaryLinks.length > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              flexShrink: 0,
+            }}
+          >
+            {resolvedSecondaryLinks.map((link, i) => {
+              const active = isLinkActive(link.url);
+              return (
+                <a
+                  key={i}
+                  href={link.url}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    height: '32px',
+                    padding: '0 10px',
+                    fontSize: '12px',
+                    fontWeight: active ? 600 : 500,
+                    color: active ? 'var(--spm-accent)' : 'var(--spm-text-muted)',
+                    textDecoration: 'none',
+                    borderRadius: '6px',
+                    background: active ? 'color-mix(in srgb, var(--spm-accent) 15%, transparent)' : 'transparent',
+                    transition: 'color 0.15s, background-color 0.15s',
+                    whiteSpace: 'nowrap',
+                  }}
+                  onMouseEnter={e => {
+                    const el = e.currentTarget as HTMLElement;
+                    if (!active) {
+                      el.style.color = 'var(--spm-accent)';
+                      el.style.backgroundColor = 'color-mix(in srgb, var(--spm-accent) 8%, transparent)';
                     }
                   }}
                   onMouseLeave={e => {
@@ -243,51 +292,6 @@ export function UiNavHeader({
           </div>
         )}
       </div>
-
-      {/* Secondary Bar */}
-      {!isMinimal && resolvedSecondaryLinks.length > 0 && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '2px',
-            flexWrap: 'wrap',
-            background: 'var(--spm-bg-primary)',
-            borderBottom: '1px solid var(--spm-border)',
-            padding: '0 16px',
-            minHeight: '32px',
-          }}
-        >
-          {resolvedSecondaryLinks.map((link, i) => (
-            <a
-              key={i}
-              href={link.url}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                height: '32px',
-                padding: '0 8px',
-                fontSize: '11px',
-                color: 'var(--spm-text-muted)',
-                textDecoration: 'none',
-                borderRadius: '4px',
-                transition: 'color 0.12s, background 0.12s',
-                whiteSpace: 'nowrap',
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.color = 'var(--spm-text-primary)';
-                (e.currentTarget as HTMLElement).style.background = 'var(--spm-bg-secondary)';
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.color = 'var(--spm-text-muted)';
-                (e.currentTarget as HTMLElement).style.background = 'transparent';
-              }}
-            >
-              {link.label}
-            </a>
-          ))}
-        </div>
-      )}
     </header>
   );
 }
