@@ -1241,6 +1241,60 @@ reconstruct "#global-toast-portal" -> UiToastContainer {
 
 ---
 
+### 21. UiDevDiagnosticPanel
+
+## Purpose & Use Cases
+
+`UiDevDiagnosticPanel` is an isolated developer overlay component designed to monitor runtime modernization health, missing DOM selectors, WebSocket hot-reloading events, and system notifications during extension development mode (`isDev`).
+
+## Properties (Props API)
+
+| Prop Name | Type | Default Value | Description |
+| :--- | :--- | :--- | :--- |
+| `items` | `DevDiagnosticItem[]` | `[]` | List of diagnostic events (`id`, `type`, `severity`, `title`, `message`, `details`, `timestamp`, `occurrenceCount`). |
+| `onClear` | `() => void` | `undefined` | Callback invoked when the user clicks the "Clear" button. |
+| `initialExpanded` | `boolean` | `false` | Initial state of the drawer expansion. |
+| `className` | `string` | `''` | Custom CSS class name. |
+| `style` | `React.CSSProperties` | `{}` | Custom inline style overrides. |
+
+## Design Tokens (CSS Variables)
+
+- `#09090b` / `#000000` - Main drawer background color.
+- `rgba(255, 255, 255, 0.15)` - Border divider color.
+- `#ffffff` - Primary text color and active tab indicator.
+- `#a1a1aa` - Muted metadata text color.
+
+---
+
+### 22. UiFormContainer
+
+## Purpose & Use Cases
+
+`UiFormContainer` modernizes legacy HTML input forms, search bars, login fields, and comment submission forms into a clean, accessible card container. It encapsulates form inputs, handles form submission events, forwards hidden input fields automatically, and styles submit buttons using SPM design tokens.
+
+## Properties (Props API)
+
+| Prop Name | Type | Default Value | Description |
+| :--- | :--- | :--- | :--- |
+| `title` | `string` | `undefined` | Header title text above the form. |
+| `description` | `string` | `undefined` | Subtitle description text. |
+| `submitUrl` | `string` | `undefined` | Target URL for form submission. |
+| `method` | `'GET' \| 'POST'` | `'POST'` | Form HTTP submission method. |
+| `fields` | `FormField[]` | `[]` | Form field configurations (`name`, `label`, `type`, `defaultValue`, `placeholder`, `required`). |
+| `submitLabel` | `string` | `'Submit'` | Text label for the submission button. |
+| `hiddenFields` | `Record<string, string>` | `{}` | Key-value map of hidden form fields to forward upon submission. |
+| `className` | `string` | `''` | Custom CSS class name. |
+| `style` | `React.CSSProperties` | `{}` | Custom inline style overrides. |
+
+## Design Tokens (CSS Variables)
+
+- `var(--spm-bg-secondary)` - Card background color.
+- `var(--spm-border)` - Card border color.
+- `var(--spm-text-primary)` - Form title and label text color.
+- `var(--spm-accent)` - Submit button background and focus ring color.
+
+---
+
 ### Layout Primitives
 
 ## Purpose & Use Cases

@@ -69,14 +69,26 @@ For detailed specifications, Props API tables, design tokens, and `.vnr` (Veneer
 | `UiSplitLayout` | Dedicated | [`UiSplitLayout.md`](components/UiSplitLayout.md) | Two-column layout shell supporting image viewer/main HTML content and scroll panel sidebar. |
 | `UiCommentListPage` | Dedicated | [`UiCommentListPage.md`](components/UiCommentListPage.md) | Comment thread list with post thumbnails, speech bubble replies, and metadata. |
 | `UiDashboardPage` | Dedicated | [`UiDashboardPage.md`](components/UiDashboardPage.md) | Card panel dashboard layout for user account options, settings, and actions. |
+| `UiDevDiagnosticPanel` | Dedicated | [`UiDevDiagnosticPanel.md`](components/UiDevDiagnosticPanel.md) | Developer diagnostic overlay panel and Missing Selector auditing drawer. |
+| `UiFormContainer` | Dedicated | [`UiFormContainer.md`](components/UiFormContainer.md) | Modernized input forms, login card container, and search submissions. |
+| `UiHeroLanding` | Dedicated | [`UiHeroLanding.md`](components/UiHeroLanding.md) | Full viewport landing hero with logo, tagline, CTA button, search bar, and primary links. |
+| `UiImageCard` | Dedicated | [`UiImageCard.md`](components/UiImageCard.md) | Thumbnail image card with title caption, aspect ratio controls, link, and hover effects. |
+| `UiImageViewer` | Dedicated | [`UiImageViewer.md`](components/UiImageViewer.md) | Responsive image viewer with fit options (`contain`/`cover`), ultra-wide fallback, and zoom toggle. |
+| `UiModernGridPage` | Dedicated | [`UiModernGridPage.md`](components/UiModernGridPage.md) | Gallery grid page layout with optional tag sidebar slot and mobile column controls. |
+| `UiNavHeader` | Dedicated | [`UiNavHeader.md`](components/UiNavHeader.md) | Navigation header with logo, site title, primary/secondary links, and responsive layouts. |
+| `UiNestedTreeTable` | Dedicated | [`UiNestedTreeTable.md`](components/UiNestedTreeTable.md) | Hierarchical tree table with collapsible/expandable rows for structured data. |
+| `UiPaginationBar` | Dedicated | [`UiPaginationBar.md`](components/UiPaginationBar.md) | Page navigation links bar for paginated feeds with active page detection. |
+| `UiPostDetails` | Dedicated | [`UiPostDetails.md`](components/UiPostDetails.md) | Split layout for post/item detail pages with sidebar, tags, search bar, buttons, and image viewport. |
+| `UiScrollPanel` | Dedicated | [`UiScrollPanel.md`](components/UiScrollPanel.md) | Scrollable sidebar panel with search input, tag lists, buttons, and statistics HTML. |
+| `UiSearchBar` | Dedicated | [`UiSearchBar.md`](components/UiSearchBar.md) | Form search input with GET/POST form target, query binding, and hidden field forwarding. |
+| `UiSplitLayout` | Dedicated | [`UiSplitLayout.md`](components/UiSplitLayout.md) | Two-column layout shell supporting image viewer/main HTML content and scroll panel sidebar. |
 | `UiStatsDashboard` | Dedicated | [`UiStatsDashboard.md`](components/UiStatsDashboard.md) | Ranking metrics and analytics tables dashboard with date range badges. |
 | `UiTable` | Dedicated | [`UiTable.md`](components/UiTable.md) | Tabular grid layout with row click callbacks, custom cell renderers, and column configs. |
 | `UiTableListPage` | Dedicated | [`UiTableListPage.md`](components/UiTableListPage.md) | Search results table page inside a `UiTable` container with pagination and infinite scroll. |
-| `UiPostDetails` | Dedicated | [`UiPostDetails.md`](components/UiPostDetails.md) | Split layout for post/item detail pages with sidebar, tags, search bar, buttons, and image viewport. |
-| `UiNestedTreeTable` | Dedicated | [`UiNestedTreeTable.md`](components/UiNestedTreeTable.md) | Hierarchical tree table with collapsible/expandable rows for structured data. |
-| `UiTerminalConsole` | Dedicated | [`UiTerminalConsole.md`](components/UiTerminalConsole.md) | Dark monospace live terminal log console with level filtering. |
 | `UiTabs` | Dedicated | [`UiTabs.md`](components/UiTabs.md) | Tabbed navigation and content switcher with underline/pill/boxed variants and URL state sync. |
-| `UiToastContainer` | Dedicated | [`UiToastContainer.md`](components/UiToastContainer.md) | Global toast notifications stack and modal confirm portal listener. |
+| `UiTagBadge` | Dedicated | [`UiTagBadge.md`](components/UiTagBadge.md) | Category/tag pill badge with item count and remove/add filter action links. |
+| `UiTerminalConsole` | Dedicated | [`UiTerminalConsole.md`](components/UiTerminalConsole.md) | Dark monospace live terminal log console with level filtering. |
+| `UiToast` | Dedicated | [`UiToastContainer.md`](components/UiToastContainer.md) | Global toast notifications stack and modal confirm portal listener. |
 
 ---
 
