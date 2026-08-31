@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import DOMPurify from 'dompurify';
 
 export interface NavLink {
   label: string;
@@ -13,6 +14,7 @@ export interface UiNavHeaderProps {
   primaryLinks?: NavLink[];
   secondaryLinks?: NavLink[];
   items?: NavLink[];
+  extraHtml?: string;
   layout?: 'standard' | 'stacked' | 'minimal';
   hideOnMobile?: boolean;
   mobileBreakpoint?: number;
@@ -41,6 +43,7 @@ export function UiNavHeader({
   primaryLinks = [],
   secondaryLinks = [],
   items = [],
+  extraHtml,
   layout = 'standard',
   hideOnMobile = false,
   mobileBreakpoint = 720,
@@ -240,13 +243,13 @@ export function UiNavHeader({
           </div>
         )}
 
-        {/* RIGHT: Secondary Action Links (e.g. Login) */}
-        {!isMinimal && resolvedSecondaryLinks.length > 0 && (
+        {/* RIGHT: Secondary Action Links & Custom Extra HTML */}
+        {!isMinimal && (resolvedSecondaryLinks.length > 0 || extraHtml) && (
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
+              gap: '8px',
               flexShrink: 0,
             }}
           >
@@ -289,6 +292,18 @@ export function UiNavHeader({
                 </a>
               );
             })}
+
+            {extraHtml && (
+              <div
+                className="spm-nav-extra-html"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(extraHtml, {
+                    FORBID_TAGS: ['script', 'iframe', 'object', 'embed'],
+                    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
+                  }),
+                }}
+              />
+            )}
           </div>
         )}
       </div>
