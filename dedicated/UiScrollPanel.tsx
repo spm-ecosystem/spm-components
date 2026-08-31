@@ -56,10 +56,28 @@ export function UiScrollPanel({
   style = {},
   onClose,
 }: UiScrollPanelProps) {
+  const hasSearch = Boolean(showSearch && searchSubmitUrl);
+  const hasButtons = Boolean(buttons && buttons.length > 0);
+  const hasTags = Boolean(tags && tags.length > 0);
+  const hasStats = Boolean(statisticsHtml && statisticsHtml.trim().length > 0);
+
+  if (!hasSearch && !hasButtons && !hasTags && !hasStats) {
+    return null;
+  }
+
+  const isKnownCategory = (t: TagItem) =>
+    Boolean(
+      t.type?.includes('copyright') ||
+      t.type?.includes('character') ||
+      t.type?.includes('artist') ||
+      t.type?.includes('metadata') ||
+      t.type?.includes('meta')
+    );
+
   const copyrightTags = tags.filter(t => t.type?.includes('copyright'));
   const characterTags = tags.filter(t => t.type?.includes('character'));
   const artistTags    = tags.filter(t => t.type?.includes('artist'));
-  const generalTags   = tags.filter(t => t.type?.includes('general'));
+  const generalTags   = tags.filter(t => t.type?.includes('general') || !isKnownCategory(t));
   const metaTags      = tags.filter(t => t.type?.includes('metadata') || t.type?.includes('meta'));
 
   const navButtons     = buttons.filter(b => getButtonVariant(b.label) === 'nav');
@@ -80,9 +98,29 @@ export function UiScrollPanel({
         }}>
           {title}
         </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+        <div
+          className="spm-tag-group-container"
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '6px',
+            wordBreak: 'break-word',
+            overflowWrap: 'anywhere',
+          }}
+        >
           {groupTags.map((tag, i) => (
-            <UiTagBadge key={i} label={tag.name} count={tag.count} href={tag.url} />
+            <UiTagBadge
+              key={i}
+              label={tag.name}
+              count={tag.count}
+              href={tag.url}
+              style={{
+                wordBreak: 'break-word',
+                overflowWrap: 'anywhere',
+                maxWidth: '100%',
+                whiteSpace: 'normal',
+              }}
+            />
           ))}
         </div>
       </div>
@@ -180,6 +218,8 @@ export function UiScrollPanel({
         display: 'flex',
         flexDirection: 'column',
         gap: '4px',
+        wordBreak: 'break-word',
+        overflowWrap: 'anywhere',
         ...style,
       }}
     >
@@ -231,10 +271,9 @@ export function UiScrollPanel({
       )}
 
       {/* Divider before tags */}
-      {(navButtons.length > 0 || primaryButtons.length > 0 || ghostButtons.length > 0) &&
-        (tags.length > 0 || statisticsHtml) && (
-          <hr style={{ border: 'none', borderTop: '1px solid var(--spm-border)', margin: '8px 0 16px 0' }} />
-        )}
+      {hasButtons && (hasTags || hasStats) && (
+        <hr style={{ border: 'none', borderTop: '1px solid var(--spm-border)', margin: '8px 0 16px 0' }} />
+      )}
 
       {/* Tags grouped by type */}
       {renderSection('Artists', artistTags)}
@@ -244,7 +283,7 @@ export function UiScrollPanel({
       {renderSection('Meta', metaTags)}
 
       {/* Statistics raw HTML */}
-      {statisticsHtml && (
+      {hasStats && (
         <div>
           <p style={{
             margin: '0 0 8px 0',
@@ -257,8 +296,14 @@ export function UiScrollPanel({
             Statistics
           </p>
           <div
-            style={{ fontSize: '12px', color: 'var(--spm-text-muted)', lineHeight: 1.7 }}
-            dangerouslySetInnerHTML={{ __html: statisticsHtml }}
+            style={{
+              fontSize: '12px',
+              color: 'var(--spm-text-muted)',
+              lineHeight: 1.7,
+              wordBreak: 'break-word',
+              overflowWrap: 'anywhere',
+            }}
+            dangerouslySetInnerHTML={{ __html: statisticsHtml! }}
           />
         </div>
       )}
