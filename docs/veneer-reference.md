@@ -187,7 +187,7 @@ The `reconstruct` block is the core building block of full-section and page mode
           sidebarSlot: "#legacy-sidebar";
       }
 
-      child items -> UiImageCard {
+      child items {
           selector: "#gallery-grid .item";
           bind imageUrl: "img | attr:src";
           bind linkUrl: "a | attr:href";
