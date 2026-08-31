@@ -1,14 +1,12 @@
 // @vitest-environment jsdom
 import { createRoot } from 'react-dom/client';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import React from 'react';
 import {
   UiCommentListPage,
   UiCommentCard,
   UiCommentReply,
   CommentThread,
   CommentItem,
-  TagItem,
 } from '../dedicated/UiCommentListPage';
 
 const waitForUpdate = () => new Promise((resolve) => setTimeout(resolve, 50));
