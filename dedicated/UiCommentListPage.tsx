@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { UiPaginationBar } from './UiPaginationBar';
 
 export interface TagItem {
@@ -8,20 +8,20 @@ export interface TagItem {
 }
 
 export interface CommentItem {
-  author: string;
+  author?: string;
   authorUrl?: string;
-  date: string;
+  date?: string;
   body: string;
 }
 
 export interface CommentThread {
   id: string;
-  thumbnailUrl: string;
+  thumbnailUrl?: string;
   postUrl: string;
-  postDate: string;
-  postUser: string;
-  postRating: string;
-  postScore: string;
+  postDate?: string;
+  postUser?: string;
+  postRating?: string;
+  postScore?: string;
   tags?: TagItem[];
   comments?: CommentItem[];
 }
@@ -35,6 +35,7 @@ export interface UiCommentListPageProps {
   pageTitle?: string;
   threads?: CommentThread[];
   pageLinks?: PageLink[];
+  showThumbnails?: boolean;
   height?: string;
   className?: string;
   style?: React.CSSProperties;
@@ -46,8 +47,23 @@ export interface UiCommentReplyProps {
 }
 
 export function UiCommentReply({ comment }: UiCommentReplyProps) {
+  const cleanAuthor = (raw?: string) => {
+    if (!raw) return 'Anonymous';
+    const stripped = raw.replace(/^(Posted by|User):?\s*/i, '').trim();
+    return stripped || 'Anonymous';
+  };
+
+  const cleanDate = (raw?: string) => {
+    if (!raw) return '';
+    return raw.replace(/^[•\s\-\|]+/, '').replace(/^Date:?\s*/i, '').trim();
+  };
+
+  const authorName = cleanAuthor(comment.author);
+  const formattedDate = cleanDate(comment.date);
+
   return (
     <div
+      className="spm-comment-reply"
       style={{
         background: 'var(--spm-bg-tertiary)',
         border: '1px solid var(--spm-border)',
@@ -56,9 +72,13 @@ export function UiCommentReply({ comment }: UiCommentReplyProps) {
       }}
     >
       <div
+        className="spm-comment-reply-header"
         style={{
           display: 'flex',
           justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '6px',
           marginBottom: '6px',
           fontSize: '11px',
         }}
@@ -71,9 +91,11 @@ export function UiCommentReply({ comment }: UiCommentReplyProps) {
             textDecoration: 'none',
           }}
         >
-          {comment.author}
+          {authorName}
         </a>
-        <span style={{ color: 'var(--spm-text-muted)' }}>{comment.date}</span>
+        {formattedDate && (
+          <span style={{ color: 'var(--spm-text-muted)' }}>{formattedDate}</span>
+        )}
       </div>
       <p
         style={{
@@ -93,13 +115,43 @@ export function UiCommentReply({ comment }: UiCommentReplyProps) {
 // 2. Modular Sub-component: A single thread card containing a thumbnail, details, replies and tags
 export interface UiCommentCardProps {
   thread: CommentThread;
+  showThumbnails?: boolean;
 }
 
-export function UiCommentCard({ thread }: UiCommentCardProps) {
+export function UiCommentCard({ thread, showThumbnails = true }: UiCommentCardProps) {
   const [hovered, setHovered] = useState(false);
+
+  const hasThumbnail = Boolean(showThumbnails && thread.thumbnailUrl && thread.thumbnailUrl.trim() !== '');
+
+  const cleanDate = (raw?: string) => {
+    if (!raw) return '';
+    return raw.replace(/^[•\s\-\|]+/, '').replace(/^Date:?\s*/i, '').trim();
+  };
+
+  const cleanUser = (raw?: string) => {
+    if (!raw) return 'Anonymous';
+    const stripped = raw.replace(/^(Posted by|User):?\s*/i, '').trim();
+    return stripped || 'Anonymous';
+  };
+
+  const cleanRating = (raw?: string) => {
+    if (!raw) return '';
+    return raw.replace(/^Rating:?\s*/i, '').trim();
+  };
+
+  const cleanScore = (raw?: string) => {
+    if (!raw) return '';
+    return raw.replace(/^Score:?\s*/i, '').trim();
+  };
+
+  const postDate = cleanDate(thread.postDate);
+  const postUser = cleanUser(thread.postUser);
+  const postRating = cleanRating(thread.postRating);
+  const postScore = cleanScore(thread.postScore);
 
   return (
     <article
+      className="spm-comment-card"
       style={{
         display: 'flex',
         gap: '20px',
@@ -112,36 +164,46 @@ export function UiCommentCard({ thread }: UiCommentCardProps) {
       }}
     >
       {/* Thumbnail Column */}
-      <div style={{ flexShrink: 0, width: '130px' }}>
-        <a
-          href={thread.postUrl}
-          style={{
-            display: 'block',
-            borderRadius: 'calc(var(--spm-radius) - 4px)',
-            overflow: 'hidden',
-            border: hovered ? '1px solid var(--spm-accent)' : '1px solid var(--spm-border)',
-            transition: 'border-color 0.15s',
-          }}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-        >
-          <img
-            src={thread.thumbnailUrl}
-            alt="Thumbnail"
+      {hasThumbnail && (
+        <div className="spm-comment-card-thumbnail" style={{ flexShrink: 0, width: '130px' }}>
+          <a
+            href={thread.postUrl || '#'}
             style={{
-              width: '100%',
-              height: '130px',
-              objectFit: 'cover',
               display: 'block',
+              borderRadius: 'calc(var(--spm-radius) - 4px)',
+              overflow: 'hidden',
+              border: hovered ? '1px solid var(--spm-accent)' : '1px solid var(--spm-border)',
+              borderColor: hovered ? 'var(--spm-accent)' : 'var(--spm-border)',
+              transition: 'border-color 0.15s',
             }}
-          />
-        </a>
-      </div>
+            onMouseEnter={(e) => {
+              setHovered(true);
+              e.currentTarget.style.borderColor = 'var(--spm-accent)';
+            }}
+            onMouseLeave={(e) => {
+              setHovered(false);
+              e.currentTarget.style.borderColor = 'var(--spm-border)';
+            }}
+          >
+            <img
+              src={thread.thumbnailUrl}
+              alt="Thumbnail"
+              style={{
+                width: '100%',
+                height: '130px',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+          </a>
+        </div>
+      )}
 
       {/* Details, Comments & Tags Column */}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div className="spm-comment-card-content" style={{ flex: 1, minWidth: 0 }}>
         {/* Post details header */}
         <div
+          className="spm-comment-card-header"
           style={{
             display: 'flex',
             flexWrap: 'wrap',
@@ -153,18 +215,24 @@ export function UiCommentCard({ thread }: UiCommentCardProps) {
             marginBottom: '14px',
           }}
         >
+          {postDate ? (
+            <span>
+              <strong>Date:</strong> {postDate}
+            </span>
+          ) : null}
           <span>
-            <strong>Date:</strong> {(thread.postDate || '').replace('Date', '').trim()}
+            <strong>Posted by:</strong> {postUser}
           </span>
-          <span>
-            <strong>Posted by:</strong> {(thread.postUser || '').replace('User', '').trim()}
-          </span>
-          <span>
-            <strong>Rating:</strong> {(thread.postRating || '').replace('Rating', '').trim()}
-          </span>
-          <span>
-            <strong>Score:</strong> {(thread.postScore || '').replace('Score', '').trim()}
-          </span>
+          {postRating ? (
+            <span>
+              <strong>Rating:</strong> {postRating}
+            </span>
+          ) : null}
+          {postScore ? (
+            <span>
+              <strong>Score:</strong> {postScore}
+            </span>
+          ) : null}
         </div>
 
         {/* Comment replies sub-list */}
@@ -242,13 +310,14 @@ export function UiCommentListPage({
   pageTitle = 'Comments',
   threads = [],
   pageLinks = [],
+  showThumbnails = true,
   height = '100vh',
   className = '',
   style = {},
 }: UiCommentListPageProps) {
   return (
     <div
-      className={className}
+      className={`spm-comment-list-page ${className}`.trim()}
       style={{
         display: 'flex',
         height,
@@ -262,6 +331,38 @@ export function UiCommentListPage({
       <style>{`
         #sidebarSlot-container:empty {
           display: none !important;
+        }
+
+        @media (max-width: 576px) {
+          .spm-comment-list-page {
+            height: 100% !important;
+          }
+          .spm-comment-list-header {
+            padding: 12px 16px !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 8px !important;
+          }
+          .spm-comment-list-main {
+            padding: 12px !important;
+            gap: 16px !important;
+          }
+          .spm-comment-card {
+            flex-direction: column !important;
+            padding: 12px !important;
+            gap: 12px !important;
+          }
+          .spm-comment-card-thumbnail {
+            width: 100% !important;
+          }
+          .spm-comment-card-thumbnail img {
+            width: 100% !important;
+            height: 160px !important;
+            object-fit: cover !important;
+          }
+          .spm-comment-card-header {
+            gap: 8px !important;
+          }
         }
       `}</style>
       {/* Sidebar slot - legacy sidebar nodes reparented here */}
@@ -282,6 +383,7 @@ export function UiCommentListPage({
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100%' }}>
         {/* Header */}
         <header
+          className="spm-comment-list-header"
           style={{
             padding: '16px 24px',
             borderBottom: '1px solid var(--spm-border)',
@@ -310,6 +412,7 @@ export function UiCommentListPage({
 
         {/* Scrollable list of comment cards */}
         <main
+          className="spm-comment-list-main"
           style={{
             padding: '24px',
             flex: 1,
@@ -326,7 +429,7 @@ export function UiCommentListPage({
             </div>
           ) : (
             threads.map((thread) => (
-              <UiCommentCard key={thread.id} thread={thread} />
+              <UiCommentCard key={thread.id} thread={thread} showThumbnails={showThumbnails} />
             ))
           )}
         </main>

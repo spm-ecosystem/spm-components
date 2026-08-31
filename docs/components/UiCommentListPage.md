@@ -11,6 +11,7 @@
 | `pageTitle` | `string` | `'Comments'` | Title text displayed in header bar. |
 | `threads` | `CommentThread[]` | `[]` | List of comment thread items containing post metadata and replies array. |
 | `pageLinks` | `PageLink[]` | `[]` | Pagination links array (`{ label, url }`). |
+| `showThumbnails` | `boolean` | `true` | Whether to render thread thumbnail image containers. |
 | `height` | `string` | `'100vh'` | Height constraint of layout wrapper. |
 | `className` | `string` | `''` | Custom CSS class name appended to root element. |
 | `style` | `React.CSSProperties` | `{}` | Custom inline style overrides. |
@@ -18,7 +19,7 @@
 ### `CommentThread` Schema
 
 - `id`: `string` - Unique thread identifier.
-- `thumbnailUrl`: `string` - Image thumbnail associated with post.
+- `thumbnailUrl`: `string` (optional) - Image thumbnail associated with post.
 - `postUrl`: `string` - Target link to main post page.
 - `postDate`: `string` - Post creation date text.
 - `postUser`: `string` - Original poster username.
