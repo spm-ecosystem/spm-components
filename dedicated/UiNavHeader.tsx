@@ -143,9 +143,12 @@ export function UiNavHeader({
           gap: isStacked ? '8px' : '4px',
           flexWrap: 'wrap',
           background: 'var(--spm-bg-secondary)',
-          borderBottom: '1px solid var(--spm-border)',
+          border: '1px solid var(--spm-border)',
+          borderRadius: 'var(--spm-radius, 8px)',
           padding: isStacked ? '12px 16px' : '0 16px',
-          minHeight: isStacked ? 'auto' : '44px',
+          minHeight: isStacked ? 'auto' : '48px',
+          boxShadow: '0 4px 16px -2px rgba(0, 0, 0, 0.3)',
+          boxSizing: 'border-box',
         }}
       >
         {/* Logo/Site Name */}
@@ -154,15 +157,15 @@ export function UiNavHeader({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: '10px',
             fontSize: '15px',
             fontWeight: 800,
             color: 'var(--spm-text-primary)',
             textDecoration: 'none',
             letterSpacing: '-0.03em',
-            marginRight: isStacked ? '0' : '12px',
+            marginRight: isStacked ? '0' : '16px',
             flexShrink: 0,
-            height: isStacked ? 'auto' : '44px',
+            height: isStacked ? 'auto' : '48px',
           }}
         >
           {logoUrl && (
@@ -171,6 +174,7 @@ export function UiNavHeader({
               alt={siteName}
               style={{
                 height: '24px',
+                borderRadius: '4px',
                 objectFit: 'contain',
                 display: 'block',
               }}
@@ -204,16 +208,16 @@ export function UiNavHeader({
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    height: isStacked ? '32px' : '44px',
-                    padding: '0 10px',
-                    fontSize: '12px',
-                    fontWeight: active ? 700 : 400,
+                    height: isStacked ? '32px' : '36px',
+                    padding: '0 12px',
+                    fontSize: '13px',
+                    fontWeight: active ? 600 : 400,
                     color: active ? 'var(--spm-text-primary)' : 'var(--spm-text-muted)',
                     textDecoration: 'none',
                     borderBottom: !isStacked && active ? '2px solid var(--spm-accent)' : '2px solid transparent',
-                    borderRadius: isStacked ? 'var(--spm-radius)' : '0',
-                    background: isStacked && active ? 'var(--spm-bg-tertiary)' : 'transparent',
-                    transition: 'color 0.12s, border-color 0.12s, background-color 0.12s',
+                    borderRadius: '6px',
+                    background: active ? 'var(--spm-bg-surface, rgba(255, 255, 255, 0.05))' : 'transparent',
+                    transition: 'color 0.15s, border-color 0.15s, background-color 0.15s',
                     whiteSpace: 'nowrap',
                     boxSizing: 'border-box',
                   }}
@@ -221,14 +225,14 @@ export function UiNavHeader({
                     const el = e.currentTarget as HTMLElement;
                     if (!active) {
                       el.style.color = 'var(--spm-text-primary)';
-                      if (isStacked) el.style.backgroundColor = 'var(--spm-bg-tertiary)';
+                      el.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
                     }
                   }}
                   onMouseLeave={e => {
                     const el = e.currentTarget as HTMLElement;
                     if (!active) {
                       el.style.color = 'var(--spm-text-muted)';
-                      if (isStacked) el.style.backgroundColor = 'transparent';
+                      el.style.backgroundColor = 'transparent';
                     }
                   }}
                 >
