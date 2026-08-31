@@ -14,10 +14,26 @@
 | `primaryLinks` | `NavLink[]` | `[]` | Primary navigation items (`{ label: string, url: string }`). |
 | `secondaryLinks` | `NavLink[]` | `[]` | Secondary/user action items (`{ label: string, url: string }`). |
 | `layout` | `'standard' \| 'stacked' \| 'minimal'` | `'standard'` | Header layout variant (`standard` = horizontal row, `stacked` = multi-tier header, `minimal` = compact container). |
+| `sticky` | `boolean` | `false` | When `true`, fixes navigation header to top of viewport during scrolling with blur backdrop. |
 | `hideOnMobile` | `boolean` | `false` | When `true`, hides navigation header on viewports narrower than `mobileBreakpoint`. |
 | `mobileBreakpoint` | `number` | `720` | Pixel width threshold for mobile responsive hiding. |
 | `className` | `string` | `''` | Custom CSS class name appended to root wrapper. |
 | `style` | `React.CSSProperties` | `{}` | Custom inline style overrides. |
+
+### Sticky Navigation Behavior
+
+When `sticky={true}` (or `sticky: true` in `.vnr`), `UiNavHeader` attaches to the top of the viewport (`top: 0`) and remains fixed in view while the user scrolls down the page.
+
+The following CSS rules are applied to the header root element:
+```css
+position: sticky;
+top: 0;
+z-index: 1000;
+backdrop-filter: blur(12px);
+-webkit-backdrop-filter: blur(12px);
+```
+
+This creates a modern semi-translucent frosted glass effect using `var(--spm-bg-secondary)` with opacity, ensuring navigation links and brand identity remain continuously accessible without obstructing visibility of the underlying scrolling page content.
 
 ## Design Tokens (CSS Variables)
 
@@ -37,6 +53,7 @@ reconstruct "#header" -> UiNavHeader {
     siteName: "Safebooru";
     logoHref: "/";
     layout: "standard";
+    sticky: true;
     hideOnMobile: false;
 
     bind logoUrl: "#logo img | attr:src";

@@ -13,11 +13,24 @@
 | `title` | `string` | **Required** | Title text used for caption and tooltip attributes. |
 | `id` | `string` | **Required** | Unique DOM identifier assigned to card element. |
 | `width` | `string` | `'160px'` | Default width of card container (overridden by `--spm-image-card-width` if defined). |
-| `aspectRatio` | `'square' \| 'video' \| 'portrait' \| 'auto'` | `'square'` | Predefined aspect ratio (`square` = 1/1, `video` = 16/9, `portrait` = 3/4, `auto` = intrinsic). |
+| `aspectRatio` | `'square' \| 'video' \| 'portrait' \| 'wide' \| 'auto'` | `'square'` | Predefined aspect ratio (`square` = 1/1, `video` = 16/9, `portrait` = 3/4, `wide` = 21/9, `auto` = intrinsic). |
 | `imageFit` | `'cover' \| 'contain'` | `'cover'` | CSS `object-fit` property applied to image. |
 | `showTitle` | `boolean` | `true` | Toggles rendering of bottom title caption block. |
 | `className` | `string` | `''` | Custom CSS class name appended to root element. |
 | `style` | `React.CSSProperties` | `{}` | Custom inline style overrides. |
+
+### Aspect Ratio Controls & Presets
+
+`UiImageCard` enforces geometric proportions across gallery grid items to eliminate cumulative layout shift (CLS):
+- `square` (default): 1:1 aspect ratio (`aspectRatio: '1 / 1'`), standard for avatars and booru post grids.
+- `video`: 16:9 widescreen format (`aspectRatio: '16 / 9'`), ideal for video thumbnails and horizontal photography.
+- `portrait`: 3:4 vertical poster format (`aspectRatio: '3 / 4'`), standard for book covers and portrait art.
+- `wide`: 21:9 ultra-wide banner format (`aspectRatio: '21 / 9'`), suited for panoramic banners.
+- `auto`: Intrinsic image aspect ratio without container constraint (`aspectRatio: 'auto'`).
+
+### Broken Image Fallback Behavior
+
+If the source `imageUrl` fails to load, returns a 404 HTTP status, or is invalid, `UiImageCard` catches the image `onError` event and automatically falls back to rendering a standardized placeholder SVG icon (`UiImage` fallback) with neutral styling to prevent browser broken image icon glitches.
 
 ## Design Tokens (CSS Variables)
 
