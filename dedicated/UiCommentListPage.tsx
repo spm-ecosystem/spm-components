@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import DOMPurify from 'dompurify';
 import { UiPaginationBar } from './UiPaginationBar';
 
 export interface TagItem {
@@ -12,6 +13,7 @@ export interface CommentItem {
   authorUrl?: string;
   date?: string;
   body: string;
+  isHtml?: boolean;
 }
 
 export interface CommentThread {
@@ -61,6 +63,10 @@ export function UiCommentReply({ comment }: UiCommentReplyProps) {
   const authorName = cleanAuthor(comment.author);
   const formattedDate = cleanDate(comment.date);
 
+  const hasHtml = Boolean(
+    comment.isHtml || (comment.body && /<[a-z][\s\S]*>/i.test(comment.body))
+  );
+
   return (
     <div
       className="spm-comment-reply"
@@ -97,17 +103,31 @@ export function UiCommentReply({ comment }: UiCommentReplyProps) {
           <span style={{ color: 'var(--spm-text-muted)' }}>{formattedDate}</span>
         )}
       </div>
-      <p
-        style={{
-          margin: 0,
-          fontSize: '13px',
-          lineHeight: '1.5',
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
-        }}
-      >
-        {comment.body}
-      </p>
+      {hasHtml ? (
+        <div
+          className="spm-comment-reply-body"
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(comment.body || '') }}
+          style={{
+            margin: 0,
+            fontSize: '13px',
+            lineHeight: '1.5',
+            wordBreak: 'break-word',
+          }}
+        />
+      ) : (
+        <p
+          className="spm-comment-reply-body"
+          style={{
+            margin: 0,
+            fontSize: '13px',
+            lineHeight: '1.5',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+          }}
+        >
+          {comment.body}
+        </p>
+      )}
     </div>
   );
 }

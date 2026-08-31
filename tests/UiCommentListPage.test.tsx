@@ -107,6 +107,63 @@ describe('UiCommentListPage & Sub-components', () => {
       expect(dateSpan?.textContent).not.toContain('•');
       expect(dateSpan?.textContent).not.toContain('Date:');
     });
+
+    it('renders formatted HTML tags as DOM elements inside comment reply body when HTML is detected', async () => {
+      const htmlComment: CommentItem = {
+        author: 'Bob',
+        body: '<p>This is <b>bold</b> and <i>italic</i> with a <a href="https://example.com">link</a>.</p>',
+      };
+
+      const root = createRoot(container);
+      root.render(<UiCommentReply comment={htmlComment} />);
+      await waitForUpdate();
+
+      const replyBody = container.querySelector('.spm-comment-reply-body');
+      expect(replyBody).toBeTruthy();
+      expect(replyBody?.querySelector('b')?.textContent).toBe('bold');
+      expect(replyBody?.querySelector('i')?.textContent).toBe('italic');
+      const anchor = replyBody?.querySelector('a');
+      expect(anchor?.getAttribute('href')).toBe('https://example.com');
+      expect(anchor?.textContent).toBe('link');
+    });
+
+    it('renders formatted HTML tags when isHtml is explicitly set to true', async () => {
+      const explicitHtmlComment: CommentItem = {
+        author: 'Bob',
+        isHtml: true,
+        body: '<span>Rich formatted <strong>content</strong></span>',
+      };
+
+      const root = createRoot(container);
+      root.render(<UiCommentReply comment={explicitHtmlComment} />);
+      await waitForUpdate();
+
+      const replyBody = container.querySelector('.spm-comment-reply-body');
+      expect(replyBody).toBeTruthy();
+      expect(replyBody?.querySelector('strong')?.textContent).toBe('content');
+    });
+
+    it('sanitizes malicious scripts and onerror/onload handlers via DOMPurify preventing XSS', async () => {
+      const maliciousComment: CommentItem = {
+        author: 'Attacker',
+        body: '<p>Safe text</p><script>alert("xss")</script><img src="invalid" onerror="alert(1)" /><svg onload="alert(2)"></svg>',
+      };
+
+      const root = createRoot(container);
+      root.render(<UiCommentReply comment={maliciousComment} />);
+      await waitForUpdate();
+
+      const replyBody = container.querySelector('.spm-comment-reply-body');
+      expect(replyBody).toBeTruthy();
+      expect(replyBody?.textContent).toContain('Safe text');
+      // Verify no script tags exist in DOM
+      expect(container.querySelectorAll('script').length).toBe(0);
+      // Verify onerror/onload event attributes are stripped
+      const img = replyBody?.querySelector('img');
+      expect(img?.getAttribute('onerror')).toBeNull();
+      const svg = replyBody?.querySelector('svg');
+      expect(svg?.getAttribute('onload')).toBeNull();
+    });
   });
 
   describe('UiCommentCard', () => {
