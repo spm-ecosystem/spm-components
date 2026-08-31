@@ -37,14 +37,14 @@ This creates a modern semi-translucent frosted glass effect using `var(--spm-bg-
 
 ## Design Tokens (CSS Variables)
 
-- `var(--spm-bg-secondary)` - Background color of header bar.
-- `var(--spm-bg-tertiary)` - Background for active navigation item pills.
-- `var(--spm-border)` - Bottom border color of header bar.
+- `var(--spm-bg-secondary)` - Background color of header bar container.
+- `var(--spm-bg-surface)` - Background color for active navigation item pills and hover highlights.
+- `var(--spm-bg-tertiary)` - Background color for active pills in stacked layout.
+- `var(--spm-border)` - Outer border color of header bar container (`1px solid var(--spm-border)`).
 - `var(--spm-text-primary)` - Site title and active link text color.
-- `var(--spm-text-secondary)` - Inactive primary navigation link color.
-- `var(--spm-text-muted)` - Secondary link text color.
-- `var(--spm-accent)` - Hover accent color for links and brand elements.
-- `var(--spm-radius)` - Border radius for nav link pills and logo wrapper.
+- `var(--spm-text-muted)` - Inactive navigation link color.
+- `var(--spm-accent)` - Accent indicator line for active primary navigation items.
+- `var(--spm-radius)` - Border radius for nav container (`var(--spm-radius, 8px)`) and nav link pills (`6px`).
 
 ## Veneer Spec (.vnr) Example
 
