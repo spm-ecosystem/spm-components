@@ -217,4 +217,52 @@ describe('UiFormContainer', () => {
     expect(formContainer.style.maxWidth).toBe('800px');
     expect(formContainer.style.opacity).toBe('0.9');
   });
+
+  it('renders multi-tab form switcher and dynamically updates active form tab state', async () => {
+    const tabs = [
+      {
+        id: 'login',
+        label: 'Login',
+        title: 'Login to Account',
+        subTitle: 'Welcome back!',
+        submitLabel: 'Log In',
+        actionUrl: '/login',
+      },
+      {
+        id: 'register',
+        label: 'Create Account',
+        title: 'Join Us',
+        subTitle: 'Create new account',
+        submitLabel: 'Create Account',
+        actionUrl: '/register',
+      },
+    ];
+
+    const root = createRoot(container);
+    root.render(<UiFormContainer tabs={tabs} activeTabId="login" />);
+    await waitForUpdate();
+
+    // Verify initial tab (Login)
+    const titleEl = container.querySelector('h2');
+    expect(titleEl?.textContent).toBe('Login to Account');
+
+    const submitBtn = container.querySelector('button[type="submit"]');
+    expect(submitBtn?.textContent).toBe('Log In');
+
+    const formEl = container.querySelector('form');
+    expect(formEl?.getAttribute('action')).toBe('/login');
+
+    // Click tab 2 (Create Account)
+    const tabButtons = container.querySelectorAll('.spm-form-tabs button');
+    expect(tabButtons.length).toBe(2);
+    expect(tabButtons[1].textContent).toBe('Create Account');
+
+    (tabButtons[1] as HTMLButtonElement).click();
+    await waitForUpdate();
+
+    // Verify active tab updated to Create Account
+    expect(container.querySelector('h2')?.textContent).toBe('Join Us');
+    expect(container.querySelector('button[type="submit"]')?.textContent).toBe('Create Account');
+    expect(container.querySelector('form')?.getAttribute('action')).toBe('/register');
+  });
 });
