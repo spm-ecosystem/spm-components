@@ -92,15 +92,19 @@ export function UiNavHeader({
   if (hideOnMobile && isMobile) return null;
 
   const rawLinks = items.length > 0 ? items : primaryLinks;
-  const resolvedPrimaryLinks = rawLinks.map(link => ({
-    label: link.label,
-    url: link.url || link.href || '',
-  }));
+  const resolvedPrimaryLinks = rawLinks
+    .map(link => ({
+      label: (link.label || '').replace(/[\s|]+/g, ' ').trim(),
+      url: link.url || link.href || '',
+    }))
+    .filter(link => link.label && link.label !== '|');
 
-  const resolvedSecondaryLinks = secondaryLinks.map(link => ({
-    label: link.label,
-    url: link.url || link.href || '',
-  }));
+  const resolvedSecondaryLinks = secondaryLinks
+    .map(link => ({
+      label: (link.label || '').replace(/[\s|]+/g, ' ').trim(),
+      url: link.url || link.href || '',
+    }))
+    .filter(link => link.label && link.label !== '|');
 
   return (
     <header
@@ -151,20 +155,21 @@ export function UiNavHeader({
           boxSizing: 'border-box',
         }}
       >
-        {/* LEFT: Logo & Site Name */}
+        {/* LEFT: Site Brand & Logo */}
         <a
           href={logoHref}
           style={{
-            display: 'flex',
+            display: 'inline-flex',
             alignItems: 'center',
             gap: '10px',
-            fontSize: '15px',
-            fontWeight: 800,
-            color: 'var(--spm-text-primary)',
             textDecoration: 'none',
-            letterSpacing: '-0.03em',
-            flexShrink: 0,
-            height: '48px',
+            color: 'var(--spm-text-primary)',
+            fontWeight: 700,
+            fontSize: '15px',
+            flex: '1 1 0%',
+            justifyContent: 'flex-start',
+            minWidth: 0,
+            whiteSpace: 'nowrap',
           }}
         >
           {logoUrl && (
@@ -191,7 +196,7 @@ export function UiNavHeader({
               alignItems: 'center',
               justifyContent: 'center',
               gap: '4px',
-              flexGrow: 1,
+              flex: '2 1 0%',
               minWidth: 0,
               overflowX: 'auto',
               scrollbarWidth: 'none',
@@ -249,8 +254,10 @@ export function UiNavHeader({
             style={{
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'flex-end',
               gap: '8px',
-              flexShrink: 0,
+              flex: '1 1 0%',
+              minWidth: 0,
             }}
           >
             {resolvedSecondaryLinks.map((link, i) => {
