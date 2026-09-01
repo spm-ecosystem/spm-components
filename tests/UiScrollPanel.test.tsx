@@ -185,9 +185,9 @@ describe('UiScrollPanel', () => {
   describe('Content Rendering & Interaction', () => {
     it('renders tags categorized into appropriate sections, including fallback for untyped tags', async () => {
       const tags = [
-        { name: 'artist_1', type: 'artist' },
-        { name: 'series_1', type: 'copyright' },
-        { name: 'char_1', type: 'character' },
+        { name: 'module_1', type: 'modules' },
+        { name: 'tech_1', type: 'technology' },
+        { name: 'cat_1', type: 'categories' },
         { name: 'tag_1', type: 'general' },
         { name: 'meta_1', type: 'meta' },
         { name: 'untyped_tag', type: '' },
@@ -200,11 +200,11 @@ describe('UiScrollPanel', () => {
       expect(aside).toBeTruthy();
 
       const headings = Array.from(container.querySelectorAll('aside p')).map(p => p.textContent);
-      expect(headings).toContain('Artists');
-      expect(headings).toContain('Copyright');
-      expect(headings).toContain('Characters');
-      expect(headings).toContain('General Tags');
-      expect(headings).toContain('Meta');
+      expect(headings).toContain('MODULES');
+      expect(headings).toContain('TECHNOLOGY');
+      expect(headings).toContain('CATEGORIES');
+      expect(headings).toContain('TAGS');
+      expect(headings).toContain('METADATA');
 
       expect(container.textContent).toContain('untyped_tag');
     });

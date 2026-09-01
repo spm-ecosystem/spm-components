@@ -22,54 +22,66 @@ export interface ButtonItem {
 }
 
 export interface UiSplitLayoutProps {
-  // Slot: image - user maps via children[name="imageSlot"] in JSON
+  // Generic Content Slots
+  mainContent?: React.ReactNode;
+  mainHtml?: string;
+  sidebarContent?: React.ReactNode;
+  sidebarHtml?: string;
+
+  // Media Explorer & Legacy Image Slots (Backward Compatible)
   imageSlot?: ImageSlotItem[];
-  // Slot: sidebar content - user maps via children in JSON
   tags?: TagItem[];
   buttons?: ButtonItem[];
   statisticsHtml?: string;
-  // Layout config - user sets via props in JSON
+
+  // Layout Configuration
   sidebarWidth?: string;
   sidebarSide?: 'left' | 'right';
+  collapsible?: boolean;
   imageFit?: 'contain' | 'cover';
   height?: string;
   splitButtons?: boolean;
-  // Search forwarded to UiScrollPanel
+
+  // Search & Navigation Options
   showSearch?: boolean;
   searchPlaceholder?: string;
   searchSubmitUrl?: string;
   searchParamName?: string;
-  // Support generic HTML content slot instead of purely images
-  mainHtml?: string;
+
   // Overrides
   className?: string;
   style?: React.CSSProperties;
 }
 
 export function UiSplitLayout({
+  mainContent,
+  mainHtml,
+  sidebarContent,
+  sidebarHtml,
   imageSlot = [],
   tags = [],
   buttons = [],
   statisticsHtml,
-  sidebarWidth = '280px',
+  sidebarWidth = '300px',
   sidebarSide = 'left',
+  collapsible = true,
   imageFit = 'contain',
-  height = '100vh',
+  height = '100%',
   splitButtons = true,
   showSearch = false,
-  searchPlaceholder = 'Search…',
+  searchPlaceholder = 'Search documentation…',
   searchSubmitUrl,
   searchParamName = 'q',
-  mainHtml,
   className = '',
   style = {},
 }: UiSplitLayoutProps) {
   const image = imageSlot[0];
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [_drawerOpen, setDrawerOpen] = React.useState(false);
 
   React.useEffect(() => {
-    const media = window.matchMedia('(max-width: 720px)');
+    const media = window.matchMedia('(max-width: 768px)');
     const update = () => setIsMobile(media.matches);
     update();
     media.addEventListener('change', update);
@@ -84,221 +96,206 @@ export function UiSplitLayout({
     ? buttons.filter(b => !imgLabels.some(lbl => b.label.toLowerCase().includes(lbl)))
     : buttons;
 
-  const panel = (
-    <UiScrollPanel
-      className="spm-scroll-panel"
-      tags={tags}
-      buttons={sidebarButtons}
-      statisticsHtml={statisticsHtml}
-      showSearch={showSearch}
-      searchPlaceholder={searchPlaceholder}
-      searchSubmitUrl={searchSubmitUrl}
-      searchParamName={searchParamName}
-      width={sidebarWidth}
-      onClose={() => setDrawerOpen(false)}
-    />
-  );
+  // Render Sidebar Content Pane
+  const renderSidebar = () => {
+    if (isCollapsed && !isMobile) return null;
 
-  const viewer = (
-    <div
-      className="spm-image-viewer-container"
-      style={{ flex: 1, height: '100%', overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column' }}
-    >
-      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-        {mainHtml ? (
-          <div
-            dangerouslySetInnerHTML={{ __html: mainHtml }}
-            style={{ height: '100%', overflowY: 'auto', boxSizing: 'border-box', padding: '24px' }}
-          />
-        ) : (
+    if (sidebarContent) {
+      return (
+        <div
+          className="spm-split-sidebar-custom"
+          style={{
+            width: isMobile ? '100%' : sidebarWidth,
+            flexShrink: 0,
+            background: 'var(--spm-bg-surface, #121215)',
+            borderRight: sidebarSide === 'left' ? '1px solid var(--spm-border, #27272a)' : 'none',
+            borderLeft: sidebarSide === 'right' ? '1px solid var(--spm-border, #27272a)' : 'none',
+            padding: '1.25rem',
+            boxSizing: 'border-box',
+            overflowY: 'auto',
+          }}
+        >
+          {sidebarContent}
+        </div>
+      );
+    }
+
+    if (sidebarHtml) {
+      return (
+        <div
+          className="spm-split-sidebar-html"
+          dangerouslySetInnerHTML={{ __html: sidebarHtml }}
+          style={{
+            width: isMobile ? '100%' : sidebarWidth,
+            flexShrink: 0,
+            background: 'var(--spm-bg-surface, #121215)',
+            borderRight: sidebarSide === 'left' ? '1px solid var(--spm-border, #27272a)' : 'none',
+            borderLeft: sidebarSide === 'right' ? '1px solid var(--spm-border, #27272a)' : 'none',
+            padding: '1.25rem',
+            boxSizing: 'border-box',
+            overflowY: 'auto',
+          }}
+        />
+      );
+    }
+
+    // Default Scroll Panel Sidebar
+    return (
+      <UiScrollPanel
+        className="spm-scroll-panel"
+        tags={tags}
+        buttons={sidebarButtons}
+        statisticsHtml={statisticsHtml}
+        showSearch={showSearch}
+        searchPlaceholder={searchPlaceholder}
+        searchSubmitUrl={searchSubmitUrl}
+        searchParamName={searchParamName}
+        width={sidebarWidth}
+        onClose={() => setDrawerOpen(false)}
+      />
+    );
+  };
+
+  // Render Main Content Pane
+  const renderMain = () => {
+    if (mainContent) {
+      return (
+        <div style={{ flex: 1, height: '100%', overflowY: 'auto', padding: '1.5rem', boxSizing: 'border-box' }}>
+          {mainContent}
+        </div>
+      );
+    }
+
+    if (mainHtml) {
+      return (
+        <div
+          dangerouslySetInnerHTML={{ __html: mainHtml }}
+          style={{ flex: 1, height: '100%', overflowY: 'auto', padding: '1.5rem', boxSizing: 'border-box' }}
+        />
+      );
+    }
+
+    return (
+      <div
+        className="spm-image-viewer-container"
+        style={{ flex: 1, height: '100%', overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column' }}
+      >
+        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
           <UiImageViewer
             src={image?.src}
             alt={image?.alt}
             fit={imageFit}
             style={{ height: '100%' }}
           />
+        </div>
+
+        {imageButtons.length > 0 && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '24px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              display: 'flex',
+              gap: '8px',
+              background: 'rgba(18, 18, 21, 0.95)',
+              border: '1px solid var(--spm-border, #27272a)',
+              borderRadius: '999px',
+              padding: '6px 12px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+              zIndex: 10,
+            }}
+          >
+            {imageButtons.map((btn, i) => {
+              const isNav = btn.label.toLowerCase().includes('previous') || btn.label.toLowerCase().includes('next');
+              return (
+                <a
+                  key={i}
+                  href={btn.url ?? '#'}
+                  onClick={e => {
+                    if (btn.targetSelector) {
+                      e.preventDefault();
+                      triggerProxyClick(btn.targetSelector);
+                    }
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '6px 16px',
+                    borderRadius: '999px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    fontFamily: 'inherit',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.15s ease',
+                    background: isNav ? '#ffffff' : 'transparent',
+                    color: isNav ? '#000000' : '#ffffff',
+                  }}
+                >
+                  {btn.label}
+                </a>
+              );
+            })}
+          </div>
         )}
       </div>
-
-      {imageButtons.length > 0 && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '24px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            display: 'flex',
-            gap: '8px',
-            background: 'var(--spm-bg-secondary)',
-            border: '1px solid var(--spm-border)',
-            borderRadius: '999px',
-            padding: '6px 12px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-            zIndex: 10,
-          }}
-        >
-          {imageButtons.map((btn, i) => {
-            const isNav = btn.label.toLowerCase().includes('previous') || btn.label.toLowerCase().includes('next');
-            return (
-              <a
-                key={i}
-                href={btn.url ?? '#'}
-                onClick={e => {
-                  if (btn.targetSelector) {
-                    e.preventDefault();
-                    triggerProxyClick(btn.targetSelector);
-                  }
-                }}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  padding: '6px 16px',
-                  borderRadius: '999px',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  fontFamily: 'inherit',
-                  whiteSpace: 'nowrap',
-                  transition: 'background 0.15s, color 0.15s',
-                  background: isNav ? 'var(--spm-accent)' : 'transparent',
-                  color: isNav ? 'var(--spm-accent-fg)' : 'var(--spm-text-primary)',
-                }}
-                onMouseEnter={e => {
-                  const el = e.currentTarget as HTMLAnchorElement;
-                  if (isNav) {
-                    el.style.background = 'var(--spm-accent-hover)';
-                  } else {
-                    el.style.background = 'var(--spm-bg-tertiary)';
-                  }
-                }}
-                onMouseLeave={e => {
-                  const el = e.currentTarget as HTMLAnchorElement;
-                  if (isNav) {
-                    el.style.background = 'var(--spm-accent)';
-                  } else {
-                    el.style.background = 'transparent';
-                  }
-                }}
-              >
-                {btn.label}
-              </a>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
+    );
+  };
 
   return (
     <div
       className={`spm-split-layout ${className}`.trim()}
-      data-drawer-open={drawerOpen ? 'true' : 'false'}
       style={{
         display: 'flex',
         flexDirection: sidebarSide === 'left' ? 'row' : 'row-reverse',
         width: '100%',
         height,
+        minHeight: 400,
+        background: 'var(--spm-bg-primary, #09090b)',
+        border: '1px solid var(--spm-border, #27272a)',
+        borderRadius: '8px',
         overflow: 'hidden',
-        background: 'var(--spm-bg-primary)',
+        position: 'relative',
         fontFamily: 'system-ui, -apple-system, sans-serif',
-        color: 'var(--spm-text-primary)',
+        color: 'var(--spm-text-primary, #ffffff)',
         ...style,
       }}
     >
-      <style>{`
-        @media (max-width: 720px) {
-          .spm-split-layout {
-            height: 100% !important;
-            width: 100% !important;
-          }
-          .spm-split-layout[data-drawer-open="true"] .spm-scroll-panel {
-            display: flex !important;
-            flex-direction: column !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 280px !important;
-            height: 100vh !important;
-            z-index: 99999 !important;
-            box-shadow: 0 0 40px rgba(0,0,0,0.8) !important;
-            transform: translateX(0) !important;
-            transition: transform 0.3s ease !important;
-            background: rgba(20, 20, 20, 0.98) !important;
-            backdrop-filter: blur(16px) !important;
-            border-right: 1px solid var(--spm-border) !important;
-            padding: 20px !important;
-          }
-          .spm-split-layout[data-drawer-open="false"] .spm-scroll-panel {
-            display: flex !important;
-            flex-direction: column !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 280px !important;
-            height: 100vh !important;
-            z-index: 99999 !important;
-            transform: translateX(-100%) !important;
-            transition: transform 0.3s ease !important;
-            pointer-events: none !important;
-            border-right: none !important;
-            padding: 20px !important;
-          }
-          .spm-split-layout .spm-image-viewer-container {
-            width: 100% !important;
-            height: 100% !important;
-            flex-shrink: 0 !important;
-          }
-        }
-      `}</style>
-      {panel}
-      {viewer}
-
-      {isMobile && drawerOpen && (
-        <div
-          onClick={() => setDrawerOpen(false)}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            background: 'rgba(0, 0, 0, 0.65)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 99990,
-          }}
-        />
-      )}
-
-      {isMobile && (
+      {/* Sidebar Toggle Handle for Desktop */}
+      {collapsible && !isMobile && (
         <button
-          onClick={() => setDrawerOpen(prev => !prev)}
+          type="button"
+          onClick={() => setIsCollapsed(prev => !prev)}
           style={{
-            position: 'fixed',
-            bottom: '24px',
-            left: '24px',
-            zIndex: 100,
+            position: 'absolute',
+            top: '12px',
+            left: sidebarSide === 'left' ? (isCollapsed ? '12px' : `calc(${sidebarWidth} - 16px)`) : 'auto',
+            right: sidebarSide === 'right' ? (isCollapsed ? '12px' : `calc(${sidebarWidth} - 16px)`) : 'auto',
+            zIndex: 20,
+            width: '28px',
+            height: '28px',
+            borderRadius: '50%',
+            background: '#ffffff',
+            color: '#000000',
+            border: '1px solid var(--spm-border, #27272a)',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            background: 'var(--spm-accent)',
-            color: 'var(--spm-accent-fg)',
-            border: 'none',
-            borderRadius: '20px',
-            padding: '10px 16px',
-            fontSize: '12px',
-            fontWeight: 700,
-            boxShadow: '0 4px 16px rgba(124, 106, 245, 0.4)',
+            justifyContent: 'center',
             cursor: 'pointer',
+            fontWeight: 700,
+            fontSize: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            transition: 'all 0.2s ease',
           }}
+          title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-          Search & Tags
+          {isCollapsed ? (sidebarSide === 'left' ? '→' : '←') : (sidebarSide === 'left' ? '←' : '→')}
         </button>
       )}
+
+      {renderSidebar()}
+      {renderMain()}
     </div>
   );
 }

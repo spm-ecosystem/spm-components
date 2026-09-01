@@ -265,4 +265,81 @@ describe('UiFormContainer', () => {
     expect(container.querySelector('button[type="submit"]')?.textContent).toBe('Create Account');
     expect(container.querySelector('form')?.getAttribute('action')).toBe('/register');
   });
+
+  it('supports controlled form state values, onChange, errors, and onSubmit', async () => {
+    let submitPayload: any = null;
+    let changePayload: any = null;
+
+    const fields: FormField[] = [
+      { id: 'email', label: 'Email', type: 'email' },
+    ];
+
+    const values = { email: 'test@example.com' };
+    const errors = { email: 'Invalid domain' };
+
+    const handleChange = (id: string, val: any) => {
+      changePayload = { id, val };
+    };
+
+    const handleSubmit = (vals: Record<string, any>) => {
+      submitPayload = vals;
+    };
+
+    const root = createRoot(container);
+    root.render(
+      <UiFormContainer
+        fields={fields}
+        values={values}
+        errors={errors}
+        onChange={handleChange}
+        onSubmit={handleSubmit}
+      />
+    );
+    await waitForUpdate();
+
+    const input = container.querySelector('input#email') as HTMLInputElement;
+    expect(input.value).toBe('test@example.com');
+
+    const errorSpan = container.querySelector('span');
+    expect(errorSpan?.textContent).toBe('Invalid domain');
+
+    const form = container.querySelector('form') as HTMLFormElement;
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await waitForUpdate();
+
+    expect(submitPayload).toEqual({ email: 'test@example.com' });
+  });
+
+  it('renders headerSlot, footerSlot, actionsSlot, and custom renderField', async () => {
+    const fields: FormField[] = [
+      { id: 'custom', label: 'Custom Field' }
+    ];
+
+    const root = createRoot(container);
+    root.render(
+      <UiFormContainer
+        fields={fields}
+        headerSlot={<div id="header-slot">Header Slot Content</div>}
+        footerSlot={<div id="footer-slot">Footer Slot Content</div>}
+        actionsSlot={<button type="button" id="action-btn">Cancel</button>}
+        renderField={(field, val) => <div id="custom-rendered-field">{field.label}: {val}</div>}
+      />
+    );
+    await waitForUpdate();
+
+    expect(container.querySelector('#header-slot')?.textContent).toBe('Header Slot Content');
+    expect(container.querySelector('#footer-slot')?.textContent).toBe('Footer Slot Content');
+    expect(container.querySelector('#action-btn')?.textContent).toBe('Cancel');
+    expect(container.querySelector('#custom-rendered-field')?.textContent).toBe('Custom Field: ');
+  });
+
+  it('applies layout variants compact and hero correctly', async () => {
+    const root = createRoot(container);
+    root.render(<UiFormContainer layout="hero" className="hero-form" />);
+    await waitForUpdate();
+
+    const heroForm = container.querySelector('.spm-form-hero');
+    expect(heroForm).not.toBeNull();
+  });
 });
+

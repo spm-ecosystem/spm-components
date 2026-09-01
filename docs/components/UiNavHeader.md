@@ -13,12 +13,20 @@
 | `logoHref` | `string` | `'/'` | Target URL when clicking logo or site title. |
 | `primaryLinks` | `NavLink[]` | `[]` | Primary navigation items centered in main bar (`{ label: string, url: string }`). |
 | `secondaryLinks` | `NavLink[]` | `[]` | Secondary/user action items aligned to right corner (`{ label: string, url: string }`). |
-| `layout` | `'standard' \| 'stacked' \| 'minimal'` | `'standard'` | Header layout variant (`standard` = single bar with centered links, `stacked` = multi-tier header, `minimal` = compact container). |
-| `sticky` | `boolean` | `false` | When `true`, fixes navigation header to top of viewport during scrolling with blur backdrop. |
+| `items` | `NavLink[]` | `[]` | Alias for `primaryLinks` navigation items array. |
+| `extraHtml` | `string` | `undefined` | Sanitized raw HTML block rendered on the right side of the navigation bar. |
+| `layout` | `'standard' \| 'stacked' \| 'minimal'` | `'standard'` | Header layout variant (`standard` = single bar with centered links, `stacked` = 2-tier header bar with secondary actions on top and primary nav on bottom, `minimal` = compact brand-only container). |
+| `sticky` | `boolean` | `false` | When `true`, fixes navigation header to top of viewport during scrolling with blur backdrop filter. |
 | `hideOnMobile` | `boolean` | `false` | When `true`, hides navigation header on viewports narrower than `mobileBreakpoint`. |
 | `mobileBreakpoint` | `number` | `720` | Pixel width threshold for mobile responsive hiding. |
 | `className` | `string` | `''` | Custom CSS class name appended to root wrapper. |
 | `style` | `React.CSSProperties` | `{}` | Custom inline style overrides. |
+
+### Layout Variants
+
+- `"standard"`: Single-row header bar containing brand logo/title on the left, primary navigation links centered in the middle, and secondary action links / extra HTML aligned to the right.
+- `"stacked"`: 2-tier header bar layout. Top tier contains brand logo/title and secondary user action links; bottom tier features a dedicated, horizontally scrollable primary navigation bar.
+- `"minimal"`: Compact single-row container that centers the brand logo/title, hiding primary and secondary navigation links.
 
 ### Sticky Navigation Behavior
 
@@ -33,12 +41,12 @@ backdrop-filter: blur(12px);
 -webkit-backdrop-filter: blur(12px);
 ```
 
-This creates a modern semi-translucent frosted glass effect using `var(--spm-bg-secondary)` with opacity, ensuring navigation links and brand identity remain continuously accessible without obstructing visibility of the underlying scrolling page content.
+This creates a modern semi-translucent frosted glass effect using `rgba(18, 18, 21, 0.92)` with blur, ensuring navigation links and brand identity remain continuously accessible without obstructing visibility of the underlying scrolling page content.
 
 ## Design Tokens (CSS Variables)
 
-- `var(--spm-bg-secondary)` - Background color of header bar container.
-- `var(--spm-accent)` - Dynamic accent color for active link text, bottom indicator line, pill background (`color-mix(15%)`), and glow (`color-mix(30%)`).
+- `var(--spm-bg-surface)` - Background color of header bar container (`rgba(18, 18, 21, 0.92)`).
+- `var(--spm-accent)` - Dynamic accent color for active link text, bottom indicator line, pill background, and glow.
 - `var(--spm-border)` - Outer border color of header bar container (`1px solid var(--spm-border)`).
 - `var(--spm-text-primary)` - Site title text color.
 - `var(--spm-text-muted)` - Inactive navigation link color.
@@ -48,9 +56,9 @@ This creates a modern semi-translucent frosted glass effect using `var(--spm-bg-
 
 ```vnr
 reconstruct "#header" -> UiNavHeader {
-    siteName: "Safebooru";
+    siteName: "SPM Portal";
     logoHref: "/";
-    layout: "standard";
+    layout: "stacked";
     sticky: true;
     hideOnMobile: false;
 

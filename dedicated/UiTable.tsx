@@ -17,6 +17,10 @@ export interface UiTableProps<T> {
   sortKey?: string;
   sortDirection?: 'asc' | 'desc';
   onSort?: (key: string) => void;
+  selectable?: boolean;
+  selectedKeys?: (string | number)[];
+  onSelectionChange?: (selectedKeys: (string | number)[]) => void;
+  rowKey?: keyof T | ((item: T) => string | number);
 }
 
 export function UiTable<T>({
@@ -28,7 +32,40 @@ export function UiTable<T>({
   sortKey,
   sortDirection,
   onSort,
+  selectable = false,
+  selectedKeys = [],
+  onSelectionChange,
+  rowKey,
 }: UiTableProps<T>) {
+  const getRowKey = (item: T, idx: number): string | number => {
+    if (typeof rowKey === 'function') return rowKey(item);
+    if (rowKey && (item as any)[rowKey] !== undefined) return (item as any)[rowKey];
+    if ((item as any).id !== undefined) return (item as any).id;
+    return idx;
+  };
+
+  const isAllSelected = data.length > 0 && data.every((item, idx) => selectedKeys.includes(getRowKey(item, idx)));
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!onSelectionChange) return;
+    if (e.target.checked) {
+      const allKeys = data.map((item, idx) => getRowKey(item, idx));
+      onSelectionChange(allKeys);
+    } else {
+      onSelectionChange([]);
+    }
+  };
+
+  const handleSelectRow = (itemKey: string | number, e: React.MouseEvent | React.ChangeEvent) => {
+    e.stopPropagation();
+    if (!onSelectionChange) return;
+    if (selectedKeys.includes(itemKey)) {
+      onSelectionChange(selectedKeys.filter((k) => k !== itemKey));
+    } else {
+      onSelectionChange([...selectedKeys, itemKey]);
+    }
+  };
+
   return (
     <div
       className={className}
@@ -58,6 +95,22 @@ export function UiTable<T>({
               background: 'var(--spm-bg-tertiary)',
             }}
           >
+            {selectable && (
+              <th
+                style={{
+                  width: '40px',
+                  padding: '12px 16px',
+                  textAlign: 'center',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={isAllSelected}
+                  onChange={handleSelectAll}
+                  style={{ accentColor: 'var(--spm-accent)', cursor: 'pointer' }}
+                />
+              </th>
+            )}
             {columns.map((col, idx) => {
               const isSortable = !!onSort && !!col.key;
               const isSorted = sortKey === col.key;
@@ -102,7 +155,7 @@ export function UiTable<T>({
           {data.length === 0 ? (
             <tr>
               <td
-                colSpan={columns.length}
+                colSpan={columns.length + (selectable ? 1 : 0)}
                 style={{
                   padding: '32px',
                   textAlign: 'center',
@@ -113,36 +166,59 @@ export function UiTable<T>({
               </td>
             </tr>
           ) : (
-            data.map((item, rowIdx) => (
-              <tr
-                key={rowIdx}
-                onClick={() => onRowClick && onRowClick(item)}
-                style={{
-                  borderBottom: rowIdx === data.length - 1 ? 'none' : '1px solid var(--spm-border)',
-                  cursor: onRowClick ? 'pointer' : 'default',
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'var(--spm-bg-tertiary)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'transparent';
-                }}
-              >
-                {columns.map((col, colIdx) => (
-                  <td
-                    key={colIdx}
-                    style={{
-                      padding: '16px',
-                      verticalAlign: 'middle',
-                      textAlign: col.align || 'left',
-                    }}
-                  >
-                    {col.render ? col.render(item) : String((item as any)[col.key] || '')}
-                  </td>
-                ))}
-              </tr>
-            ))
+            data.map((item, rowIdx) => {
+              const itemKey = getRowKey(item, rowIdx);
+              const isSelected = selectedKeys.includes(itemKey);
+
+              return (
+                <tr
+                  key={rowIdx}
+                  onClick={() => onRowClick && onRowClick(item)}
+                  style={{
+                    borderBottom: rowIdx === data.length - 1 ? 'none' : '1px solid var(--spm-border)',
+                    background: isSelected ? 'var(--spm-bg-tertiary)' : 'transparent',
+                    cursor: onRowClick ? 'pointer' : 'default',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => {
+                    if (!isSelected) e.currentTarget.style.background = 'var(--spm-bg-tertiary)';
+                  }}
+                  onMouseLeave={e => {
+                    if (!isSelected) e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  {selectable && (
+                    <td
+                      style={{
+                        padding: '16px',
+                        textAlign: 'center',
+                        verticalAlign: 'middle',
+                      }}
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={e => handleSelectRow(itemKey, e)}
+                        style={{ accentColor: 'var(--spm-accent)', cursor: 'pointer' }}
+                      />
+                    </td>
+                  )}
+                  {columns.map((col, colIdx) => (
+                    <td
+                      key={colIdx}
+                      style={{
+                        padding: '16px',
+                        verticalAlign: 'middle',
+                        textAlign: col.align || 'left',
+                      }}
+                    >
+                      {col.render ? col.render(item) : String((item as any)[col.key] || '')}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>

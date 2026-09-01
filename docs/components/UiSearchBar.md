@@ -11,7 +11,7 @@
 | `placeholder` | `string` | `'Search…'` | Placeholder text displayed when input is empty. |
 | `defaultValue` | `string` | `''` | Initial text value populated in search input field. |
 | `submitUrl` | `string` | `undefined` | Target URL action for native browser form submission. |
-| `queryParamName` | `string` | `'tags'` | The `name` attribute key used for the search text field. |
+| `queryParamName` | `string` | `'q'` | The `name` attribute key used for the search text field. |
 | `method` | `'get' \| 'post' \| 'GET' \| 'POST'` | `'GET'` | HTTP form submission method. |
 | `hiddenFields` | `{ name: string; value: string }[] \| string` | `[]` | Array or JSON-parsed string of hidden form inputs (`{ name: string, value: string }`) to forward on submit. |
 | `className` | `string` | `''` | Custom CSS class name appended to form wrapper. |
@@ -31,15 +31,15 @@
 
 ```vnr
 reconstruct "#search-box" -> UiSearchBar {
-    placeholder: "Search posts by tag...";
-    submitUrl: "https://safebooru.org/index.php?page=post&s=list";
-    queryParamName: "tags";
+    placeholder: "Search documentation...";
+    submitUrl: "/docs/search";
+    queryParamName: "q";
     method: "GET";
     hiddenFields: R"([
-      { "name": "page", "value": "post" },
-      { "name": "s", "value": "list" }
+      { "name": "type", "value": "component" },
+      { "name": "scope", "value": "all" }
     ])";
 
-    bind defaultValue: "form input[name='tags'] | attr:value";
+    bind defaultValue: "form input[name='q'] | attr:value";
 }
 ```

@@ -53,6 +53,7 @@ export function UiNavHeader({
 }: UiNavHeaderProps) {
   const [isMobile, setIsMobile] = useState(false);
   const isMinimal = layout === 'minimal';
+  const isStacked = layout === 'stacked';
   const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -113,6 +114,11 @@ export function UiNavHeader({
       style={{
         width: '100%',
         fontFamily: 'system-ui, sans-serif',
+        position: sticky ? 'sticky' : 'relative',
+        top: sticky ? 0 : 'auto',
+        zIndex: sticky ? 1000 : 'auto',
+        backdropFilter: sticky ? 'blur(12px)' : 'none',
+        WebkitBackdropFilter: sticky ? 'blur(12px)' : 'none',
         ...style,
       }}
     >
@@ -139,177 +145,262 @@ export function UiNavHeader({
         }
       `}</style>
 
-      {/* Unified Single Primary Header Bar */}
+      {/* Main Header Container Box */}
       <div
         style={{
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '16px',
-          background: 'var(--spm-bg-secondary)',
+          flexDirection: 'column',
+          background: 'rgba(18, 18, 21, 0.92)',
           border: '1px solid var(--spm-border)',
           borderRadius: 'var(--spm-radius, 8px)',
-          padding: '0 16px',
-          minHeight: '48px',
           boxShadow: '0 4px 16px -2px rgba(0, 0, 0, 0.4)',
           boxSizing: 'border-box',
+          overflow: 'hidden',
         }}
       >
-        {/* LEFT: Site Brand & Logo */}
-        <a
-          href={logoHref}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '10px',
-            textDecoration: 'none',
-            color: 'var(--spm-text-primary)',
-            fontWeight: 700,
-            fontSize: '15px',
-            flex: '1 1 0%',
-            justifyContent: 'flex-start',
-            minWidth: 0,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {logoUrl && (
-            <img
-              src={logoUrl}
-              alt={siteName}
+        {/* STACKED LAYOUT: Top Row (Brand + Secondary Actions) */}
+        {isStacked ? (
+          <>
+            <div
               style={{
-                height: '24px',
-                borderRadius: '4px',
-                objectFit: 'contain',
-                display: 'block',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '16px',
+                padding: '0 16px',
+                minHeight: '44px',
               }}
-            />
-          )}
-          <span>{siteName}</span>
-        </a>
-
-        {/* CENTER: Primary Navigation Links */}
-        {!isMinimal && (
-          <div
-            className="spm-nav-container"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '4px',
-              flex: '2 1 0%',
-              minWidth: 0,
-              overflowX: 'auto',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}
-          >
-            {resolvedPrimaryLinks.map((link, i) => {
-              const active = isLinkActive(link.url);
-              return (
-                <a
-                  key={i}
-                  href={link.url}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    height: '36px',
-                    padding: '0 12px',
-                    fontSize: '13px',
-                    fontWeight: active ? 600 : 400,
-                    color: active ? 'var(--spm-accent)' : 'var(--spm-text-muted)',
-                    textDecoration: 'none',
-                    borderBottom: active ? '2px solid var(--spm-accent)' : '2px solid transparent',
-                    borderRadius: '6px',
-                    background: active ? 'color-mix(in srgb, var(--spm-accent) 15%, transparent)' : 'transparent',
-                    boxShadow: active ? '0 0 10px color-mix(in srgb, var(--spm-accent) 30%, transparent)' : 'none',
-                    transition: 'color 0.15s, border-color 0.15s, background-color 0.15s, box-shadow 0.15s',
-                    whiteSpace: 'nowrap',
-                    boxSizing: 'border-box',
-                  }}
-                  onMouseEnter={e => {
-                    const el = e.currentTarget as HTMLElement;
-                    if (!active) {
-                      el.style.color = 'var(--spm-accent)';
-                      el.style.backgroundColor = 'color-mix(in srgb, var(--spm-accent) 8%, transparent)';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    const el = e.currentTarget as HTMLElement;
-                    if (!active) {
-                      el.style.color = 'var(--spm-text-muted)';
-                      el.style.backgroundColor = 'transparent';
-                    }
-                  }}
-                >
-                  {link.label}
-                </a>
-              );
-            })}
-          </div>
-        )}
-
-        {/* RIGHT: Secondary Action Links & Custom Extra HTML */}
-        {!isMinimal && (resolvedSecondaryLinks.length > 0 || extraHtml) && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-              gap: '8px',
-              flex: '1 1 0%',
-              minWidth: 0,
-            }}
-          >
-            {resolvedSecondaryLinks.map((link, i) => {
-              const active = isLinkActive(link.url);
-              return (
-                <a
-                  key={i}
-                  href={link.url}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    height: '32px',
-                    padding: '0 10px',
-                    fontSize: '12px',
-                    fontWeight: active ? 600 : 500,
-                    color: active ? 'var(--spm-accent)' : 'var(--spm-text-muted)',
-                    textDecoration: 'none',
-                    borderRadius: '6px',
-                    background: active ? 'color-mix(in srgb, var(--spm-accent) 15%, transparent)' : 'transparent',
-                    transition: 'color 0.15s, background-color 0.15s',
-                    whiteSpace: 'nowrap',
-                  }}
-                  onMouseEnter={e => {
-                    const el = e.currentTarget as HTMLElement;
-                    if (!active) {
-                      el.style.color = 'var(--spm-accent)';
-                      el.style.backgroundColor = 'color-mix(in srgb, var(--spm-accent) 8%, transparent)';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    const el = e.currentTarget as HTMLElement;
-                    if (!active) {
-                      el.style.color = 'var(--spm-text-muted)';
-                      el.style.backgroundColor = 'transparent';
-                    }
-                  }}
-                >
-                  {link.label}
-                </a>
-              );
-            })}
-
-            {extraHtml && (
-              <div
-                className="spm-nav-extra-html"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(extraHtml, {
-                    FORBID_TAGS: ['script', 'iframe', 'object', 'embed'],
-                    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
-                  }),
+            >
+              {/* Brand */}
+              <a
+                href={logoHref}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  textDecoration: 'none',
+                  color: 'var(--spm-text-primary)',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  whiteSpace: 'nowrap',
                 }}
-              />
+              >
+                {logoUrl && (
+                  <img
+                    src={logoUrl}
+                    alt={siteName}
+                    style={{ height: '22px', borderRadius: '4px', objectFit: 'contain', display: 'block' }}
+                  />
+                )}
+                <span>{siteName}</span>
+              </a>
+
+              {/* Secondary Links & Extra HTML */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {resolvedSecondaryLinks.map((link, i) => (
+                  <a
+                    key={i}
+                    href={link.url}
+                    style={{
+                      padding: '4px 10px',
+                      fontSize: '12px',
+                      color: 'var(--spm-text-muted)',
+                      textDecoration: 'none',
+                      borderRadius: '4px',
+                    }}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+                {extraHtml && (
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(extraHtml, { FORBID_TAGS: ['script', 'iframe'] }),
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* STACKED LAYOUT: Bottom Tier Navigation Bar */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '4px 12px',
+                borderTop: '1px solid var(--spm-border)',
+                background: 'rgba(9, 9, 11, 0.6)',
+                overflowX: 'auto',
+              }}
+            >
+              {resolvedPrimaryLinks.map((link, i) => {
+                const active = isLinkActive(link.url);
+                return (
+                  <a
+                    key={i}
+                    href={link.url}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      height: '32px',
+                      padding: '0 12px',
+                      fontSize: '13px',
+                      fontWeight: active ? 600 : 400,
+                      color: active ? 'var(--spm-accent)' : 'var(--spm-text-muted)',
+                      textDecoration: 'none',
+                      borderRadius: '4px',
+                      background: active ? 'var(--spm-bg-hover, rgba(255, 255, 255, 0.1))' : 'transparent',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {link.label}
+                  </a>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          /* STANDARD / MINIMAL LAYOUT: Single Row Header */
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '16px',
+              padding: '0 16px',
+              minHeight: '48px',
+              boxSizing: 'border-box',
+            }}
+          >
+            {/* LEFT: Site Brand & Logo */}
+            <a
+              href={logoHref}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px',
+                textDecoration: 'none',
+                color: 'var(--spm-text-primary)',
+                fontWeight: 700,
+                fontSize: '15px',
+                flex: isMinimal ? '1' : '1 1 0%',
+                justifyContent: isMinimal ? 'center' : 'flex-start',
+                minWidth: 0,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {logoUrl && (
+                <img
+                  src={logoUrl}
+                  alt={siteName}
+                  style={{
+                    height: '24px',
+                    borderRadius: '4px',
+                    objectFit: 'contain',
+                    display: 'block',
+                  }}
+                />
+              )}
+              <span>{siteName}</span>
+            </a>
+
+            {/* CENTER: Primary Navigation Links */}
+            {!isMinimal && (
+              <div
+                className="spm-nav-container"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  flex: '2 1 0%',
+                  minWidth: 0,
+                  overflowX: 'auto',
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                }}
+              >
+                {resolvedPrimaryLinks.map((link, i) => {
+                  const active = isLinkActive(link.url);
+                  return (
+                    <a
+                      key={i}
+                      href={link.url}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        height: '36px',
+                        padding: '0 12px',
+                        fontSize: '13px',
+                        fontWeight: active ? 600 : 400,
+                        color: active ? 'var(--spm-accent)' : 'var(--spm-text-muted)',
+                        textDecoration: 'none',
+                        borderBottom: active ? '2px solid var(--spm-accent)' : '2px solid transparent',
+                        borderRadius: '6px',
+                        background: active ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                        transition: 'color 0.15s, border-color 0.15s, background-color 0.15s',
+                        whiteSpace: 'nowrap',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      {link.label}
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* RIGHT: Secondary Action Links & Custom Extra HTML */}
+            {!isMinimal && (resolvedSecondaryLinks.length > 0 || extraHtml) && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-end',
+                  gap: '8px',
+                  flex: '1 1 0%',
+                  minWidth: 0,
+                }}
+              >
+                {resolvedSecondaryLinks.map((link, i) => {
+                  const active = isLinkActive(link.url);
+                  return (
+                    <a
+                      key={i}
+                      href={link.url}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        height: '32px',
+                        padding: '0 10px',
+                        fontSize: '12px',
+                        fontWeight: active ? 600 : 500,
+                        color: active ? 'var(--spm-accent)' : 'var(--spm-text-muted)',
+                        textDecoration: 'none',
+                        borderRadius: '6px',
+                        background: active ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                        transition: 'color 0.15s, background-color 0.15s',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {link.label}
+                    </a>
+                  );
+                })}
+
+                {extraHtml && (
+                  <div
+                    className="spm-nav-extra-html"
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(extraHtml, {
+                        FORBID_TAGS: ['script', 'iframe', 'object', 'embed'],
+                        FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
+                      }),
+                    }}
+                  />
+                )}
+              </div>
             )}
           </div>
         )}

@@ -2,7 +2,7 @@
 
 ## Purpose & Use Cases
 
-`UiStatsDashboard` provides a metrics and analytics leaderboard layout component. It presents top-ranked metrics and statistical breakdown tables (such as top tag usage, active users, or post upload counts) organized into section cards, complete with timeframe badges (`dateRangeText`) and navigation links (`navLinks`).
+`UiStatsDashboard` provides a metrics and analytics leaderboard layout component. It presents top-ranked metrics and statistical breakdown tables (such as top component usage, active contributors, or build counts) organized into section cards, complete with timeframe badges (`dateRangeText`) and navigation links (`navLinks`).
 
 ## Properties (Props API)
 
@@ -44,7 +44,7 @@
 ```vnr
 reconstruct "#content:has(div.toptencont)" -> UiStatsDashboard {
     urlPattern: "page=stats";
-    pageTitle: "Booru Statistics Dashboard";
+    pageTitle: "Workspace Statistics Dashboard";
     height: "calc(100vh - 78px)";
 
     bind dateRangeText: "h2 | text";

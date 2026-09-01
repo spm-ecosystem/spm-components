@@ -31,8 +31,8 @@ export interface TagGroupConfig {
 }
 
 export interface UiModernGridPageProps {
-  pageTitle: string;
-  items: GridItem[];
+  pageTitle?: string;
+  items?: GridItem[] | any[];
   pageLinks?: PageLink[];
   sidebarHtml?: string;
   tags?: TagItem[];
@@ -56,10 +56,16 @@ export interface UiModernGridPageProps {
   className?: string;
   style?: React.CSSProperties;
   onLoadMore?: () => Promise<{ items: any[]; hasMore: boolean }>;
+
+  // Modernized custom renderer & slots
+  renderItem?: (item: any, index: number) => React.ReactNode;
+  sidebarSlot?: React.ReactNode;
+  headerSlot?: React.ReactNode;
+  toolbarSlot?: React.ReactNode;
 }
 
 export function UiModernGridPage({
-  pageTitle,
+  pageTitle = 'Gallery',
   items = [],
   pageLinks,
   sidebarHtml,
@@ -77,13 +83,17 @@ export function UiModernGridPage({
   mobileColumns = 2,
   mobileGap = '8px',
   mobilePadding = '8px',
-  mobileCardAspectRatio = '1 / 1.28',
+  mobileCardAspectRatio: _mobileCardAspectRatio = '1 / 1.28',
   mobileHeaderSticky = true,
   mobileShowHeader = true,
   mobileShowPagination = true,
   className = '',
   style = {},
   onLoadMore,
+  renderItem,
+  sidebarSlot,
+  headerSlot,
+  toolbarSlot,
 }: UiModernGridPageProps) {
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window !== 'undefined' && window.matchMedia) {
@@ -91,7 +101,7 @@ export function UiModernGridPage({
     }
     return false;
   });
-  const [gridItems, setGridItems] = useState(items);
+  const [gridItems, setGridItems] = useState<any[]>(items);
   const [loadingMore, setLoadingMore] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -125,7 +135,7 @@ export function UiModernGridPage({
     const handleScroll = async () => {
       if (isLoading || !localHasMore) return;
 
-      const threshold = 300; // px threshold from bottom
+      const threshold = 300;
       const offset = mainEl.scrollHeight - mainEl.scrollTop - mainEl.clientHeight;
 
       if (offset <= threshold) {
@@ -135,7 +145,6 @@ export function UiModernGridPage({
           const res = await onLoadMore();
           if (res && res.items && res.items.length > 0) {
             setGridItems((prev) => {
-              // Deduplicate items by ID
               const existingIds = new Set(prev.map(x => x.id));
               const newItems = res.items.filter(x => !existingIds.has(x.id));
               return [...prev, ...newItems];
@@ -202,7 +211,6 @@ export function UiModernGridPage({
       });
     }
 
-    // Dynamic unique types fallback (generic!)
     const uniqueTypes = Array.from(new Set(tags.map(t => t.type || 'general'))).filter(Boolean);
     return uniqueTypes.map((type, idx) => {
       const filtered = tags.filter(t => (t.type || 'general') === type);
@@ -214,6 +222,13 @@ export function UiModernGridPage({
       );
     });
   })();
+
+  const gridColumnsToken = isMobile
+    ? `repeat(${mobileColumns}, minmax(0, 1fr))`
+    : 'repeat(auto-fill, minmax(200px, 1fr))';
+
+  const gridGapToken = isMobile ? mobileGap : '16px';
+  const gridPaddingToken = isMobile ? mobilePadding : '24px';
 
   return (
     <div
@@ -228,184 +243,37 @@ export function UiModernGridPage({
         color: 'var(--spm-text-primary)',
         fontFamily: 'system-ui, sans-serif',
         overflow: 'hidden',
+        ['--spm-grid-columns' as any]: gridColumnsToken,
+        ['--spm-grid-gap' as any]: gridGapToken,
+        ['--spm-grid-padding' as any]: gridPaddingToken,
         ...style,
       }}
     >
-      <style>
-        {`
-          .spm-modern-grid-page {
-            --spm-image-card-width: 160px;
-            --spm-mobile-columns: ${mobileColumns};
-            --spm-mobile-gap: ${mobileGap};
-            --spm-mobile-padding: ${mobilePadding};
-            --spm-mobile-card-aspect-ratio: ${mobileCardAspectRatio};
+      <style>{`
+        .spm-modern-grid-sidebar, .spm-modern-grid-main {
+          scrollbar-width: thin;
+          scrollbar-color: var(--spm-border) transparent;
+        }
+        @media (max-width: ${mobileBreakpoint}px) {
+          .spm-modern-grid-page[data-hide-sidebar-on-mobile="true"][data-drawer-open="true"] .spm-modern-grid-sidebar {
+            display: flex !important;
+            flex-direction: column !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 280px !important;
+            height: 100vh !important;
+            z-index: 99999 !important;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8) !important;
+            background: rgba(20, 20, 20, 0.98) !important;
+            backdrop-filter: blur(16px) !important;
+            border-right: 1px solid var(--spm-border) !important;
+            padding: 20px !important;
           }
+        }
+      `}</style>
 
-          .spm-modern-grid-sidebar {
-            scrollbar-width: thin;
-            scrollbar-color: var(--spm-border) transparent;
-          }
-
-          .spm-modern-grid-main {
-            scrollbar-width: thin;
-            scrollbar-color: var(--spm-border) transparent;
-          }
-
-          .spm-image-card {
-            break-inside: avoid;
-          }
-
-          @media (max-width: ${mobileBreakpoint}px) {
-            .spm-modern-grid-page {
-              --spm-image-card-width: 100%;
-              height: 100vh !important;
-              min-height: 100vh;
-              background: var(--spm-bg-primary) !important;
-              overflow-x: hidden !important;
-              width: 100vw !important;
-            }
-
-            .spm-modern-grid-page[data-hide-sidebar-on-mobile="true"][data-drawer-open="true"] .spm-modern-grid-sidebar {
-              display: flex !important;
-              flex-direction: column !important;
-              position: fixed !important;
-              top: 0 !important;
-              left: 0 !important;
-              width: 280px !important;
-              height: 100vh !important;
-              z-index: 99999 !important;
-              box-shadow: 0 0 40px rgba(0,0,0,0.8) !important;
-              transform: translateX(0) !important;
-              transition: transform 0.3s ease !important;
-              background: rgba(20, 20, 20, 0.98) !important;
-              backdrop-filter: blur(16px) !important;
-              border-right: 1px solid var(--spm-border) !important;
-              padding: 20px !important;
-            }
-
-            .spm-modern-grid-page[data-hide-sidebar-on-mobile="true"][data-drawer-open="false"] .spm-modern-grid-sidebar {
-              display: flex !important;
-              flex-direction: column !important;
-              position: fixed !important;
-              top: 0 !important;
-              left: 0 !important;
-              width: 280px !important;
-              height: 100vh !important;
-              z-index: 99999 !important;
-              transform: translateX(-100%) !important;
-              transition: transform 0.3s ease !important;
-              pointer-events: none !important;
-              border-right: none !important;
-              padding: 20px !important;
-            }
-
-            .spm-modern-grid-content {
-              width: 100%;
-              height: 100%;
-              flex: 1 1 100% !important;
-              min-width: 0 !important;
-              max-width: 100% !important;
-              overflow-x: hidden !important;
-            }
-
-            .spm-modern-grid-header {
-              position: ${mobileHeaderSticky ? 'sti' + 'cky' : 'relative'};
-              top: 0;
-              z-index: 5;
-              padding: 10px 10px 8px !important;
-              gap: 8px !important;
-              background: var(--spm-bg-primary);
-              backdrop-filter: blur(12px);
-            }
-
-            .spm-modern-grid-title {
-              width: 100%;
-              font-size: 18px !important;
-              line-height: 1.2;
-            }
-
-            .spm-modern-grid-pagination {
-              width: 100%;
-              overflow-x: auto;
-              flex-wrap: nowrap !important;
-              padding-bottom: 2px;
-              scrollbar-width: none;
-            }
-
-            .spm-modern-grid-pagination::-webkit-scrollbar {
-              display: none;
-            }
-
-            .spm-modern-grid-main {
-              display: grid !important;
-              grid-template-columns: repeat(${mobileColumns}, minmax(0, 1fr)) !important;
-              grid-auto-rows: min-content !important;
-              align-content: start !important;
-              gap: ${mobileGap} !important;
-              padding: ${mobilePadding} !important;
-              overflow-y: auto;
-              overflow-x: hidden !important;
-              background: var(--spm-bg-primary);
-            }
-
-            .spm-modern-grid-main .spm-image-card {
-              width: 100% !important;
-              display: flex !important;
-              flex-direction: column !important;
-              margin: 0 !important;
-              border: 0 !important;
-              border-radius: 8px !important;
-              background: var(--spm-bg-secondary) !important;
-              transform: none !important;
-              vertical-align: top;
-            }
-
-            .spm-modern-grid-main .spm-image-card-media {
-              width: 100% !important;
-              display: block !important;
-              aspect-ratio: ${mobileCardAspectRatio} !important;
-              background: var(--spm-bg-tertiary) !important;
-              overflow: hidden !important;
-              flex-shrink: 0 !important;
-            }
-
-            .spm-modern-grid-main .spm-image-card img {
-              width: 100% !important;
-              height: 100% !important;
-              display: block !important;
-              object-fit: cover !important;
-            }
-
-            .spm-modern-grid-main .spm-image-card-caption {
-              padding: 6px 2px 2px !important;
-              border-top: 0 !important;
-              background: var(--spm-bg-primary) !important;
-            }
-
-            .spm-modern-grid-main .spm-image-card-caption p {
-              font-size: 10px !important;
-              color: var(--spm-text-primary) !important;
-              white-space: normal !important;
-              display: -webkit-box;
-              -webkit-line-clamp: 2;
-              -webkit-box-orient: vertical;
-            }
-          }
-
-          @media (max-width: 360px) {
-            .spm-modern-grid-main {
-              column-gap: 6px;
-              padding: 6px !important;
-            }
-
-            .spm-modern-grid-main .spm-image-card {
-              margin-bottom: 6px;
-            }
-          }
-        `}
-      </style>
-
-      {/* Sidebar slot - legacy nodes reparented here OR structured render */}
+      {/* Sidebar Slot or Standard Tag Sidebar */}
       <aside
         id="sidebarSlot-container"
         className="spm-modern-grid-sidebar"
@@ -442,7 +310,9 @@ export function UiModernGridPage({
             </svg>
           </button>
         )}
-        {sidebarHtml ? (
+        {sidebarSlot ? (
+          sidebarSlot
+        ) : sidebarHtml ? (
           <div dangerouslySetInnerHTML={{ __html: sidebarHtml }} />
         ) : (
           <>
@@ -465,7 +335,7 @@ export function UiModernGridPage({
       </aside>
 
       <div className="spm-modern-grid-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100%' }}>
-        {/* Header */}
+        {/* Header Slot or Default Header */}
         {showHeader && (
           <header
             className="spm-modern-grid-header"
@@ -477,59 +347,88 @@ export function UiModernGridPage({
               justifyContent: 'space-between',
               flexWrap: 'wrap',
               gap: '12px',
+              position: isMobile && mobileHeaderSticky ? 'sticky' : 'relative',
+              top: 0,
+              zIndex: 5,
+              background: 'var(--spm-bg-primary)',
             }}
           >
-            <h1
-              className="spm-modern-grid-title"
-              style={{
-                margin: 0,
-                fontSize: '20px',
-                fontWeight: 700,
-                color: 'var(--spm-text-primary)',
-                letterSpacing: 0,
-                flexShrink: 0,
-              }}
-            >
-              {pageTitle || 'Gallery'}
-            </h1>
+            {headerSlot ? (
+              headerSlot
+            ) : (
+              <>
+                <h1
+                  className="spm-modern-grid-title"
+                  style={{
+                    margin: 0,
+                    fontSize: '20px',
+                    fontWeight: 700,
+                    color: 'var(--spm-text-primary)',
+                    letterSpacing: 0,
+                    flexShrink: 0,
+                  }}
+                >
+                  {pageTitle}
+                </h1>
 
-            {showPagination && (
-              <UiPaginationBar pageLinks={pageLinks} className="spm-modern-grid-pagination" />
+                {showPagination && (
+                  <UiPaginationBar pageLinks={pageLinks} className="spm-modern-grid-pagination" />
+                )}
+              </>
             )}
           </header>
         )}
 
-        {/* Grid */}
+        {/* Toolbar Slot */}
+        {toolbarSlot && (
+          <div
+            className="spm-modern-grid-toolbar"
+            style={{
+              padding: '12px 24px',
+              borderBottom: '1px solid var(--spm-border)',
+              background: 'var(--spm-bg-secondary)',
+            }}
+          >
+            {toolbarSlot}
+          </div>
+        )}
+
+        {/* Tokenized Grid Main */}
         <main
           ref={mainRef as any}
           className="spm-modern-grid-main"
           style={{
-            padding: '24px',
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '16px',
-            justifyContent: 'flex-start',
+            padding: 'var(--spm-grid-padding, 24px)',
+            display: 'grid',
+            gridTemplateColumns: 'var(--spm-grid-columns, repeat(auto-fill, minmax(200px, 1fr)))',
+            gap: 'var(--spm-grid-gap, 16px)',
+            alignContent: 'start',
             flex: 1,
             overflowY: 'auto',
           }}
         >
           {gridItems.length === 0 ? (
-            <div style={{ color: 'var(--spm-text-muted)', fontSize: '14px', margin: 'auto' }}>
+            <div style={{ color: 'var(--spm-text-muted)', fontSize: '14px', gridColumn: '1 / -1', margin: 'auto' }}>
               No items found.
             </div>
           ) : (
             <>
-              {gridItems.map(item => (
-                <UiImageCard
-                  key={item.id}
-                  id={item.id}
-                  imageUrl={item.imageUrl}
-                  linkUrl={item.linkUrl}
-                  title={item.title}
-                />
-              ))}
+              {gridItems.map((item, index) => {
+                if (renderItem) {
+                  return <React.Fragment key={item.id || index}>{renderItem(item, index)}</React.Fragment>;
+                }
+                return (
+                  <UiImageCard
+                    key={item.id || index}
+                    id={item.id}
+                    imageUrl={item.imageUrl}
+                    linkUrl={item.linkUrl}
+                    title={item.title}
+                  />
+                );
+              })}
               {loadingMore && (
-                <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '24px 0', order: 9999 }}>
+                <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
                   <div style={{
                     width: '24px',
                     height: '24px',

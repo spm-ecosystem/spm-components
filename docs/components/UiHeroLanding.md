@@ -17,7 +17,7 @@
 | `ctaUrl` | `string` | `undefined` | Destination URL for CTA button. |
 | `searchPlaceholder` | `string` | `undefined` | Placeholder text for embedded search bar. |
 | `searchSubmitUrl` | `string` | `undefined` | Form submit action URL for search bar. |
-| `searchParamName` | `string` | `undefined` | Query string parameter key for search field (e.g., `'tags'`, `'q'`). |
+| `searchParamName` | `string` | `undefined` | Query string parameter key for search field (e.g., `'q'`, `'search'`). |
 | `primaryLinks` | `NavLink[]` | `[]` | List of pill navigation links (`{ label: string, url: string }`). |
 | `className` | `string` | `''` | Custom CSS class name appended to root wrapper. |
 | `style` | `React.CSSProperties` | `{}` | Custom inline style overrides. |
@@ -38,17 +38,17 @@
 
 ```vnr
 reconstruct "#static-index" -> UiHeroLanding {
-    urlPattern: R"(safebooru\.org\/?(?:index\.php)?$)";
-    tagline: "Anime picture search engine";
-    subtext: "Browse millions of safe anime illustrations, updated hourly.";
-    ctaLabel: "Browse Gallery";
-    ctaUrl: "https://safebooru.org/index.php?page=post&s=list&tags=all";
-    searchPlaceholder: "Search tags... (e.g. blue_hair 1girl)";
-    searchSubmitUrl: "https://safebooru.org/index.php?page=post&s=list";
-    searchParamName: "tags";
+    urlPattern: R"(spm\.dev\/?$)";
+    tagline: "Modern Component Platform";
+    subtext: "High-performance modular web component architecture and documentation engine.";
+    ctaLabel: "Get Started";
+    ctaUrl: "/docs/overview";
+    searchPlaceholder: "Search components... (e.g. UiSplitLayout, UiNavHeader)";
+    searchSubmitUrl: "/docs/search";
+    searchParamName: "q";
 
-    bind siteName: "img[alt='Safebooru'] | attr:alt";
-    bind logoUrl: "img[alt='Safebooru'] | attr:src";
+    bind siteName: "img[alt='SPM Platform'] | attr:alt";
+    bind logoUrl: "img[alt='SPM Platform'] | attr:src";
 
     child primaryLinks extends NavLink {
         selector: "#links a";

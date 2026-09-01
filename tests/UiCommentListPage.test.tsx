@@ -387,5 +387,42 @@ describe('UiCommentListPage & Sub-components', () => {
       expect(rootEl?.classList.contains('custom-feed-class')).toBe(true);
       expect((rootEl as HTMLElement).style.backgroundColor).toBe('rgb(10, 10, 10)');
     });
+
+    it('renders sidebarSlot, commentFormSlot, replyActionSlot, and headerActionsSlot', async () => {
+      const threads: CommentThread[] = [
+        {
+          id: 't-1',
+          postUrl: '/post/1',
+          tags: [
+            { label: 'danger_tag', url: '#', type: 'module' },
+            { label: 'success_tag', url: '#', type: 'technology' },
+          ],
+          comments: [{ author: 'User1', body: 'Hello' }],
+        },
+      ];
+
+      const root = createRoot(container);
+      root.render(
+        <UiCommentListPage
+          threads={threads}
+          sidebarSlot={<div id="test-sidebar">Sidebar Content</div>}
+          commentFormSlot={<form id="test-form"><button>Submit</button></form>}
+          headerActionsSlot={<button id="test-header-btn">New Post</button>}
+          replyActionSlot={<button id="test-reply-btn">Reply</button>}
+        />
+      );
+      await waitForUpdate();
+
+      expect(container.querySelector('#test-sidebar')?.textContent).toBe('Sidebar Content');
+      expect(container.querySelector('#test-form')).toBeTruthy();
+      expect(container.querySelector('#test-header-btn')?.textContent).toBe('New Post');
+      expect(container.querySelector('#test-reply-btn')?.textContent).toBe('Reply');
+
+      const tagDots = container.querySelectorAll('.spm-comment-card-content a span');
+      expect(tagDots.length).toBe(2);
+      expect((tagDots[0] as HTMLElement).style.background).toContain('var(--spm-tag-danger');
+      expect((tagDots[1] as HTMLElement).style.background).toContain('var(--spm-tag-success');
+    });
   });
 });
+

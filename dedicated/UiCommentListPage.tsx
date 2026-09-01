@@ -41,14 +41,21 @@ export interface UiCommentListPageProps {
   height?: string;
   className?: string;
   style?: React.CSSProperties;
+
+  // Slots
+  sidebarSlot?: React.ReactNode;
+  commentFormSlot?: React.ReactNode;
+  replyActionSlot?: React.ReactNode;
+  headerActionsSlot?: React.ReactNode;
 }
 
 // 1. Modular Sub-component: A single comment reply speech bubble
 export interface UiCommentReplyProps {
   comment: CommentItem;
+  replyActionSlot?: React.ReactNode | ((comment: CommentItem) => React.ReactNode);
 }
 
-export function UiCommentReply({ comment }: UiCommentReplyProps) {
+export function UiCommentReply({ comment, replyActionSlot }: UiCommentReplyProps) {
   const cleanAuthor = (raw?: string) => {
     if (!raw) return 'Anonymous';
     const stripped = raw.replace(/^(Posted by|User):?\s*/i, '').trim();
@@ -66,6 +73,8 @@ export function UiCommentReply({ comment }: UiCommentReplyProps) {
   const hasHtml = Boolean(
     comment.isHtml || (comment.body && /<[a-z][\s\S]*>/i.test(comment.body))
   );
+
+  const actionContent = typeof replyActionSlot === 'function' ? replyActionSlot(comment) : replyActionSlot;
 
   return (
     <div
@@ -99,9 +108,14 @@ export function UiCommentReply({ comment }: UiCommentReplyProps) {
         >
           {authorName}
         </a>
-        {formattedDate && (
-          <span style={{ color: 'var(--spm-text-muted)' }}>{formattedDate}</span>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {formattedDate && (
+            <span style={{ color: 'var(--spm-text-muted)' }}>{formattedDate}</span>
+          )}
+          {actionContent && (
+            <div className="spm-comment-reply-action-slot">{actionContent}</div>
+          )}
+        </div>
       </div>
       {hasHtml ? (
         <div
@@ -136,9 +150,16 @@ export function UiCommentReply({ comment }: UiCommentReplyProps) {
 export interface UiCommentCardProps {
   thread: CommentThread;
   showThumbnails?: boolean;
+  commentFormSlot?: React.ReactNode;
+  replyActionSlot?: React.ReactNode;
 }
 
-export function UiCommentCard({ thread, showThumbnails = true }: UiCommentCardProps) {
+export function UiCommentCard({
+  thread,
+  showThumbnails = true,
+  commentFormSlot,
+  replyActionSlot,
+}: UiCommentCardProps) {
   const [hovered, setHovered] = useState(false);
 
   const hasThumbnail = Boolean(showThumbnails && thread.thumbnailUrl && thread.thumbnailUrl.trim() !== '');
@@ -258,27 +279,30 @@ export function UiCommentCard({ thread, showThumbnails = true }: UiCommentCardPr
         {/* Comment replies sub-list */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '14px' }}>
           {(thread.comments || []).map((cmt, idx) => (
-            <UiCommentReply key={idx} comment={cmt} />
+            <UiCommentReply key={idx} comment={cmt} replyActionSlot={replyActionSlot} />
           ))}
         </div>
+
+        {/* Optional Comment Form Slot inside Card */}
+        {commentFormSlot && (
+          <div className="spm-comment-card-form-slot" style={{ marginBottom: '14px' }}>
+            {commentFormSlot}
+          </div>
+        )}
 
         {/* Associated tags list */}
         {thread.tags && thread.tags.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
             {thread.tags.map((tag, tagIdx) => {
-              const isArtist = tag.type.includes('artist');
-              const isChar = tag.type.includes('character');
-              const isCopy = tag.type.includes('copyright');
-              const isMeta = tag.type.includes('metadata');
-              const dotColor = isArtist
-                ? '#ef4444' // red
-                : isChar
-                ? '#10b981' // green
-                : isCopy
-                ? '#a855f7' // purple
-                : isMeta
-                ? '#f59e0b' // orange
-                : '#9ca3af'; // gray/general
+              const isDanger = tag.type.includes('module') || tag.type.includes('danger');
+              const isSuccess = tag.type.includes('technology') || tag.type.includes('tech') || tag.type.includes('success');
+              const isSystem = tag.type.includes('system') || tag.type.includes('category');
+              const isMeta = tag.type.includes('metadata') || tag.type.includes('meta');
+              let dotColor = 'var(--spm-text-muted, #a1a1aa)';
+              if (isDanger) dotColor = 'var(--spm-tag-danger, #ef4444)';
+              else if (isSuccess) dotColor = 'var(--spm-tag-success, #10b981)';
+              else if (isSystem) dotColor = 'var(--spm-tag-system, #38bdf8)';
+              else if (isMeta) dotColor = 'var(--spm-tag-warning, #f59e0b)';
               return (
                 <a
                   key={tagIdx}
@@ -334,6 +358,10 @@ export function UiCommentListPage({
   height = '100vh',
   className = '',
   style = {},
+  sidebarSlot,
+  commentFormSlot,
+  replyActionSlot,
+  headerActionsSlot,
 }: UiCommentListPageProps) {
   return (
     <div
@@ -385,9 +413,10 @@ export function UiCommentListPage({
           }
         }
       `}</style>
-      {/* Sidebar slot - legacy sidebar nodes reparented here */}
+      {/* Sidebar slot */}
       <aside
         id="sidebarSlot-container"
+        className="spm-comment-list-sidebar"
         style={{
           width: '240px',
           flexShrink: 0,
@@ -397,7 +426,9 @@ export function UiCommentListPage({
           overflowY: 'auto',
           boxSizing: 'border-box',
         }}
-      />
+      >
+        {sidebarSlot}
+      </aside>
 
       {/* Main content scroll container */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100%' }}>
@@ -427,7 +458,12 @@ export function UiCommentListPage({
             {pageTitle}
           </h1>
 
-          <UiPaginationBar pageLinks={pageLinks} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {headerActionsSlot && (
+              <div className="spm-comment-list-header-actions">{headerActionsSlot}</div>
+            )}
+            <UiPaginationBar pageLinks={pageLinks} />
+          </div>
         </header>
 
         {/* Scrollable list of comment cards */}
@@ -443,13 +479,22 @@ export function UiCommentListPage({
             boxSizing: 'border-box',
           }}
         >
+          {commentFormSlot && (
+            <div className="spm-comment-list-form-slot">{commentFormSlot}</div>
+          )}
+
           {threads.length === 0 ? (
             <div style={{ color: 'var(--spm-text-muted)', fontSize: '14px', margin: 'auto' }}>
               No comments found.
             </div>
           ) : (
             threads.map((thread) => (
-              <UiCommentCard key={thread.id} thread={thread} showThumbnails={showThumbnails} />
+              <UiCommentCard
+                key={thread.id}
+                thread={thread}
+                showThumbnails={showThumbnails}
+                replyActionSlot={replyActionSlot}
+              />
             ))
           )}
         </main>

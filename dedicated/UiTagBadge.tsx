@@ -1,50 +1,54 @@
 import React from 'react';
 
 export interface UiTagBadgeProps {
-  label: string;
+  label?: string;
+  name?: string;
   count?: string | number;
   href?: string;
+  url?: string;
   addUrl?: string;
   removeUrl?: string;
   variant?: 'default' | 'success' | 'danger' | 'warning' | 'info' | 'active' | 'error' | string;
   style?: React.CSSProperties;
 }
 
-export function UiTagBadge({ label, count, href, addUrl, removeUrl, variant = 'default', style: customStyle = {} }: UiTagBadgeProps) {
+export function UiTagBadge({ label, name, count, href, url, addUrl, removeUrl, variant = 'default', style: customStyle = {} }: UiTagBadgeProps) {
+  const displayLabel = label || name || '';
+  const displayHref = href || url;
   const getVariantStyles = (): React.CSSProperties => {
     const v = String(variant).toLowerCase();
     if (v === 'success' || v === 'active') {
       return {
-        background: 'rgba(34, 197, 94, 0.12)',
-        color: '#4ade80',
-        border: '1px solid rgba(34, 197, 94, 0.3)',
+        background: '#ffffff',
+        color: '#000000',
+        border: '1px solid #ffffff',
       };
     }
     if (v === 'danger' || v === 'error') {
       return {
-        background: 'rgba(239, 68, 68, 0.12)',
-        color: '#f87171',
-        border: '1px solid rgba(239, 68, 68, 0.3)',
+        background: 'var(--spm-bg-element, #1e1e24)',
+        color: '#ffffff',
+        border: '1px solid var(--spm-border, #27272a)',
       };
     }
     if (v === 'warning') {
       return {
-        background: 'rgba(245, 158, 11, 0.12)',
-        color: '#fbbf24',
-        border: '1px solid rgba(245, 158, 11, 0.3)',
+        background: 'var(--spm-bg-element, #1e1e24)',
+        color: 'var(--spm-text-muted, #a1a1aa)',
+        border: '1px dashed var(--spm-border, #27272a)',
       };
     }
     if (v === 'info') {
       return {
-        background: 'rgba(59, 130, 246, 0.12)',
-        color: '#60a5fa',
-        border: '1px solid rgba(59, 130, 246, 0.3)',
+        background: 'var(--spm-bg-surface, #121215)',
+        color: 'var(--spm-text-muted, #a1a1aa)',
+        border: '1px solid var(--spm-border, #27272a)',
       };
     }
     return {
-      background: 'var(--spm-bg-tertiary)',
-      color: 'var(--spm-text-primary)',
-      border: '1px solid var(--spm-border)',
+      background: 'var(--spm-bg-element, #1e1e24)',
+      color: '#ffffff',
+      border: '1px solid var(--spm-border, #27272a)',
     };
   };
 
@@ -134,9 +138,9 @@ export function UiTagBadge({ label, count, href, addUrl, removeUrl, variant = 'd
         )}
 
         {/* Main Tag Link */}
-        {href ? (
+        {displayHref ? (
           <a
-            href={href}
+            href={displayHref}
             style={{
               color: 'inherit',
               textDecoration: 'none',
@@ -149,10 +153,10 @@ export function UiTagBadge({ label, count, href, addUrl, removeUrl, variant = 'd
               e.currentTarget.style.color = 'inherit';
             }}
           >
-            {label}
+            {displayLabel}
           </a>
         ) : (
-          <span style={{ fontWeight: 600 }}>{label}</span>
+          <span style={{ fontWeight: 600 }}>{displayLabel}</span>
         )}
 
         {/* Count Badge */}

@@ -23,8 +23,8 @@ describe('UiNestedTreeTable', () => {
       { key: 'type', title: 'File Type' },
     ];
     const data: TreeNode[] = [
-      { id: '1', label: 'src', values: { size: '4 KB', type: 'Folder' }, icon: '📁' },
-      { id: '2', label: 'package.json', values: { size: '1 KB', type: 'JSON' }, icon: '📄' },
+      { id: '1', label: 'src', values: { size: '4 KB', type: 'Folder' }, icon: '[DIR]' },
+      { id: '2', label: 'package.json', values: { size: '1 KB', type: 'JSON' }, icon: '[FILE]' },
     ];
 
     const root = createRoot(container);
@@ -52,12 +52,12 @@ describe('UiNestedTreeTable', () => {
     const rows = container.querySelectorAll('tbody tr');
     expect(rows.length).toBe(2);
 
-    expect(rows[0].textContent).toContain('📁');
+    expect(rows[0].textContent).toContain('[DIR]');
     expect(rows[0].textContent).toContain('src');
     expect(rows[0].textContent).toContain('4 KB');
     expect(rows[0].textContent).toContain('Folder');
 
-    expect(rows[1].textContent).toContain('📄');
+    expect(rows[1].textContent).toContain('[FILE]');
     expect(rows[1].textContent).toContain('package.json');
     expect(rows[1].textContent).toContain('1 KB');
     expect(rows[1].textContent).toContain('JSON');
@@ -140,6 +140,69 @@ describe('UiNestedTreeTable', () => {
     expect(buttons[0].textContent).toBe('►');
   });
 
+  it('supports ReactNode in TreeNode values and custom renderCell prop', async () => {
+    const columns: TreeColumn[] = [{ key: 'badge', title: 'Badge' }, { key: 'action', title: 'Action' }];
+    const data: TreeNode[] = [
+      {
+        id: '1',
+        label: 'Item 1',
+        values: {
+          badge: <span className="custom-badge">Active</span>,
+        },
+      },
+    ];
+
+    const root = createRoot(container);
+    root.render(
+      <UiNestedTreeTable
+        columns={columns}
+        data={data}
+        renderCell={(node, colKey) => {
+          if (colKey === 'action') {
+            return <button className="action-btn">Edit {node.id}</button>;
+          }
+          return undefined; // fallback to values
+        }}
+      />
+    );
+    await waitForUpdate();
+
+    expect(container.querySelector('.custom-badge')?.textContent).toBe('Active');
+    expect(container.querySelector('.action-btn')?.textContent).toBe('Edit 1');
+  });
+
+  it('includes proper ARIA accessibility attributes and tokenized indent calculation', async () => {
+    const data: TreeNode[] = [
+      {
+        id: 'p1',
+        label: 'Parent',
+        children: [{ id: 'c1', label: 'Child' }],
+      },
+    ];
+
+    const root = createRoot(container);
+    root.render(<UiNestedTreeTable columns={[{ key: 'k', title: 'T' }]} data={data} expandedDepth={1} />);
+    await waitForUpdate();
+
+    const table = container.querySelector('table');
+    expect(table?.getAttribute('role')).toBe('treegrid');
+
+    const rows = container.querySelectorAll('tbody tr');
+    expect(rows.length).toBe(2);
+
+    expect(rows[0].getAttribute('role')).toBe('row');
+    expect(rows[0].getAttribute('aria-level')).toBe('1');
+    expect(rows[0].getAttribute('aria-expanded')).toBe('true');
+
+    expect(rows[1].getAttribute('role')).toBe('row');
+    expect(rows[1].getAttribute('aria-level')).toBe('2');
+    expect(rows[1].getAttribute('aria-expanded')).toBeNull(); // child has no children
+
+    const childTd = rows[1].querySelector('td');
+    expect(childTd?.getAttribute('role')).toBe('rowheader');
+    expect(childTd?.style.paddingLeft).toBe('calc(12px + 1 * var(--spm-tree-indent-step, 20px))');
+  });
+
   it('renders default values and handles empty data gracefully', async () => {
     const root = createRoot(container);
     root.render(<UiNestedTreeTable />);
@@ -167,3 +230,4 @@ describe('UiNestedTreeTable', () => {
     expect(wrapper.style.border).toBe('2px solid red');
   });
 });
+

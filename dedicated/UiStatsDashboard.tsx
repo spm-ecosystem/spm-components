@@ -1,15 +1,19 @@
 import React from 'react';
 
 export interface StatItem {
-  place?: string;
+  place?: string | number;
+  rank?: string | number;
   amount: string;
   name: string;
   profileUrl?: string;
+  trend?: 'up' | 'down' | 'neutral';
+  change?: string;
 }
 
 export interface StatSection {
   title: string;
   items: StatItem[];
+  sparklineSlot?: React.ReactNode;
 }
 
 export interface NavLink {
@@ -25,6 +29,11 @@ export interface UiStatsDashboardProps {
   height?: string;
   className?: string;
   style?: React.CSSProperties;
+
+  // New Slots
+  sparklineSlot?: React.ReactNode;
+  headerSlot?: React.ReactNode;
+  toolbarSlot?: React.ReactNode;
 }
 
 export function UiStatsDashboard({
@@ -35,11 +44,77 @@ export function UiStatsDashboard({
   height = '100vh',
   className = '',
   style = {},
+  sparklineSlot,
+  headerSlot,
+  toolbarSlot,
 }: UiStatsDashboardProps) {
-  
-  const renderStatCard = (title: string, items: StatItem[]) => {
+
+  const renderTrendIndicator = (trend?: 'up' | 'down' | 'neutral', change?: string) => {
+    if (!trend && !change) return null;
+
+    let color = 'var(--spm-text-muted)';
+    let icon = '→';
+
+    if (trend === 'up') {
+      color = '#ffffff';
+      icon = '↑';
+    } else if (trend === 'down') {
+      color = 'var(--spm-text-muted, #a1a1aa)';
+      icon = '↓';
+    }
+
+    return (
+      <span
+        className="spm-stat-trend-indicator"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '3px',
+          fontSize: '11px',
+          fontWeight: 600,
+          color,
+          marginLeft: '8px',
+        }}
+      >
+        <span>{icon}</span>
+        {change && <span>{change}</span>}
+      </span>
+    );
+  };
+
+  const getRankColors = (rankVal: number) => {
+    if (rankVal === 1) {
+      return {
+        background: 'var(--spm-rank-gold-bg, rgba(234, 179, 8, 0.15))',
+        color: 'var(--spm-rank-gold-fg, rgb(234, 179, 8))',
+      };
+    }
+    if (rankVal === 2) {
+      return {
+        background: 'var(--spm-rank-silver-bg, rgba(148, 163, 184, 0.15))',
+        color: 'var(--spm-rank-silver-fg, rgb(148, 163, 184))',
+      };
+    }
+    if (rankVal === 3) {
+      return {
+        background: 'var(--spm-rank-bronze-bg, rgba(217, 119, 6, 0.15))',
+        color: 'var(--spm-rank-bronze-fg, rgb(217, 119, 6))',
+      };
+    }
+
+    return {
+      background: 'var(--spm-bg-tertiary)',
+      color: 'var(--spm-text-muted)',
+    };
+  };
+
+  const renderStatCard = (section: StatSection, sectionIdx: number) => {
+    const { title, items, sparklineSlot: sectionSparkline } = section;
+
     return (
       <div
+        key={sectionIdx}
+        className="spm-stat-card"
         style={{
           flex: '1 1 280px',
           background: 'var(--spm-bg-secondary)',
@@ -60,81 +135,104 @@ export function UiStatsDashboard({
             letterSpacing: '0.05em',
             borderBottom: '1px solid var(--spm-border)',
             paddingBottom: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}
         >
           {title}
         </h3>
+
+        {sectionSparkline && (
+          <div className="spm-stat-card-sparkline-slot" style={{ marginBottom: '12px' }}>
+            {sectionSparkline}
+          </div>
+        )}
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {items.length === 0 ? (
             <div style={{ color: 'var(--spm-text-muted)', fontSize: '12px', textAlign: 'center', padding: '16px 0' }}>
               No entries found.
             </div>
           ) : (
-            items.map((item, idx) => (
-              <div
-                key={idx}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  fontSize: '12px',
-                  padding: '4px 0',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                  <span
-                    style={{
-                      width: '20px',
-                      height: '20px',
-                      borderRadius: '50%',
-                      background: idx === 0 ? 'rgba(234, 179, 8, 0.15)' : idx === 1 ? 'rgba(148, 163, 184, 0.15)' : 'var(--spm-bg-tertiary)',
-                      color: idx === 0 ? 'rgb(234, 179, 8)' : idx === 1 ? 'rgb(148, 163, 184)' : 'var(--spm-text-muted)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: 700,
-                      fontSize: '10px',
-                    }}
-                  >
-                    {item.place || (idx + 1)}
-                  </span>
-                  {item.profileUrl ? (
-                    <a
-                      href={item.profileUrl}
-                      style={{
-                        color: 'var(--spm-text-primary)',
-                        fontWeight: 500,
-                        textDecoration: 'none',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                      onMouseEnter={e => (e.currentTarget.style.color = 'var(--spm-accent)')}
-                      onMouseLeave={e => (e.currentTarget.style.color = 'var(--spm-text-primary)')}
-                    >
-                      {item.name || 'Anonymous'}
-                    </a>
-                  ) : (
-                    <span style={{ color: 'var(--spm-text-primary)', fontWeight: 500 }}>
-                      {item.name || 'Anonymous'}
-                    </span>
-                  )}
-                </div>
-                <span
+            items.map((item, idx) => {
+              const rawRank = item.rank ?? item.place ?? (idx + 1);
+              const numericRank = typeof rawRank === 'number' ? rawRank : parseInt(String(rawRank), 10);
+              const rankColors = getRankColors(isNaN(numericRank) ? idx + 1 : numericRank);
+
+              return (
+                <div
+                  key={idx}
+                  className="spm-stat-item"
                   style={{
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    padding: '2px 6px',
-                    borderRadius: '8px',
-                    background: 'var(--spm-bg-tertiary)',
-                    border: '1px solid var(--spm-border)',
-                    color: 'var(--spm-text-muted)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: '12px',
+                    padding: '4px 0',
                   }}
                 >
-                  {item.amount}
-                </span>
-              </div>
-            ))
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+                    <span
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        background: rankColors.background,
+                        color: rankColors.color,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 700,
+                        fontSize: '10px',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {rawRank}
+                    </span>
+                    {item.profileUrl ? (
+                      <a
+                        href={item.profileUrl}
+                        style={{
+                          color: 'var(--spm-text-primary)',
+                          fontWeight: 500,
+                          textDecoration: 'none',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.color = 'var(--spm-accent)')}
+                        onMouseLeave={e => (e.currentTarget.style.color = 'var(--spm-text-primary)')}
+                      >
+                        {item.name || 'Anonymous'}
+                      </a>
+                    ) : (
+                      <span style={{ color: 'var(--spm-text-primary)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {item.name || 'Anonymous'}
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        padding: '2px 6px',
+                        borderRadius: '8px',
+                        background: 'var(--spm-bg-tertiary)',
+                        border: '1px solid var(--spm-border)',
+                        color: 'var(--spm-text-muted)',
+                      }}
+                    >
+                      {item.amount}
+                    </span>
+
+                    {renderTrendIndicator(item.trend, item.change)}
+                  </div>
+                </div>
+              );
+            })
           )}
         </div>
       </div>
@@ -143,7 +241,7 @@ export function UiStatsDashboard({
 
   return (
     <div
-      className={className}
+      className={`spm-stats-dashboard ${className}`.trim()}
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -167,14 +265,18 @@ export function UiStatsDashboard({
           gap: '8px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-          <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 700, letterSpacing: '-0.02em' }}>
-            {pageTitle}
-          </h1>
-          <span style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '12px', background: 'var(--spm-bg-tertiary)', border: '1px solid var(--spm-border)', color: 'var(--spm-text-muted)' }}>
-            {dateRangeText}
-          </span>
-        </div>
+        {headerSlot ? (
+          headerSlot
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+            <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 700, letterSpacing: '-0.02em' }}>
+              {pageTitle}
+            </h1>
+            <span style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '12px', background: 'var(--spm-bg-tertiary)', border: '1px solid var(--spm-border)', color: 'var(--spm-text-muted)' }}>
+              {dateRangeText}
+            </span>
+          </div>
+        )}
 
         {navLinks.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '11px', marginTop: '4px' }}>
@@ -193,6 +295,12 @@ export function UiStatsDashboard({
             ))}
           </div>
         )}
+
+        {toolbarSlot && (
+          <div className="spm-stats-dashboard-toolbar-slot" style={{ marginTop: '8px' }}>
+            {toolbarSlot}
+          </div>
+        )}
       </header>
 
       {/* Main Grid content */}
@@ -207,12 +315,14 @@ export function UiStatsDashboard({
           gap: '24px',
         }}
       >
+        {sparklineSlot && (
+          <div className="spm-stats-dashboard-sparkline-slot" style={{ width: '100%' }}>
+            {sparklineSlot}
+          </div>
+        )}
+
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-          {sections.map((section, idx) => (
-            <React.Fragment key={idx}>
-              {renderStatCard(section.title, section.items)}
-            </React.Fragment>
-          ))}
+          {sections.map((section, idx) => renderStatCard(section, idx))}
         </div>
       </main>
     </div>

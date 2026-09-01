@@ -23,13 +23,13 @@ export function UiToast({ message, type = 'info', onClose }: UiToastProps) {
   const getTypeStyles = () => {
     switch (type) {
       case 'success':
-        return { borderLeft: '4px solid #10b981', color: '#34d399' };
+        return { borderLeft: '3px solid #ffffff', color: '#ffffff' };
       case 'warning':
-        return { borderLeft: '4px solid #f59e0b', color: '#fbbf24' };
+        return { borderLeft: '3px solid var(--spm-text-muted, #a1a1aa)', color: 'var(--spm-text-muted, #a1a1aa)' };
       case 'error':
-        return { borderLeft: '4px solid #ef4444', color: '#f87171' };
+        return { borderLeft: '3px solid #ffffff', color: '#ffffff' };
       default:
-        return { borderLeft: '4px solid var(--spm-accent)', color: 'var(--spm-text-primary)' };
+        return { borderLeft: '3px solid #ffffff', color: '#ffffff' };
     }
   };
 

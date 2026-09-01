@@ -3,15 +3,19 @@ import { UiTable, ColumnConfig } from './UiTable';
 import { UiPaginationBar } from './UiPaginationBar';
 import { UiTagBadge } from './UiTagBadge';
 
-export interface TableColumnConfig {
+export interface TableColumn {
   key: string;
   header: string;
   width?: string;
   align?: 'left' | 'center' | 'right';
-  type?: 'text' | 'link' | 'html' | 'badge' | 'checkbox' | 'date' | 'currency';
+  type?: 'text' | 'link' | 'html' | 'badge' | 'checkbox' | 'date' | 'currency' | 'custom';
   urlKey?: string;
   badgeStyleKey?: string;
+  sortable?: boolean;
+  render?: (item: any, index?: number) => React.ReactNode;
 }
+
+export type TableColumnConfig = TableColumn;
 
 export interface PageLink {
   label: string;
@@ -21,12 +25,22 @@ export interface PageLink {
 export interface UiTableListPageProps {
   pageTitle?: string;
   tableRows?: any[];
-  columns?: TableColumnConfig[];
+  columns?: TableColumn[];
   pageLinks?: PageLink[];
+  sidebarSlot?: React.ReactNode;
+  paginationMode?: 'floating' | 'inline' | 'infinite';
   height?: string;
   className?: string;
   style?: React.CSSProperties;
   onLoadMore?: () => Promise<{ tableRows: any[]; hasMore: boolean }>;
+  
+  // Interactive State Props
+  selectedRowKeys?: (string | number)[];
+  onSelectionChange?: (selectedKeys: (string | number)[], selectedRows: any[]) => void;
+  pageSize?: number;
+  onPageSizeChange?: (pageSize: number) => void;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
 }
 
 export function UiTableListPage({
@@ -34,14 +48,55 @@ export function UiTableListPage({
   tableRows = [],
   columns: columnsProp,
   pageLinks = [],
+  sidebarSlot,
+  paginationMode,
   height = 'auto',
   className = '',
   style = {},
   onLoadMore,
+  selectedRowKeys: controlledSelectedKeys,
+  onSelectionChange,
+  pageSize: controlledPageSize,
+  onPageSizeChange,
+  currentPage: controlledCurrentPage,
+  onPageChange,
 }: UiTableListPageProps) {
   const [rows, setRows] = React.useState(tableRows);
   const [loadingMore, setLoadingMore] = React.useState(false);
   const [sortConfig, setSortConfig] = React.useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+  
+  const [internalSelectedKeys, setInternalSelectedKeys] = React.useState<(string | number)[]>([]);
+  const selectedKeys = controlledSelectedKeys !== undefined ? controlledSelectedKeys : internalSelectedKeys;
+
+  const [internalPageSize, setInternalPageSize] = React.useState<number>(controlledPageSize || 10);
+  const pageSize = controlledPageSize !== undefined ? controlledPageSize : internalPageSize;
+
+  const [internalCurrentPage, setInternalCurrentPage] = React.useState<number>(controlledCurrentPage || 1);
+  const currentPage = controlledCurrentPage !== undefined ? controlledCurrentPage : internalCurrentPage;
+
+  React.useEffect(() => {
+    setRows(tableRows);
+  }, [tableRows]);
+
+  const handleSelectionToggle = (itemKey: string | number, item: any) => {
+    let nextKeys: (string | number)[];
+    if (selectedKeys.includes(itemKey)) {
+      nextKeys = selectedKeys.filter((k) => k !== itemKey);
+    } else {
+      nextKeys = [...selectedKeys, itemKey];
+    }
+    setInternalSelectedKeys(nextKeys);
+    if (onSelectionChange) {
+      const nextRows = rows.filter((r, idx) => nextKeys.includes(r.id ?? r.key ?? idx));
+      onSelectionChange(nextKeys, nextRows);
+    }
+  };
+
+  const resolvedPaginationMode = React.useMemo(() => {
+    if (paginationMode) return paginationMode;
+    if (onLoadMore) return 'infinite';
+    return 'inline';
+  }, [paginationMode, onLoadMore]);
 
   const handleSort = (key: string) => {
     setSortConfig((prev) => {
@@ -100,8 +155,8 @@ export function UiTableListPage({
     });
   }, [rows, sortConfig, columnsProp]);
 
-  const prevLink = pageLinks.find((l) => l.label.toLowerCase().includes('prev'));
-  const nextLink = pageLinks.find((l) => l.label.toLowerCase().includes('next'));
+  const prevLink = pageLinks.find((l) => l.label.toLowerCase().includes('prev') || l.label === '<' || l.label === '‹');
+  const nextLink = pageLinks.find((l) => l.label.toLowerCase().includes('next') || l.label === '>' || l.label === '›');
 
   const columns: ColumnConfig<any>[] = React.useMemo(() => {
     if (columnsProp && columnsProp.length > 0) {
@@ -110,8 +165,11 @@ export function UiTableListPage({
         header: col.header,
         width: col.width,
         align: col.align,
-        sortable: true,
-        render: (item: any) => {
+        sortable: col.sortable !== undefined ? col.sortable : true,
+        render: (item: any, index?: number) => {
+          if (col.render) {
+            return col.render(item, index);
+          }
           const val = item[col.key];
           if (col.type === 'link') {
             const url = col.urlKey ? item[col.urlKey] : item.url || '#';
@@ -139,7 +197,17 @@ export function UiTableListPage({
             return <span dangerouslySetInnerHTML={{ __html: String(val || '') }} />;
           }
           if (col.type === 'checkbox') {
-            return <input type="checkbox" checked={Boolean(val)} readOnly style={{ accentColor: 'var(--spm-accent)' }} />;
+            const itemKey = item.id ?? item.key ?? (index !== undefined ? index : JSON.stringify(item));
+            const isChecked = selectedKeys.includes(itemKey) || Boolean(val);
+            return (
+              <input
+                type="checkbox"
+                checked={isChecked}
+                onChange={() => handleSelectionToggle(itemKey, item)}
+                onClick={(e) => e.stopPropagation()}
+                style={{ accentColor: 'var(--spm-accent)', cursor: 'pointer' }}
+              />
+            );
           }
           if (col.type === 'date') {
             if (val === undefined || val === null || val === '') return <span>-</span>;
@@ -249,7 +317,7 @@ export function UiTableListPage({
   const mainRef = React.useRef<HTMLElement>(null);
 
   React.useEffect(() => {
-    if (!onLoadMore || !mainRef.current) return;
+    if (resolvedPaginationMode !== 'infinite' || !onLoadMore || !mainRef.current) return;
 
     const el = mainRef.current;
     const handleScroll = async () => {
@@ -271,13 +339,13 @@ export function UiTableListPage({
 
     el.addEventListener('scroll', handleScroll);
     return () => el.removeEventListener('scroll', handleScroll);
-  }, [onLoadMore, loadingMore]);
+  }, [onLoadMore, loadingMore, resolvedPaginationMode]);
 
   const isFixedHeight = height !== 'auto' && height !== '100%';
 
   return (
     <div
-      className={className}
+      className={`spm-table-list-page ${className}`.trim()}
       style={{
         display: 'flex',
         minHeight: isFixedHeight ? height : undefined,
@@ -289,25 +357,23 @@ export function UiTableListPage({
         ...style,
       }}
     >
-      <style>{`
-        #sidebarSlot-container:empty {
-          display: none !important;
-        }
-      `}</style>
-      
-      {/* Sidebar slot - legacy sidebar nodes reparented here */}
-      <aside
-        id="sidebarSlot-container"
-        style={{
-          width: '240px',
-          flexShrink: 0,
-          borderRight: '1px solid var(--spm-border)',
-          background: 'var(--spm-bg-secondary)',
-          padding: '16px',
-          overflowY: 'auto',
-          boxSizing: 'border-box',
-        }}
-      />
+      {/* Sidebar slot rendering if provided */}
+      {sidebarSlot && (
+        <aside
+          className="spm-table-list-sidebar"
+          style={{
+            width: '240px',
+            flexShrink: 0,
+            borderRight: '1px solid var(--spm-border)',
+            background: 'var(--spm-bg-secondary)',
+            padding: '16px',
+            overflowY: 'auto',
+            boxSizing: 'border-box',
+          }}
+        >
+          {sidebarSlot}
+        </aside>
+      )}
 
       {/* Main content scroll container */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: isFixedHeight ? '100%' : 'auto' }}>
@@ -336,7 +402,9 @@ export function UiTableListPage({
             {pageTitle}
           </h1>
 
-          {!onLoadMore && <UiPaginationBar pageLinks={pageLinks} />}
+          {resolvedPaginationMode === 'inline' && pageLinks && pageLinks.length > 0 && (
+            <UiPaginationBar pageLinks={pageLinks} />
+          )}
         </header>
 
         {/* Scrollable list of table rows */}
@@ -356,7 +424,7 @@ export function UiTableListPage({
             sortDirection={sortConfig?.direction}
             onSort={handleSort}
           />
-          {loadingMore && (
+          {resolvedPaginationMode === 'infinite' && loadingMore && (
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
               <div style={{
                 width: '20px',
@@ -376,7 +444,7 @@ export function UiTableListPage({
         </main>
       </div>
 
-      {!onLoadMore && pageLinks && pageLinks.length > 0 && (prevLink || nextLink) && (
+      {resolvedPaginationMode === 'floating' && pageLinks && pageLinks.length > 0 && (prevLink || nextLink) && (
         <div
           className="spm-floating-pagination"
           style={{

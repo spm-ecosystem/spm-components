@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { UiTagBadge } from './UiTagBadge';
 import { UiSearchBar } from './UiSearchBar';
 import { triggerProxyClick } from '../../content/engine';
@@ -34,7 +35,7 @@ export interface UiScrollPanelProps {
 
 // Classify buttons by label so primary actions stand out
 const NAV_LABELS = ['previous', 'next'];
-const PRIMARY_LABELS = ['original image', 'add to favorites'];
+const PRIMARY_LABELS = ['original image', 'add to favorites', 'download', 'submit', 'export'];
 
 function getButtonVariant(label: string): 'nav' | 'primary' | 'ghost' {
   const l = label.toLowerCase();
@@ -65,35 +66,46 @@ export function UiScrollPanel({
     return null;
   }
 
-  const isKnownCategory = (t: TagItem) =>
-    Boolean(
-      t.type?.includes('copyright') ||
-      t.type?.includes('character') ||
-      t.type?.includes('artist') ||
-      t.type?.includes('metadata') ||
-      t.type?.includes('meta')
-    );
+  // Dynamic tag grouping by enterprise category
+  const groupedTags = useMemo(() => {
+    const groups: Record<string, TagItem[]> = {};
+    tags.forEach(t => {
+      let rawType = t.type ? t.type.trim().toLowerCase() : '';
+      let categoryName = 'TAGS';
+      if (rawType.includes('module')) {
+        categoryName = 'MODULES';
+      } else if (rawType.includes('tech')) {
+        categoryName = 'TECHNOLOGY';
+      } else if (rawType.includes('category')) {
+        categoryName = 'CATEGORIES';
+      } else if (rawType.includes('status')) {
+        categoryName = 'SYSTEM STATUS';
+      } else if (rawType.includes('meta')) {
+        categoryName = 'METADATA';
+      } else if (t.type) {
+        categoryName = t.type.toUpperCase();
+      }
 
-  const copyrightTags = tags.filter(t => t.type?.includes('copyright'));
-  const characterTags = tags.filter(t => t.type?.includes('character'));
-  const artistTags    = tags.filter(t => t.type?.includes('artist'));
-  const generalTags   = tags.filter(t => t.type?.includes('general') || !isKnownCategory(t));
-  const metaTags      = tags.filter(t => t.type?.includes('metadata') || t.type?.includes('meta'));
+      if (!groups[categoryName]) groups[categoryName] = [];
+      groups[categoryName].push(t);
+    });
+    return groups;
+  }, [tags]);
 
   const navButtons     = buttons.filter(b => getButtonVariant(b.label) === 'nav');
   const primaryButtons = buttons.filter(b => getButtonVariant(b.label) === 'primary');
   const ghostButtons   = buttons.filter(b => getButtonVariant(b.label) === 'ghost');
 
   const renderSection = (title: string, groupTags: TagItem[]) => {
-    if (!groupTags.length) return null;
+    if (!groupTags || !groupTags.length) return null;
     return (
-      <div style={{ marginBottom: '20px' }}>
+      <div key={title} style={{ marginBottom: '20px' }}>
         <p style={{
           margin: '0 0 8px 0',
           fontSize: '10px',
           textTransform: 'uppercase',
           letterSpacing: '0.08em',
-          color: 'var(--spm-text-muted)',
+          color: 'var(--spm-text-muted, #94a3b8)',
           fontWeight: 600,
         }}>
           {title}
@@ -108,12 +120,12 @@ export function UiScrollPanel({
             overflowWrap: 'anywhere',
           }}
         >
-          {groupTags.map((tag, i) => (
+          {groupTags.map((t, idx) => (
             <UiTagBadge
-              key={i}
-              label={tag.name}
-              count={tag.count}
-              href={tag.url}
+              key={idx}
+              label={t.name}
+              count={t.count}
+              href={t.url}
               style={{
                 wordBreak: 'break-word',
                 overflowWrap: 'anywhere',
@@ -127,128 +139,94 @@ export function UiScrollPanel({
     );
   };
 
-  const renderButtonGroup = (items: ButtonItem[], variant: 'nav' | 'primary' | 'ghost') => {
-    if (!items.length) return null;
+  const renderButtonGroup = (btns: ButtonItem[], variant: 'nav' | 'primary' | 'ghost') => {
+    if (!btns.length) return null;
+    const isNav = variant === 'nav';
+    const isPrimary = variant === 'primary';
     return (
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
-        {items.map((btn, i) => {
-          const isNav = variant === 'nav';
-          const isPrimary = variant === 'primary';
-          return (
-            <a
-              key={i}
-              href={btn.url ?? '#'}
-              onClick={e => {
-                if (btn.targetSelector) {
-                  e.preventDefault();
-                  triggerProxyClick(btn.targetSelector);
-                }
-              }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: isNav ? '7px 16px' : isPrimary ? '6px 12px' : '5px 10px',
-                borderRadius: 'var(--spm-radius)',
-                fontSize: isNav ? '12px' : '11px',
-                fontWeight: isNav ? 700 : isPrimary ? 600 : 400,
-                textDecoration: 'none',
-                fontFamily: 'inherit',
-                whiteSpace: 'nowrap',
-                transition: 'background 0.15s, border-color 0.15s, color 0.15s',
-                background: isNav
-                  ? 'var(--spm-accent)'
-                  : isPrimary
-                  ? 'var(--spm-bg-tertiary)'
-                  : 'transparent',
-                color: isNav
-                  ? 'var(--spm-accent-fg)'
-                  : 'var(--spm-text-primary)',
-                border: isNav
-                  ? '1px solid var(--spm-accent)'
-                  : isPrimary
-                  ? '1px solid var(--spm-border)'
-                  : '1px solid transparent',
-              }}
-              onMouseEnter={e => {
-                const el = e.currentTarget as HTMLAnchorElement;
-                if (isNav) {
-                  el.style.background = 'var(--spm-accent-hover)';
-                } else if (isPrimary) {
-                  el.style.borderColor = 'var(--spm-accent)';
-                  el.style.background = 'var(--spm-bg-secondary)';
-                } else {
-                  el.style.color = 'var(--spm-text-muted)';
-                  el.style.borderColor = 'var(--spm-border)';
-                }
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget as HTMLAnchorElement;
-                if (isNav) {
-                  el.style.background = 'var(--spm-accent)';
-                } else if (isPrimary) {
-                  el.style.borderColor = 'var(--spm-border)';
-                  el.style.background = 'var(--spm-bg-tertiary)';
-                } else {
-                  el.style.color = 'var(--spm-text-primary)';
-                  el.style.borderColor = 'transparent';
-                }
-              }}
-            >
-              {btn.label}
-            </a>
-          );
-        })}
+      <div style={{
+        display: isNav ? 'grid' : 'flex',
+        gridTemplateColumns: isNav ? `repeat(${Math.min(btns.length, 2)}, 1fr)` : undefined,
+        flexDirection: isNav ? undefined : 'column',
+        gap: '6px',
+        marginBottom: '10px',
+      }}>
+        {btns.map((btn, i) => (
+          <a
+            key={i}
+            href={btn.url ?? '#'}
+            onClick={e => {
+              if (btn.targetSelector) {
+                e.preventDefault();
+                triggerProxyClick(btn.targetSelector);
+              }
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: isNav ? '6px 12px' : '7px 12px',
+              borderRadius: isNav ? '999px' : 'var(--spm-radius, 6px)',
+              fontSize: '12px',
+              fontWeight: 600,
+              textDecoration: 'none',
+              transition: 'background 0.15s, color 0.15s',
+              background: isPrimary || isNav ? 'var(--spm-accent, #ffffff)' : 'var(--spm-bg-element, #1e1e24)',
+              color: isPrimary || isNav ? 'var(--spm-accent-fg, #000000)' : 'var(--spm-text-primary, #ffffff)',
+              border: isPrimary || isNav ? 'none' : '1px solid var(--spm-border, #27272a)',
+            }}
+          >
+            {btn.label}
+          </a>
+        ))}
       </div>
     );
   };
 
   return (
     <aside
-      className={className}
+      className={`spm-scroll-panel ${className}`.trim()}
       style={{
         width,
-        flexShrink: 0,
-        height: '100%',
+        minWidth: width,
+        boxSizing: 'border-box',
+        backgroundColor: 'var(--spm-bg-surface, #121215)',
+        borderRight: '1px solid var(--spm-border, #27272a)',
+        padding: '20px 16px',
         overflowY: 'auto',
         overflowX: 'hidden',
-        background: 'var(--spm-bg-secondary)',
-        borderRight: '1px solid var(--spm-border)',
-        padding: '16px',
-        boxSizing: 'border-box',
+        fontSize: '13px',
+        color: 'var(--spm-text-primary, #ffffff)',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
         display: 'flex',
         flexDirection: 'column',
-        gap: '4px',
+        maxHeight: '100%',
+        ...style,
         wordBreak: 'break-word',
         overflowWrap: 'anywhere',
-        ...style,
       }}
     >
       {onClose && (
-        <button
-          onClick={onClose}
-          style={{
-            alignSelf: 'flex-end',
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--spm-text-primary)',
-            cursor: 'pointer',
-            padding: '4px',
-            marginBottom: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--spm-text-muted, #a1a1aa)',
+              fontSize: '18px',
+              cursor: 'pointer',
+              padding: '4px',
+            }}
+          >
+            ✕
+          </button>
+        </div>
       )}
-      {/* Search */}
-      {showSearch && searchSubmitUrl && (
-        <div style={{ marginBottom: '20px' }}>
+
+      {hasSearch && (
+        <div style={{ marginBottom: '16px' }}>
           <UiSearchBar
             placeholder={searchPlaceholder}
             submitUrl={searchSubmitUrl}
@@ -257,32 +235,26 @@ export function UiScrollPanel({
         </div>
       )}
 
-      {/* Navigation buttons (Previous / Next) */}
       {renderButtonGroup(navButtons, 'nav')}
-
-      {/* Primary action buttons */}
       {renderButtonGroup(primaryButtons, 'primary')}
-
-      {/* Ghost utility buttons */}
       {ghostButtons.length > 0 && (
         <div style={{ marginBottom: '16px' }}>
           {renderButtonGroup(ghostButtons, 'ghost')}
         </div>
       )}
 
-      {/* Divider before tags */}
       {hasButtons && (hasTags || hasStats) && (
-        <hr style={{ border: 'none', borderTop: '1px solid var(--spm-border)', margin: '8px 0 16px 0' }} />
+        <hr style={{ border: 'none', borderTop: '1px solid var(--spm-border, #27272a)', margin: '8px 0 16px 0' }} />
       )}
 
-      {/* Tags grouped by type */}
-      {renderSection('Artists', artistTags)}
-      {renderSection('Copyright', copyrightTags)}
-      {renderSection('Characters', characterTags)}
-      {renderSection('General Tags', generalTags)}
-      {renderSection('Meta', metaTags)}
+      {hasTags && (
+        <div>
+          {Object.entries(groupedTags).map(([catTitle, groupTags]) =>
+            renderSection(catTitle, groupTags as TagItem[])
+          )}
+        </div>
+      )}
 
-      {/* Statistics raw HTML */}
       {hasStats && (
         <div>
           <p style={{
@@ -290,7 +262,7 @@ export function UiScrollPanel({
             fontSize: '10px',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
-            color: 'var(--spm-text-muted)',
+            color: 'var(--spm-text-muted, #94a3b8)',
             fontWeight: 600,
           }}>
             Statistics
@@ -298,12 +270,10 @@ export function UiScrollPanel({
           <div
             style={{
               fontSize: '12px',
-              color: 'var(--spm-text-muted)',
-              lineHeight: 1.7,
-              wordBreak: 'break-word',
-              overflowWrap: 'anywhere',
+              color: 'var(--spm-text-muted, #94a3b8)',
+              lineHeight: 1.6,
             }}
-            dangerouslySetInnerHTML={{ __html: statisticsHtml! }}
+            dangerouslySetInnerHTML={{ __html: statisticsHtml || '' }}
           />
         </div>
       )}

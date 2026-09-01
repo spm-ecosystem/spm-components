@@ -17,6 +17,8 @@ export interface UiTabsProps {
   orientation?: 'horizontal' | 'vertical';
   className?: string;
   style?: React.CSSProperties;
+  activeTabId?: string;
+  onTabChange?: (tabId: string, tab: UiTabItem) => void;
 }
 
 export function UiTabs({
@@ -26,8 +28,13 @@ export function UiTabs({
   orientation = 'horizontal',
   className = '',
   style = {},
+  activeTabId: activeTabIdProp,
+  onTabChange,
 }: UiTabsProps) {
   const getInitialTabId = (): string => {
+    if (activeTabIdProp && tabs.some(t => t.id === activeTabIdProp)) {
+      return activeTabIdProp;
+    }
     if (activeParamName && typeof window !== 'undefined') {
       try {
         const param = new URLSearchParams(window.location.search).get(activeParamName);
@@ -48,10 +55,12 @@ export function UiTabs({
   const [activeTabId, setActiveTabId] = useState<string>(getInitialTabId);
 
   useEffect(() => {
-    if (!tabs.some(t => t.id === activeTabId)) {
+    if (activeTabIdProp && tabs.some(t => t.id === activeTabIdProp)) {
+      setActiveTabId(activeTabIdProp);
+    } else if (!tabs.some(t => t.id === activeTabId)) {
       setActiveTabId(getInitialTabId());
     }
-  }, [tabs, activeParamName]);
+  }, [tabs, activeParamName, activeTabIdProp]);
 
   const activeTab = tabs.find(t => t.id === activeTabId);
 
@@ -64,6 +73,9 @@ export function UiTabs({
     if (tab.contentHtml !== undefined) {
       e.preventDefault();
       setActiveTabId(tab.id);
+      if (onTabChange) {
+        onTabChange(tab.id, tab);
+      }
       if (activeParamName && typeof window !== 'undefined') {
         try {
           const url = new URL(window.location.href);
@@ -75,9 +87,15 @@ export function UiTabs({
       }
     } else if (tab.href) {
       // Navigational tab - default browser navigation
+      if (onTabChange) {
+        onTabChange(tab.id, tab);
+      }
     } else {
       e.preventDefault();
       setActiveTabId(tab.id);
+      if (onTabChange) {
+        onTabChange(tab.id, tab);
+      }
       if (activeParamName && typeof window !== 'undefined') {
         try {
           const url = new URL(window.location.href);
@@ -121,12 +139,12 @@ export function UiTabs({
           : 'var(--spm-text-secondary, #94a3b8)',
         borderBottom: isHorizontal
           ? isSelected
-            ? '2px solid var(--spm-accent, #38bdf8)'
+            ? '2px solid var(--spm-accent, #ffffff)'
             : '2px solid transparent'
           : undefined,
         borderRight: !isHorizontal
           ? isSelected
-            ? '2px solid var(--spm-accent, #38bdf8)'
+            ? '2px solid var(--spm-accent, #ffffff)'
             : '2px solid transparent'
           : undefined,
         marginBottom: isHorizontal ? '-1px' : undefined,
@@ -141,7 +159,7 @@ export function UiTabs({
         borderRadius: '9999px',
         fontWeight: isSelected ? 600 : 500,
         background: isSelected
-          ? 'var(--spm-accent, #38bdf8)'
+          ? 'var(--spm-accent, #ffffff)'
           : 'transparent',
         color: isSelected
           ? 'var(--spm-accent-fg, #ffffff)'

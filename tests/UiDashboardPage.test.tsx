@@ -74,7 +74,7 @@ describe('UiDashboardPage', () => {
     root.render(<UiDashboardPage cards={cards} />);
     await waitForUpdate();
 
-    const cardElements = container.querySelectorAll('main > div');
+    const cardElements = container.querySelectorAll('.spm-dashboard-card');
     expect(cardElements.length).toBe(3);
 
     // Card 1: title, description, and custom urlLabel
@@ -121,4 +121,38 @@ describe('UiDashboardPage', () => {
     expect(outerDiv.style.height).toBe('400px');
     expect(outerDiv.style.opacity).toBe('0.5');
   });
+
+  it('supports layoutMode variants grid-2-col, grid-3-col, and masonry', async () => {
+    const root = createRoot(container);
+    root.render(
+      <UiDashboardPage
+        layoutMode="grid-2-col"
+        cards={[{ title: 'Card 1', url: '#' }]}
+      />
+    );
+    await waitForUpdate();
+
+    const page = container.querySelector('.spm-dashboard-grid-2-col');
+    expect(page).not.toBeNull();
+  });
+
+  it('supports renderCard, sidebarSlot, and headerSlot', async () => {
+    const cards = [{ title: 'Stat 1', val: '100' }];
+    const root = createRoot(container);
+    root.render(
+      <UiDashboardPage
+        cards={cards}
+        sidebarSlot={<div id="dash-sidebar">Dash Sidebar</div>}
+        headerSlot={<div id="dash-header">Dash Header</div>}
+        renderCard={(card) => <div className="custom-dash-card">{card.title}: {card.val}</div>}
+      />
+    );
+    await waitForUpdate();
+
+    expect(container.querySelector('#dash-sidebar')?.textContent).toBe('Dash Sidebar');
+    expect(container.querySelector('#dash-header')?.textContent).toBe('Dash Header');
+    const customCard = container.querySelector('.custom-dash-card');
+    expect(customCard?.textContent).toBe('Stat 1: 100');
+  });
 });
+

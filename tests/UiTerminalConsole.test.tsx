@@ -55,14 +55,14 @@ describe('UiTerminalConsole', () => {
     expect(container.textContent).toContain('ERROR');
     expect(container.textContent).toContain('DEBUG');
 
-    // Check level colors
-    const spans = container.querySelectorAll('div > div > span');
+    // Check level colors CSS tokens
+    const spans = container.querySelectorAll('.spm-terminal-log-row > span');
     const levelSpans = Array.from(spans).filter(s => ['INFO', 'WARN', 'ERROR', 'DEBUG'].includes(s.textContent || ''));
     expect(levelSpans.length).toBe(4);
-    expect((levelSpans[0] as HTMLElement).style.color).toBe('rgb(56, 189, 248)'); // #38bdf8
-    expect((levelSpans[1] as HTMLElement).style.color).toBe('rgb(251, 191, 36)'); // #fbbf24
-    expect((levelSpans[2] as HTMLElement).style.color).toBe('rgb(248, 113, 113)'); // #f87171
-    expect((levelSpans[3] as HTMLElement).style.color).toBe('rgb(148, 163, 184)'); // #94a3b8
+    expect((levelSpans[0] as HTMLElement).style.color).toBe('var(--spm-console-log-info, #38bdf8)');
+    expect((levelSpans[1] as HTMLElement).style.color).toBe('var(--spm-console-log-warn, #fbbf24)');
+    expect((levelSpans[2] as HTMLElement).style.color).toBe('var(--spm-console-log-error, #f87171)');
+    expect((levelSpans[3] as HTMLElement).style.color).toBe('var(--spm-console-log-debug, #94a3b8)');
   });
 
   it('filters logs when clicking filter buttons', async () => {
@@ -131,6 +131,84 @@ describe('UiTerminalConsole', () => {
     expect(container.textContent).toContain('Fatal crash');
   });
 
+  it('filters logs by search query input and updates line counter', async () => {
+    const logs: LogEntry[] = [
+      { id: '1', level: 'info', message: 'Database connected' },
+      { id: '2', level: 'error', message: 'Network timeout' },
+      { id: '3', level: 'warn', message: 'High CPU usage' },
+    ];
+
+    const root = createRoot(container);
+    root.render(<UiTerminalConsole logs={logs} />);
+    await waitForUpdate();
+
+    const input = container.querySelector('.spm-terminal-search-input') as HTMLInputElement;
+    expect(input).not.toBeNull();
+
+    // Check initial line counter
+    expect(container.textContent).toContain('3 / 3 lines');
+
+    // Type 'CPU' into search input
+    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+    nativeSetter?.call(input, 'CPU');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await waitForUpdate();
+
+    expect(container.textContent).toContain('High CPU usage');
+    expect(container.textContent).not.toContain('Database connected');
+    expect(container.textContent).not.toContain('Network timeout');
+    expect(container.textContent).toContain('1 / 3 lines');
+  });
+
+  it('handles Copy All and Clear Logs callbacks', async () => {
+    let copiedText = '';
+    let cleared = false;
+    const logs: LogEntry[] = [
+      { id: '1', timestamp: '10:00:00', level: 'info', message: 'Log to copy' },
+    ];
+
+    const root = createRoot(container);
+    root.render(
+      <UiTerminalConsole
+        logs={logs}
+        onCopy={(text) => { copiedText = text; }}
+        onClear={() => { cleared = true; }}
+      />
+    );
+    await waitForUpdate();
+
+    const copyBtn = Array.from(container.querySelectorAll('button')).find(b => b.textContent === 'Copy All');
+    const clearBtn = Array.from(container.querySelectorAll('button')).find(b => b.textContent === 'Clear Logs');
+
+    expect(copyBtn).toBeTruthy();
+    expect(clearBtn).toBeTruthy();
+
+    copyBtn!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(copiedText).toContain('Log to copy');
+
+    clearBtn!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(cleared).toBe(true);
+  });
+
+  it('renders custom logRenderer and toolbarSlot', async () => {
+    const logs: LogEntry[] = [
+      { id: '1', level: 'info', message: 'Custom formatted log' },
+    ];
+
+    const root = createRoot(container);
+    root.render(
+      <UiTerminalConsole
+        logs={logs}
+        logRenderer={(log, index) => <div className="custom-log">[{index}] {log.message}</div>}
+        toolbarSlot={<button className="custom-tool-btn">Custom Tool</button>}
+      />
+    );
+    await waitForUpdate();
+
+    expect(container.querySelector('.custom-log')?.textContent).toBe('[0] Custom formatted log');
+    expect(container.querySelector('.custom-tool-btn')?.textContent).toBe('Custom Tool');
+  });
+
   it('renders "No console logs." when logs are empty or filtered out completely', async () => {
     const root = createRoot(container);
     root.render(<UiTerminalConsole logs={[]} />);
@@ -156,3 +234,4 @@ describe('UiTerminalConsole', () => {
     expect(el.style.opacity).toBe('0.8');
   });
 });
+

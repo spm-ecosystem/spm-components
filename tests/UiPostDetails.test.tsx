@@ -4,9 +4,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { UiPostDetails } from '../dedicated/UiPostDetails';
 import { triggerProxyClick } from './mocks/engine-mock';
 
-vi.mock('../../content/engine', () => ({
-  triggerProxyClick: (...args: any[]) => triggerProxyClick(...args),
-}));
+vi.mock('../../content/engine', () => import('./mocks/engine-mock'));
 
 const waitForUpdate = () => new Promise(resolve => setTimeout(resolve, 50));
 
@@ -198,4 +196,59 @@ describe('UiPostDetails', () => {
     expect(img).toBeTruthy();
     expect(img.alt).toBe('Custom Post Alt');
   });
+
+  it('renders mediaSlot overriding default img element', async () => {
+    const root = createRoot(container);
+    root.render(
+      <UiPostDetails
+        imageUrl="https://example.com/image.jpg"
+        mediaSlot={<video id="custom-video-player" src="video.mp4" controls />}
+      />
+    );
+    await waitForUpdate();
+
+    expect(container.querySelector('img')).toBeNull();
+    const video = container.querySelector('#custom-video-player');
+    expect(video).toBeTruthy();
+  });
+
+  it('renders sidebarSlot, actionsSlot, and footerSlot', async () => {
+    const root = createRoot(container);
+    root.render(
+      <UiPostDetails
+        sidebarSlot={<div id="test-sidebar">Custom Sidebar</div>}
+        actionsSlot={<button id="test-action">Extra Action</button>}
+        footerSlot={<footer id="test-footer">Custom Footer</footer>}
+      />
+    );
+    await waitForUpdate();
+
+    expect(container.querySelector('#test-sidebar')?.textContent).toBe('Custom Sidebar');
+    expect(container.querySelector('#test-action')?.textContent).toBe('Extra Action');
+    expect(container.querySelector('#test-footer')?.textContent).toBe('Custom Footer');
+  });
+
+  it('supports explicit button variant props (primary, secondary, ghost)', async () => {
+    const buttons = [
+      { label: 'Primary Action', url: '/p', variant: 'primary' as const },
+      { label: 'Secondary Action', url: '/s', variant: 'secondary' as const },
+      { label: 'Ghost Action', url: '/g', variant: 'ghost' as const },
+    ];
+
+    const root = createRoot(container);
+    root.render(
+      <UiPostDetails
+        imageUrl="https://example.com/image.jpg"
+        buttons={buttons}
+      />
+    );
+    await waitForUpdate();
+
+    const actionLinks = container.querySelectorAll('.spm-post-details-actions-bar a');
+    expect(actionLinks.length).toBe(3);
+    expect((actionLinks[0] as HTMLElement).style.background).toContain('var(--spm-accent');
+    expect((actionLinks[1] as HTMLElement).style.background).toContain('var(--spm-bg-secondary');
+    expect((actionLinks[2] as HTMLElement).style.background).toBe('transparent');
+  });
 });
+

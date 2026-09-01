@@ -22,7 +22,7 @@
 ### Aspect Ratio Controls & Presets
 
 `UiImageCard` enforces geometric proportions across gallery grid items to eliminate cumulative layout shift (CLS):
-- `square` (default): 1:1 aspect ratio (`aspectRatio: '1 / 1'`), standard for avatars and booru post grids.
+- `square` (default): 1:1 aspect ratio (`aspectRatio: '1 / 1'`), standard for avatars and media post grids.
 - `video`: 16:9 widescreen format (`aspectRatio: '16 / 9'`), ideal for video thumbnails and horizontal photography.
 - `portrait`: 3:4 vertical poster format (`aspectRatio: '3 / 4'`), standard for book covers and portrait art.
 - `wide`: 21:9 ultra-wide banner format (`aspectRatio: '21 / 9'`), suited for panoramic banners.

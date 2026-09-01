@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 
 export interface TreeNode {
   id: string;
-  label: string;
-  values?: Record<string, string>;
+  label: React.ReactNode;
+  values?: Record<string, React.ReactNode>;
   children?: TreeNode[];
-  icon?: string;
+  icon?: React.ReactNode;
 }
 
 export interface TreeColumn {
@@ -15,10 +15,11 @@ export interface TreeColumn {
 }
 
 export interface UiNestedTreeTableProps {
-  title?: string;
+  title?: React.ReactNode;
   columns?: TreeColumn[];
   data?: TreeNode[];
   expandedDepth?: number;
+  renderCell?: (node: TreeNode, columnKey: string) => React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -28,6 +29,7 @@ export function UiNestedTreeTable({
   columns = [],
   data = [],
   expandedDepth = 1,
+  renderCell,
   className = '',
   style = {},
 }: UiNestedTreeTableProps) {
@@ -47,17 +49,33 @@ export function UiNestedTreeTable({
     return (
       <React.Fragment key={node.id}>
         <tr
+          role="row"
+          aria-level={depth + 1}
+          aria-expanded={hasChildren ? isExpanded : undefined}
           style={{
             borderBottom: '1px solid var(--spm-border, #334155)',
             backgroundColor: depth % 2 === 0 ? 'transparent' : 'var(--spm-bg-secondary, #1e293b)',
           }}
         >
-          <td style={{ padding: '10px 12px', paddingLeft: `${12 + depth * 20}px` }}>
+          <td
+            role="rowheader"
+            onClick={hasChildren ? () => toggleRow(node.id, depth) : undefined}
+            style={{
+              padding: '10px 12px',
+              paddingLeft: `calc(12px + ${depth} * var(--spm-tree-indent-step, 20px))`,
+              cursor: hasChildren ? 'pointer' : 'default',
+              userSelect: 'none',
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {hasChildren ? (
                 <button
                   type="button"
-                  onClick={() => toggleRow(node.id, depth)}
+                  aria-label={isExpanded ? `Collapse ${typeof node.label === 'string' ? node.label : 'row'}` : `Expand ${typeof node.label === 'string' ? node.label : 'row'}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleRow(node.id, depth);
+                  }}
                   style={{
                     background: 'none',
                     border: 'none',
@@ -77,11 +95,15 @@ export function UiNestedTreeTable({
             </div>
           </td>
 
-          {columns.map((col) => (
-            <td key={col.key} style={{ padding: '10px 12px', fontSize: '13px' }}>
-              {node.values?.[col.key] || ''}
-            </td>
-          ))}
+          {columns.map((col) => {
+            const customValue = renderCell ? renderCell(node, col.key) : undefined;
+            const cellValue = customValue !== undefined && customValue !== null ? customValue : node.values?.[col.key];
+            return (
+              <td key={col.key} role="gridcell" style={{ padding: '10px 12px', fontSize: '13px' }}>
+                {cellValue !== undefined && cellValue !== null ? cellValue : ''}
+              </td>
+            );
+          })}
         </tr>
 
         {hasChildren && isExpanded && node.children!.map((child) => renderNode(child, depth + 1))}
@@ -107,12 +129,18 @@ export function UiNestedTreeTable({
           {title}
         </div>
       )}
-      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+      <table role="treegrid" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
         <thead>
-          <tr style={{ backgroundColor: 'var(--spm-bg-primary, #0f172a)', borderBottom: '1px solid var(--spm-border, #334155)' }}>
-            <th style={{ padding: '12px', fontSize: '12px', textTransform: 'uppercase' }}>Structure</th>
+          <tr role="row" style={{ backgroundColor: 'var(--spm-bg-primary, #0f172a)', borderBottom: '1px solid var(--spm-border, #334155)' }}>
+            <th role="columnheader" style={{ padding: '12px', fontSize: '12px', textTransform: 'uppercase' }}>
+              Structure
+            </th>
             {columns.map((col) => (
-              <th key={col.key} style={{ padding: '12px', fontSize: '12px', textTransform: 'uppercase', width: col.width }}>
+              <th
+                key={col.key}
+                role="columnheader"
+                style={{ padding: '12px', fontSize: '12px', textTransform: 'uppercase', width: col.width }}
+              >
                 {col.title}
               </th>
             ))}
@@ -123,3 +151,4 @@ export function UiNestedTreeTable({
     </div>
   );
 }
+

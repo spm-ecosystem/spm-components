@@ -110,4 +110,58 @@ describe('UiTableListPage', () => {
     expect(cells[3].textContent).toBe('Item C');
     expect(cells[6].textContent).toBe('Item A');
   });
+
+  it('renders sidebarSlot when provided', async () => {
+    const root = createRoot(container);
+    root.render(
+      <UiTableListPage
+        pageTitle="Sidebar Test"
+        sidebarSlot={<div id="test-sidebar">Sidebar Content</div>}
+      />
+    );
+    await waitForUpdate();
+
+    const sidebar = container.querySelector('.spm-table-list-sidebar');
+    expect(sidebar).not.toBeNull();
+    expect(container.querySelector('#test-sidebar')?.textContent).toBe('Sidebar Content');
+  });
+
+  it('supports custom render function in TableColumn', async () => {
+    const columns: TableColumnConfig[] = [
+      {
+        key: 'name',
+        header: 'Name',
+        render: (item) => <strong className="custom-cell">{item.name.toUpperCase()}</strong>,
+      },
+    ];
+    const rows = [{ name: 'Alpha' }];
+
+    const root = createRoot(container);
+    root.render(<UiTableListPage columns={columns} tableRows={rows} />);
+    await waitForUpdate();
+
+    const customCell = container.querySelector('.custom-cell');
+    expect(customCell?.textContent).toBe('ALPHA');
+  });
+
+  it('supports floating, inline, and infinite paginationMode variants', async () => {
+    const pageLinks = [
+      { label: 'Prev', url: '#prev' },
+      { label: 'Next', url: '#next' },
+    ];
+
+    const root = createRoot(container);
+    root.render(
+      <UiTableListPage
+        pageTitle="Pagination Test"
+        pageLinks={pageLinks}
+        paginationMode="floating"
+      />
+    );
+    await waitForUpdate();
+
+    const floatingPagination = container.querySelector('.spm-floating-pagination');
+    expect(floatingPagination).not.toBeNull();
+  });
 });
+

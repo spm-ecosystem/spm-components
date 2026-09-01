@@ -295,4 +295,39 @@ describe('UiModernGridPage', () => {
     expect(sidebar).toBeTruthy();
     expect(sidebar.style.display).toBe('none'); // showSidebar is false on mobile if hideSidebarOnMobile is true
   });
+
+  it('supports custom renderItem callback for rendering generic items', async () => {
+    const customItems = [{ id: '1', label: 'Custom Card' }];
+    const root = createRoot(container);
+    root.render(
+      <UiModernGridPage
+        pageTitle="Custom Item Grid"
+        items={customItems}
+        renderItem={(item) => <div className="custom-grid-card">{item.label}</div>}
+      />
+    );
+    await waitForUpdate();
+
+    const customCard = container.querySelector('.custom-grid-card');
+    expect(customCard).not.toBeNull();
+    expect(customCard?.textContent).toBe('Custom Card');
+  });
+
+  it('renders sidebarSlot, headerSlot, and toolbarSlot when provided', async () => {
+    const root = createRoot(container);
+    root.render(
+      <UiModernGridPage
+        pageTitle="Slot Test"
+        sidebarSlot={<div id="grid-sidebar-slot">Grid Sidebar Slot</div>}
+        headerSlot={<div id="grid-header-slot">Grid Header Slot</div>}
+        toolbarSlot={<div id="grid-toolbar-slot">Grid Toolbar Slot</div>}
+      />
+    );
+    await waitForUpdate();
+
+    expect(container.querySelector('#grid-sidebar-slot')?.textContent).toBe('Grid Sidebar Slot');
+    expect(container.querySelector('#grid-header-slot')?.textContent).toBe('Grid Header Slot');
+    expect(container.querySelector('#grid-toolbar-slot')?.textContent).toBe('Grid Toolbar Slot');
+  });
 });
+

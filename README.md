@@ -37,7 +37,7 @@ When building or extending components in this library:
 
 ## Documentation
 
-- [🌐 Interactive Documentation Portal](https://spm-ecosystem.github.io/spm-portal/)
+- [Interactive Documentation Portal](https://spm-ecosystem.github.io/spm-portal/)
 - [Component API & Props Guide](docs/components.md)
 
 ---

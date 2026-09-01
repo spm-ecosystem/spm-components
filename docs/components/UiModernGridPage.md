@@ -17,7 +17,7 @@
 | `showSearch` | `boolean` | `false` | Enables embedded search bar. |
 | `searchPlaceholder` | `string` | `undefined` | Placeholder text for search field. |
 | `searchSubmitUrl` | `string` | `undefined` | Form submit action URL for search field. |
-| `searchParamName` | `string` | `'tags'` | Search field query string parameter key. |
+| `searchParamName` | `string` | `'q'` | Search field query string parameter key. |
 | `searchDefaultValue` | `string` | `''` | Initial search query string. |
 | `height` | `string` | `'100vh'` | Height constraint of gallery container. |
 | `sidebarWidth` | `string` | `'280px'` | Width of sidebar panel. |
@@ -47,23 +47,22 @@ reconstruct "#post-list" -> UiModernGridPage {
     sidebarWidth: "260px";
     hideSidebarOnMobile: true;
     showSearch: true;
-    searchPlaceholder: "Search tags…";
-    searchSubmitUrl: "https://safebooru.org/index.php?page=post&s=list";
-    searchParamName: "tags";
+    searchPlaceholder: "Filter items…";
+    searchSubmitUrl: "/docs/search";
+    searchParamName: "q";
 
     mobileBreakpoint: 720;
     mobileColumns: 2;
     mobileGap: "8px";
 
     tagGroups: R"([
-      { "title": "Artists", "typeKey": "artist" },
-      { "title": "Copyrights", "typeKey": "copyright" },
-      { "title": "Characters", "typeKey": "character" },
-      { "title": "General", "typeKey": "general" },
-      { "title": "Meta", "typeKey": "metadata" }
+      { "title": "Modules", "typeKey": "modules" },
+      { "title": "Technology", "typeKey": "technology" },
+      { "title": "Status", "typeKey": "status" },
+      { "title": "Tags", "typeKey": "tags" }
     ])";
 
-    bind searchDefaultValue: ".sidebar form input[name='tags'] | attr:value";
+    bind searchDefaultValue: ".sidebar form input[name='q'] | attr:value";
 
     child items {
         selector: "#post-list .thumb";

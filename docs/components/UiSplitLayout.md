@@ -2,69 +2,67 @@
 
 ## Purpose & Use Cases
 
-`UiSplitLayout` provides a two-column layout shell for detail and inspection views. It pairs a main media view (rendering an image via `UiImageViewer` or arbitrary rich markup via `mainHtml`) with a scrollable information sidebar (`UiScrollPanel`). Supports side swapping (`left`/`right`), customizable sidebar width, image fit control, and search bar forwarding.
+`UiSplitLayout` provides a responsive two-column split layout shell for documentation workspaces, detail inspection views, and content managers. It pairs a main view (rendering custom React content via `mainContent`, HTML markup via `mainHtml`, or media via `imageSlot` with `UiImageViewer`) with a sidebar column (`sidebarContent`, `sidebarHtml`, or default `UiScrollPanel`). Supports desktop toggle collapsing (`collapsible`), side positioning (`sidebarSide`: `"left"` | `"right"`), customizable column widths (`sidebarWidth`), image fit modes (`contain` | `cover`), and search forwarding.
 
 ## Properties (Props API)
 
 | Prop Name | Type | Default Value | Description |
 | :--- | :--- | :--- | :--- |
-| `imageSlot` | `ImageSlotItem[]` | `[]` | Media image items (`{ src, alt }`) rendered in main view using `UiImageViewer`. |
-| `tags` | `TagItem[]` | `[]` | Forwarded tag items rendered in sidebar. |
-| `buttons` | `ButtonItem[]` | `[]` | Forwarded action buttons rendered in sidebar. |
-| `statisticsHtml` | `string` | `undefined` | Forwarded HTML content string rendered in sidebar statistics block. |
-| `sidebarWidth` | `string` | `'280px'` | Width of sidebar panel column. |
+| `mainContent` | `React.ReactNode` | `undefined` | Custom React node content rendered inside the main viewport area. |
+| `mainHtml` | `string` | `undefined` | HTML markup string rendered inside the main viewport when `mainContent` and `imageSlot` are empty. |
+| `sidebarContent` | `React.ReactNode` | `undefined` | Custom React node content rendered inside the sidebar column. |
+| `sidebarHtml` | `string` | `undefined` | HTML markup string rendered inside the sidebar container when `sidebarContent` is omitted. |
+| `collapsible` | `boolean` | `true` | Enables a desktop toggle handle button to expand or collapse the sidebar column. |
 | `sidebarSide` | `'left' \| 'right'` | `'left'` | Position of sidebar column (`left` or `right`). |
+| `sidebarWidth` | `string` | `'300px'` | Width of sidebar panel column. |
+| `imageSlot` | `ImageSlotItem[]` | `[]` | Media image items (`{ src, alt }`) rendered in main view using `UiImageViewer`. |
+| `tags` | `TagItem[]` | `[]` | Forwarded tag items rendered in default sidebar panel. |
+| `buttons` | `ButtonItem[]` | `[]` | Forwarded action buttons rendered in default sidebar panel. |
+| `statisticsHtml` | `string` | `undefined` | Forwarded HTML content string rendered in sidebar statistics block. |
 | `imageFit` | `'contain' \| 'cover'` | `'contain'` | Image object-fit property passed to `UiImageViewer`. |
-| `height` | `string` | `'100vh'` | Layout container height. |
-| `splitButtons` | `boolean` | `false` | Enables separate button placement layout. |
-| `showSearch` | `boolean` | `false` | Enables search bar in sidebar. |
-| `searchPlaceholder` | `string` | `undefined` | Forwarded search bar placeholder text. |
+| `height` | `string` | `'100%'` | Layout container height. |
+| `splitButtons` | `boolean` | `true` | Enables separate button placement layout. |
+| `showSearch` | `boolean` | `false` | Enables search bar in default sidebar panel. |
+| `searchPlaceholder` | `string` | `'Search documentation…'` | Forwarded search bar placeholder text. |
 | `searchSubmitUrl` | `string` | `undefined` | Forwarded search bar submission URL. |
 | `searchParamName` | `string` | `'q'` | Forwarded query parameter key for search bar. |
-| `mainHtml` | `string` | `undefined` | Generic HTML markup string rendered in main viewport when `imageSlot` is empty. |
 | `className` | `string` | `''` | Custom CSS class name appended to root element. |
 | `style` | `React.CSSProperties` | `{}` | Custom inline style overrides. |
 
 ## Design Tokens (CSS Variables)
 
-- `var(--spm-bg-primary)` - Main viewing pane background color.
-- `var(--spm-bg-secondary)` - Sidebar column background color.
-- `var(--spm-border)` - Divider border line separating main view and sidebar.
-- `var(--spm-text-primary)` - Primary text color.
+- `var(--spm-bg-primary)` - Main viewing pane background color (`#09090b`).
+- `var(--spm-bg-surface)` - Sidebar column background color (`#121215`).
+- `var(--spm-border)` - Divider border line separating main view and sidebar (`#27272a`).
+- `var(--spm-text-primary)` - Primary text color (`#ffffff`).
 
 ## Veneer Spec (.vnr) Example
 
 ```vnr
-reconstruct "#post-view" -> UiSplitLayout {
-    urlPattern: "page=post&s=view";
+reconstruct "#doc-workspace" -> UiSplitLayout {
     sidebarWidth: "300px";
     sidebarSide: "left";
-    imageFit: "contain";
-    height: "calc(100vh - 78px)";
+    collapsible: true;
+    height: "calc(100vh - 64px)";
     showSearch: true;
-    searchPlaceholder: "Search tags...";
-    searchSubmitUrl: "https://safebooru.org/index.php?page=post&s=list";
-    searchParamName: "tags";
+    searchPlaceholder: "Search documentation...";
+    searchSubmitUrl: "/docs/search";
+    searchParamName: "q";
 
-    bind statisticsHtml: "#stats ul | html";
+    bind statisticsHtml: "#doc-stats | html";
+    bind mainHtml: "#doc-body | html";
 
-    child imageSlot {
-        selector: "#image";
-        bind src: "self | attr:src";
-        bind alt: "self | attr:alt";
-    }
-
-    child tags {
-        selector: "#tag-sidebar li[class*='tag-type-']";
+    child tags extends TagItem {
+        selector: "#doc-toc .toc-item";
         scope: "document";
-        bind name: "a:last-of-type | text";
-        bind count: "span.tag-count | text";
-        bind type: "self | attr:class";
-        bind url: "a:last-of-type | attr:href";
+        bind name: "a.toc-link | text";
+        bind count: "span.doc-count | text";
+        bind type: "self | attr:data-category";
+        bind url: "a.toc-link | attr:href";
     }
 
-    child buttons {
-        selector: ".link-list a";
+    child buttons extends ButtonItem {
+        selector: "#doc-actions a";
         scope: "document";
         bind label: "self | text";
         bind url: "self | hrefOrOnclick";
