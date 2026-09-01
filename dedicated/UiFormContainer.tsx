@@ -32,6 +32,8 @@ export interface UiFormContainerProps {
   hiddenInputs?: Record<string, string>;
   tabs?: FormTab[];
   activeTabId?: string;
+  forgotPasswordUrl?: string;
+  secondaryLink?: { label: string; url: string };
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -47,6 +49,8 @@ export function UiFormContainer({
   hiddenInputs: initialHiddenInputs = {},
   tabs = [],
   activeTabId,
+  forgotPasswordUrl,
+  secondaryLink,
   children,
   className = '',
   style = {},
@@ -240,6 +244,24 @@ export function UiFormContainer({
         >
           {submitLabel}
         </button>
+
+        {(forgotPasswordUrl || secondaryLink) && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px' }}>
+            <a
+              href={secondaryLink?.url || forgotPasswordUrl}
+              style={{
+                fontSize: '13px',
+                color: 'var(--spm-text-muted, #94a3b8)',
+                textDecoration: 'none',
+                transition: 'color 0.15s ease',
+              }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--spm-accent, #3b82f6)')}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--spm-text-muted, #94a3b8)')}
+            >
+              {secondaryLink?.label || 'Esqueceu a senha?'}
+            </a>
+          </div>
+        )}
       </form>
     </div>
   );
