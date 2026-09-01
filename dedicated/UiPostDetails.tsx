@@ -1,7 +1,15 @@
+import React from 'react';
 import { UiTagBadge } from './UiTagBadge';
 import { UiSearchBar } from './UiSearchBar';
-import { triggerProxyClick } from '../../content/engine';
-import React from 'react';
+
+function triggerProxyClick(selector: string) {
+  if (typeof window !== 'undefined' && (window as any).spmTriggerProxyClick) {
+    (window as any).spmTriggerProxyClick(selector);
+    return;
+  }
+  const el = document.querySelector(selector) as HTMLElement;
+  if (el) el.click();
+}
 
 export interface TagItem {
   name: string;
