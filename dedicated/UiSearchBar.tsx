@@ -39,7 +39,7 @@ export function UiSearchBar({
   placeholder = 'Search…',
   defaultValue = '',
   submitUrl,
-  queryParamName = 'tags',
+  queryParamName = 'q',
   method = 'GET',
   hiddenFields = [],
   className = '',

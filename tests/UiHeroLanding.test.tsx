@@ -154,4 +154,14 @@ describe('UiHeroLanding', () => {
     expect(styleEl?.textContent).toContain('margin-top: 10px;');
     expect(styleEl?.textContent).toContain('width: 100%;');
   });
+
+  it('renders search bar with default neutral searchPlaceholder ("Search…") and searchParamName ("q")', async () => {
+    const root = createRoot(container);
+    root.render(<UiHeroLanding searchSubmitUrl="/search" />);
+    await waitForUpdate();
+
+    const input = container.querySelector('input[name="q"]') as HTMLInputElement;
+    expect(input).toBeTruthy();
+    expect(input.placeholder).toBe('Search…');
+  });
 });

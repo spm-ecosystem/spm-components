@@ -28,7 +28,7 @@ describe('UiSearchBar', () => {
     );
     await waitForUpdate();
 
-    const input = container.querySelector('input[name="tags"]') as HTMLInputElement;
+    const input = container.querySelector('input[name="q"]') as HTMLInputElement;
     expect(input).toBeTruthy();
     expect(input.placeholder).toBe('Search tags…');
     expect(input.value).toBe('cat_ears');
