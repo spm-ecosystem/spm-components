@@ -306,6 +306,9 @@ export function UiHeroLanding({
                 image-rendering: pixelated;
                 margin: 0 1px;
               }
+              .spm-hero-counter-slot br {
+                display: none;
+              }
               .spm-hero-counter-slot small {
                 display: block;
                 font-size: 11px;
