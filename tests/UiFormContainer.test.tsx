@@ -269,6 +269,7 @@ describe('UiFormContainer', () => {
   it('supports controlled form state values, onChange, errors, and onSubmit', async () => {
     let submitPayload: any = null;
     let changePayload: any = null;
+    void changePayload;
 
     const fields: FormField[] = [
       { id: 'email', label: 'Email', type: 'email' },

@@ -153,23 +153,23 @@ export function UiFormContainer({
     switch (layout) {
       case 'compact':
         return {
-          padding: '16px',
-          maxWidth: '420px',
-          borderRadius: 'var(--spm-radius, 6px)',
+          padding: 'var(--spm-form-padding, 16px)',
+          maxWidth: 'var(--spm-form-max-width, 420px)',
+          borderRadius: 'var(--spm-card-radius, var(--spm-radius, 6px))',
         };
       case 'hero':
         return {
-          padding: '40px 32px',
-          maxWidth: '720px',
-          borderRadius: 'var(--spm-radius, 12px)',
+          padding: 'var(--spm-form-padding, 40px 32px)',
+          maxWidth: 'var(--spm-form-max-width, 720px)',
+          borderRadius: 'var(--spm-card-radius, var(--spm-radius, 12px))',
           boxShadow: '0 10px 40px rgba(0, 0, 0, 0.35)',
         };
       case 'card':
       default:
         return {
-          padding: '24px',
-          maxWidth: '600px',
-          borderRadius: 'var(--spm-radius, 8px)',
+          padding: 'var(--spm-form-padding, 24px)',
+          maxWidth: 'var(--spm-form-max-width, 600px)',
+          borderRadius: 'var(--spm-card-radius, var(--spm-radius, 8px))',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
         };
     }
@@ -183,6 +183,7 @@ export function UiFormContainer({
         color: 'var(--spm-text-primary, #f8fafc)',
         border: '1px solid var(--spm-border, #334155)',
         width: '100%',
+        maxWidth: 'var(--spm-container-max-width, 100%)',
         boxSizing: 'border-box',
         ...layoutStyles,
         ...style,
@@ -195,11 +196,11 @@ export function UiFormContainer({
           className="spm-form-tabs"
           style={{
             display: 'flex',
-            gap: '4px',
+            gap: 'var(--spm-form-tab-gap, 4px)',
             marginBottom: '20px',
             backgroundColor: 'var(--spm-input-bg, var(--spm-bg-primary, #0f172a))',
-            padding: '4px',
-            borderRadius: 'var(--spm-radius, 6px)',
+            padding: 'var(--spm-form-tab-padding, 4px)',
+            borderRadius: 'var(--spm-card-radius, var(--spm-radius, 6px))',
             border: '1px solid var(--spm-border, #334155)',
           }}
         >
@@ -215,13 +216,13 @@ export function UiFormContainer({
                 }}
                 style={{
                   flex: 1,
-                  padding: '8px 12px',
+                  padding: 'var(--spm-button-padding, 8px 12px)',
                   fontSize: layout === 'compact' ? '12px' : '13px',
                   fontWeight: isActive ? 600 : 400,
                   color: isActive ? 'var(--spm-text-primary, #ffffff)' : 'var(--spm-text-muted, #94a3b8)',
                   backgroundColor: isActive ? 'var(--spm-form-bg, var(--spm-bg-surface, #1e293b))' : 'transparent',
                   border: isActive ? '1px solid var(--spm-border, #334155)' : '1px solid transparent',
-                  borderRadius: '4px',
+                  borderRadius: 'var(--spm-card-radius, var(--spm-radius, 4px))',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease-in-out',
                 }}
@@ -244,7 +245,7 @@ export function UiFormContainer({
         </p>
       )}
 
-      <form action={actionUrl} method={method} onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: layout === 'compact' ? '12px' : '16px' }}>
+      <form action={actionUrl} method={method} onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: `var(--spm-form-gap, ${layout === 'compact' ? '12px' : '16px'})` }}>
         {Object.entries(hiddenInputs).map(([k, v]) => (
           <input key={k} type="hidden" name={k} value={v} />
         ))}
@@ -266,7 +267,7 @@ export function UiFormContainer({
             : '1px solid var(--spm-border, #334155)';
 
           return (
-            <div key={field.id} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div key={field.id} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spm-form-field-gap, 6px)' }}>
               {field.type !== 'checkbox' && (
                 <label htmlFor={field.id} style={{ fontSize: layout === 'compact' ? '12px' : '13px', fontWeight: 500 }}>
                   {field.label} {field.required && <span style={{ color: '#ef4444' }}>*</span>}
@@ -283,11 +284,11 @@ export function UiFormContainer({
                   required={field.required}
                   rows={layout === 'compact' ? 3 : 4}
                   style={{
-                    padding: layout === 'compact' ? '6px 10px' : '8px 12px',
+                    padding: `var(--spm-input-padding, ${layout === 'compact' ? '6px 10px' : '8px 12px'})`,
                     backgroundColor: 'var(--spm-input-bg, var(--spm-bg-primary, #0f172a))',
                     color: 'var(--spm-text-primary, #f8fafc)',
                     border: inputBorderStyle,
-                    borderRadius: 'var(--spm-radius, 6px)',
+                    borderRadius: 'var(--spm-card-radius, var(--spm-radius, 6px))',
                     fontSize: layout === 'compact' ? '13px' : '14px',
                     fontFamily: 'inherit',
                   }}
@@ -300,11 +301,11 @@ export function UiFormContainer({
                   onChange={(e) => handleFieldChange(field.id, e.target.value)}
                   required={field.required}
                   style={{
-                    padding: layout === 'compact' ? '6px 10px' : '8px 12px',
+                    padding: `var(--spm-input-padding, ${layout === 'compact' ? '6px 10px' : '8px 12px'})`,
                     backgroundColor: 'var(--spm-input-bg, var(--spm-bg-primary, #0f172a))',
                     color: 'var(--spm-text-primary, #f8fafc)',
                     border: inputBorderStyle,
-                    borderRadius: 'var(--spm-radius, 6px)',
+                    borderRadius: 'var(--spm-card-radius, var(--spm-radius, 6px))',
                     fontSize: layout === 'compact' ? '13px' : '14px',
                   }}
                 >
@@ -315,7 +316,7 @@ export function UiFormContainer({
                   ))}
                 </select>
               ) : field.type === 'checkbox' ? (
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: layout === 'compact' ? '13px' : '14px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--spm-form-gap, 8px)', cursor: 'pointer', fontSize: layout === 'compact' ? '13px' : '14px' }}>
                   <input
                     type="checkbox"
                     id={field.id}
@@ -335,11 +336,11 @@ export function UiFormContainer({
                   onChange={(e) => handleFieldChange(field.id, e.target.value)}
                   required={field.required}
                   style={{
-                    padding: layout === 'compact' ? '6px 10px' : '8px 12px',
+                    padding: `var(--spm-input-padding, ${layout === 'compact' ? '6px 10px' : '8px 12px'})`,
                     backgroundColor: 'var(--spm-input-bg, var(--spm-bg-primary, #0f172a))',
                     color: 'var(--spm-text-primary, #f8fafc)',
                     border: inputBorderStyle,
-                    borderRadius: 'var(--spm-radius, 6px)',
+                    borderRadius: 'var(--spm-card-radius, var(--spm-radius, 6px))',
                     fontSize: layout === 'compact' ? '13px' : '14px',
                   }}
                 />
@@ -356,15 +357,15 @@ export function UiFormContainer({
 
         {children}
 
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '8px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 'var(--spm-form-actions-gap, 12px)', alignItems: 'center', marginTop: '8px', flexWrap: 'wrap' }}>
           <button
             type="submit"
             style={{
-              padding: layout === 'compact' ? '8px 14px' : '10px 18px',
+              padding: `var(--spm-button-padding, ${layout === 'compact' ? '8px 14px' : '10px 18px'})`,
               backgroundColor: 'var(--spm-accent, #ffffff)',
               color: 'var(--spm-accent-fg, #000000)',
               border: 'none',
-              borderRadius: 'var(--spm-radius, 6px)',
+              borderRadius: 'var(--spm-card-radius, var(--spm-radius, 6px))',
               fontSize: layout === 'compact' ? '13px' : '14px',
               fontWeight: 600,
               cursor: 'pointer',

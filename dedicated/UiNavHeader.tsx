@@ -113,6 +113,7 @@ export function UiNavHeader({
       className={className}
       style={{
         width: '100%',
+        maxWidth: 'var(--spm-container-max-width, 100%)',
         fontFamily: 'system-ui, sans-serif',
         position: sticky ? 'sticky' : 'relative',
         top: sticky ? 0 : 'auto',
@@ -152,7 +153,7 @@ export function UiNavHeader({
           flexDirection: 'column',
           background: 'rgba(18, 18, 21, 0.92)',
           border: '1px solid var(--spm-border)',
-          borderRadius: 'var(--spm-radius, 8px)',
+          borderRadius: 'var(--spm-nav-radius, var(--spm-card-radius, var(--spm-radius, 8px)))',
           boxShadow: '0 4px 16px -2px rgba(0, 0, 0, 0.4)',
           boxSizing: 'border-box',
           overflow: 'hidden',
@@ -166,8 +167,8 @@ export function UiNavHeader({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: '16px',
-                padding: '0 16px',
+                gap: 'var(--spm-nav-gap, 16px)',
+                padding: 'var(--spm-nav-padding, 0 16px)',
                 minHeight: '44px',
               }}
             >
@@ -177,7 +178,7 @@ export function UiNavHeader({
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '10px',
+                  gap: 'var(--spm-nav-gap, 10px)',
                   textDecoration: 'none',
                   color: 'var(--spm-text-primary)',
                   fontWeight: 700,
@@ -189,24 +190,24 @@ export function UiNavHeader({
                   <img
                     src={logoUrl}
                     alt={siteName}
-                    style={{ height: '22px', borderRadius: '4px', objectFit: 'contain', display: 'block' }}
+                    style={{ height: '22px', borderRadius: 'var(--spm-card-radius, var(--spm-radius, 4px))', objectFit: 'contain', display: 'block' }}
                   />
                 )}
                 <span>{siteName}</span>
               </a>
 
               {/* Secondary Links & Extra HTML */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spm-nav-gap, 8px)' }}>
                 {resolvedSecondaryLinks.map((link, i) => (
                   <a
                     key={i}
                     href={link.url}
                     style={{
-                      padding: '4px 10px',
+                      padding: 'var(--spm-nav-item-padding, 4px 10px)',
                       fontSize: '12px',
                       color: 'var(--spm-text-muted)',
                       textDecoration: 'none',
-                      borderRadius: '4px',
+                      borderRadius: 'var(--spm-card-radius, var(--spm-radius, 4px))',
                     }}
                   >
                     {link.label}
@@ -227,8 +228,8 @@ export function UiNavHeader({
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
-                padding: '4px 12px',
+                gap: 'var(--spm-nav-gap, 4px)',
+                padding: 'var(--spm-nav-padding, 4px 12px)',
                 borderTop: '1px solid var(--spm-border)',
                 background: 'rgba(9, 9, 11, 0.6)',
                 overflowX: 'auto',
@@ -244,12 +245,12 @@ export function UiNavHeader({
                       display: 'inline-flex',
                       alignItems: 'center',
                       height: '32px',
-                      padding: '0 12px',
+                      padding: 'var(--spm-nav-item-padding, 0 12px)',
                       fontSize: '13px',
                       fontWeight: active ? 600 : 400,
                       color: active ? 'var(--spm-accent)' : 'var(--spm-text-muted)',
                       textDecoration: 'none',
-                      borderRadius: '4px',
+                      borderRadius: 'var(--spm-card-radius, var(--spm-radius, 4px))',
                       background: active ? 'var(--spm-bg-hover, rgba(255, 255, 255, 0.1))' : 'transparent',
                       whiteSpace: 'nowrap',
                     }}
@@ -267,8 +268,8 @@ export function UiNavHeader({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              gap: '16px',
-              padding: '0 16px',
+              gap: 'var(--spm-nav-gap, 16px)',
+              padding: 'var(--spm-nav-padding, 0 16px)',
               minHeight: '48px',
               boxSizing: 'border-box',
             }}
@@ -279,7 +280,7 @@ export function UiNavHeader({
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '10px',
+                gap: 'var(--spm-nav-gap, 10px)',
                 textDecoration: 'none',
                 color: 'var(--spm-text-primary)',
                 fontWeight: 700,
@@ -296,7 +297,7 @@ export function UiNavHeader({
                   alt={siteName}
                   style={{
                     height: '24px',
-                    borderRadius: '4px',
+                    borderRadius: 'var(--spm-card-radius, var(--spm-radius, 4px))',
                     objectFit: 'contain',
                     display: 'block',
                   }}
@@ -313,7 +314,7 @@ export function UiNavHeader({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '4px',
+                  gap: 'var(--spm-nav-gap, 4px)',
                   flex: '2 1 0%',
                   minWidth: 0,
                   overflowX: 'auto',
@@ -331,13 +332,13 @@ export function UiNavHeader({
                         display: 'inline-flex',
                         alignItems: 'center',
                         height: '36px',
-                        padding: '0 12px',
+                        padding: 'var(--spm-nav-item-padding, 0 12px)',
                         fontSize: '13px',
                         fontWeight: active ? 600 : 400,
                         color: active ? 'var(--spm-accent)' : 'var(--spm-text-muted)',
                         textDecoration: 'none',
                         borderBottom: active ? '2px solid var(--spm-accent)' : '2px solid transparent',
-                        borderRadius: '6px',
+                        borderRadius: 'var(--spm-card-radius, var(--spm-radius, 6px))',
                         background: active ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
                         transition: 'color 0.15s, border-color 0.15s, background-color 0.15s',
                         whiteSpace: 'nowrap',
@@ -358,7 +359,7 @@ export function UiNavHeader({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'flex-end',
-                  gap: '8px',
+                  gap: 'var(--spm-nav-gap, 8px)',
                   flex: '1 1 0%',
                   minWidth: 0,
                 }}
@@ -373,12 +374,12 @@ export function UiNavHeader({
                         display: 'inline-flex',
                         alignItems: 'center',
                         height: '32px',
-                        padding: '0 10px',
+                        padding: 'var(--spm-nav-item-padding, 0 10px)',
                         fontSize: '12px',
                         fontWeight: active ? 600 : 500,
                         color: active ? 'var(--spm-accent)' : 'var(--spm-text-muted)',
                         textDecoration: 'none',
-                        borderRadius: '6px',
+                        borderRadius: 'var(--spm-card-radius, var(--spm-radius, 6px))',
                         background: active ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
                         transition: 'color 0.15s, background-color 0.15s',
                         whiteSpace: 'nowrap',

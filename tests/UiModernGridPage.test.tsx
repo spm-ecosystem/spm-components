@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { createRoot } from 'react-dom/client';
-import { describe, it, expect, beforeEach, afterEach, vi, beforeAll } from 'vitest';
-import React from 'react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { UiModernGridPage, GridItem, TagItem, TagGroupConfig } from '../dedicated/UiModernGridPage';
 
 const waitForUpdate = () => new Promise(resolve => setTimeout(resolve, 50));

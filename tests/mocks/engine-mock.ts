@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 
-export const triggerProxyClick = vi.fn((selector: string, index?: number) => {
+export const triggerProxyClick = vi.fn((_selector: string, _index?: number) => {
   // Mock implementation
 });
 

@@ -60,6 +60,7 @@ export function UiSearchBar({
         display: 'flex',
         alignItems: 'center',
         width: '100%',
+        maxWidth: 'var(--spm-container-max-width, 100%)',
         boxSizing: 'border-box',
         ...style,
       }}
@@ -73,11 +74,11 @@ export function UiSearchBar({
           flex: 1,
           display: 'flex',
           alignItems: 'center',
-          gap: '6px',
+          gap: 'var(--spm-search-gap, 6px)',
           background: 'var(--spm-bg-secondary)',
           border: `1px solid ${focused ? 'var(--spm-accent)' : 'var(--spm-border)'}`,
-          borderRadius: 'var(--spm-radius)',
-          padding: '0 8px',
+          borderRadius: 'var(--spm-card-radius, var(--spm-radius, 6px))',
+          padding: 'var(--spm-search-padding, 0 8px)',
           transition: 'border-color 0.15s',
           minWidth: 0,
         }}
@@ -119,7 +120,7 @@ export function UiSearchBar({
             outline: 'none',
             color: 'var(--spm-text-primary)',
             fontSize: '12px',
-            padding: '8px 0',
+            padding: 'var(--spm-input-padding, 8px 0)',
             fontFamily: 'inherit',
           }}
         />

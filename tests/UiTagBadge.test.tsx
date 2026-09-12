@@ -58,7 +58,7 @@ describe('UiTagBadge', () => {
       }
     });
     expect(countSpan).toBeTruthy();
-    expect(countSpan?.style.fontSize).toBe('9px');
+    expect((countSpan as HTMLSpanElement | null)?.style.fontSize).toBe('9px');
   });
 
   it('renders main label as an anchor when href is provided', async () => {

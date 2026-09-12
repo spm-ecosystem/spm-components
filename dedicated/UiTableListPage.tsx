@@ -344,6 +344,7 @@ export function UiTableListPage({
         display: 'flex',
         minHeight: isFixedHeight ? height : undefined,
         height: isFixedHeight ? height : 'auto',
+        maxWidth: 'var(--spm-container-max-width, 100%)',
         background: 'var(--spm-bg-primary)',
         color: 'var(--spm-text-primary)',
         fontFamily: 'system-ui, -apple-system, sans-serif',
@@ -360,7 +361,7 @@ export function UiTableListPage({
             flexShrink: 0,
             borderRight: '1px solid var(--spm-border)',
             background: 'var(--spm-bg-secondary)',
-            padding: '16px',
+            padding: 'var(--spm-sidebar-padding, 16px)',
             overflowY: 'auto',
             boxSizing: 'border-box',
           }}
@@ -374,13 +375,13 @@ export function UiTableListPage({
         {/* Header */}
         <header
           style={{
-            padding: '16px 24px',
+            padding: 'var(--spm-header-padding, 16px 24px)',
             borderBottom: '1px solid var(--spm-border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             flexWrap: 'wrap',
-            gap: '12px',
+            gap: 'var(--spm-header-gap, 12px)',
             background: 'var(--spm-bg-secondary)',
           }}
         >
@@ -405,7 +406,7 @@ export function UiTableListPage({
         <main
           ref={mainRef as any}
           style={{
-            padding: '24px',
+            padding: 'var(--spm-container-padding, 24px)',
             flex: 1,
             overflowY: isFixedHeight ? 'auto' : 'visible',
             boxSizing: 'border-box',
@@ -448,12 +449,12 @@ export function UiTableListPage({
             zIndex: 100,
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: 'var(--spm-pagination-gap, 8px)',
             background: 'rgba(26, 26, 26, 0.85)',
             backdropFilter: 'blur(12px)',
             border: '1px solid var(--spm-border)',
-            borderRadius: '24px',
-            padding: '6px 12px',
+            borderRadius: 'var(--spm-card-radius, var(--spm-radius, 24px))',
+            padding: 'var(--spm-pagination-padding, 6px 12px)',
             boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
           }}
         >
@@ -465,8 +466,8 @@ export function UiTableListPage({
                 fontSize: '12px',
                 fontWeight: 600,
                 textDecoration: 'none',
-                padding: '6px 12px',
-                borderRadius: '16px',
+                padding: 'var(--spm-pagination-item-padding, 6px 12px)',
+                borderRadius: 'var(--spm-card-radius, var(--spm-radius, 16px))',
                 transition: 'background 0.2s, color 0.2s',
               }}
               onMouseEnter={e => {
@@ -490,8 +491,8 @@ export function UiTableListPage({
                 fontSize: '12px',
                 fontWeight: 600,
                 textDecoration: 'none',
-                padding: '6px 12px',
-                borderRadius: '16px',
+                padding: 'var(--spm-pagination-item-padding, 6px 12px)',
+                borderRadius: 'var(--spm-card-radius, var(--spm-radius, 16px))',
                 transition: 'background 0.2s, color 0.2s',
               }}
               onMouseEnter={e => {
