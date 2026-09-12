@@ -22,6 +22,7 @@ describe('UiScrollPanel', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     vi.clearAllMocks();
+    (window as any).spmTriggerProxyClick = mockTriggerProxyClick;
   });
 
   afterEach(() => {

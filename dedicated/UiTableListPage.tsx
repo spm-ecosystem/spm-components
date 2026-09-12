@@ -56,10 +56,10 @@ export function UiTableListPage({
   onLoadMore,
   selectedRowKeys: controlledSelectedKeys,
   onSelectionChange,
-  pageSize: controlledPageSize,
-  onPageSizeChange,
-  currentPage: controlledCurrentPage,
-  onPageChange,
+  pageSize: _controlledPageSize,
+  onPageSizeChange: _onPageSizeChange,
+  currentPage: _controlledCurrentPage,
+  onPageChange: _onPageChange,
 }: UiTableListPageProps) {
   const [rows, setRows] = React.useState(tableRows);
   const [loadingMore, setLoadingMore] = React.useState(false);
@@ -68,17 +68,11 @@ export function UiTableListPage({
   const [internalSelectedKeys, setInternalSelectedKeys] = React.useState<(string | number)[]>([]);
   const selectedKeys = controlledSelectedKeys !== undefined ? controlledSelectedKeys : internalSelectedKeys;
 
-  const [internalPageSize, setInternalPageSize] = React.useState<number>(controlledPageSize || 10);
-  const pageSize = controlledPageSize !== undefined ? controlledPageSize : internalPageSize;
-
-  const [internalCurrentPage, setInternalCurrentPage] = React.useState<number>(controlledCurrentPage || 1);
-  const currentPage = controlledCurrentPage !== undefined ? controlledCurrentPage : internalCurrentPage;
-
   React.useEffect(() => {
     setRows(tableRows);
   }, [tableRows]);
 
-  const handleSelectionToggle = (itemKey: string | number, item: any) => {
+  const handleSelectionToggle = (itemKey: string | number, _item: any) => {
     let nextKeys: (string | number)[];
     if (selectedKeys.includes(itemKey)) {
       nextKeys = selectedKeys.filter((k) => k !== itemKey);
