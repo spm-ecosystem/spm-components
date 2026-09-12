@@ -235,7 +235,7 @@ export function UiScrollPanel({
     );
   };
 
-  const showCloseButton = Boolean(onClose || collapsible);
+  const showCloseButton = Boolean(onClose);
 
   return (
     <aside

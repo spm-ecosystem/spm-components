@@ -331,18 +331,19 @@ describe('UiScrollPanel', () => {
       expect(closeBtn).toBeTruthy();
     });
 
-    it('renders ✕ close button when collapsible=true', async () => {
+    it('hides ✕ close button when onClose is undefined even if collapsible=true', async () => {
       const root = createRoot(container);
       root.render(
         <UiScrollPanel
           tags={[{ name: 'tag1', type: 'general' }]}
           collapsible={true}
+          onClose={undefined}
         />
       );
       await waitForUpdate();
 
       const closeBtn = container.querySelector('.spm-scrollpanel-close');
-      expect(closeBtn).toBeTruthy();
+      expect(closeBtn).toBeNull();
     });
 
     it('invokes onClose and collapses panel when ✕ button is clicked with collapsible=true and onClose provided', async () => {
@@ -363,24 +364,6 @@ describe('UiScrollPanel', () => {
       await waitForUpdate();
 
       expect(onClose).toHaveBeenCalledTimes(1);
-      expect(container.querySelector('aside')).toBeNull();
-    });
-
-    it('collapses panel when ✕ button is clicked with collapsible=true and no onClose provided', async () => {
-      const root = createRoot(container);
-      root.render(
-        <UiScrollPanel
-          tags={[{ name: 'tag1', type: 'general' }]}
-          collapsible={true}
-        />
-      );
-      await waitForUpdate();
-
-      const closeBtn = container.querySelector('.spm-scrollpanel-close') as HTMLButtonElement;
-      expect(closeBtn).toBeTruthy();
-      closeBtn.click();
-      await waitForUpdate();
-
       expect(container.querySelector('aside')).toBeNull();
     });
   });
