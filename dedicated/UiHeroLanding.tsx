@@ -83,7 +83,6 @@ export function UiHeroLanding({
   variant = 'standard',
   showCard = false,
   counterImageUrlPrefix,
-  counterImageHeight = '68px',
   headerSlot,
   footerSlot,
   counterSlot,
@@ -291,7 +290,7 @@ export function UiHeroLanding({
                 src={`${counterImageUrlPrefix}${digit}.gif`}
                 alt={digit}
                 style={{
-                  height: typeof counterImageHeight === 'number' ? `${counterImageHeight}px` : counterImageHeight,
+                  height: 'var(--spm-counter-image-height, 68px)',
                   width: 'auto',
                   display: 'inline-block',
                   imageRendering: 'pixelated',
