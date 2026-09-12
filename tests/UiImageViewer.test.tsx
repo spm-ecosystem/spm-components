@@ -67,7 +67,7 @@ describe('UiImageViewer', () => {
     expect(zoomBtn?.textContent).toContain('Fill');
   });
 
-  it('3. Standard Aspect Ratio: preserves cover fit for normal ratio images (16:9)', async () => {
+  it('3. Standard Aspect Ratio: preserves cover fit attribute while using objectFit contain with scale for normal ratio images (16:9)', async () => {
     const root = createRoot(container);
     root.render(
       <UiImageViewer
@@ -80,13 +80,13 @@ describe('UiImageViewer', () => {
     const img = container.querySelector('img') as HTMLImageElement;
     expect(img).not.toBeNull();
 
-    // 1920 / 1080 = 1.778 (between 0.5 and 2.2)
     simulateImageLoad(img, 1920, 1080);
     await waitForUpdate();
 
     expect(img.getAttribute('data-extreme-ratio') ?? container.querySelector('.spm-image-viewer')?.getAttribute('data-extreme-ratio')).toBe('false');
-    expect(img.style.objectFit).toBe('cover');
+    expect(img.style.objectFit).toBe('contain');
     expect(img.getAttribute('data-fit')).toBe('cover');
+    expect(img.getAttribute('data-scale')).toBe('1.8');
   });
 
   it('4. Ultra-Wide Aspect Ratio: automatically falls back from cover to contain for ultra-wide images (> 2.2:1)', async () => {
@@ -102,7 +102,6 @@ describe('UiImageViewer', () => {
     const img = container.querySelector('img') as HTMLImageElement;
     expect(img).not.toBeNull();
 
-    // 3000 / 1000 = 3.0 (> 2.2)
     simulateImageLoad(img, 3000, 1000);
     await waitForUpdate();
 
@@ -110,6 +109,7 @@ describe('UiImageViewer', () => {
     expect(rootEl.getAttribute('data-extreme-ratio')).toBe('true');
     expect(img.style.objectFit).toBe('contain');
     expect(img.getAttribute('data-fit')).toBe('contain');
+    expect(img.getAttribute('data-scale')).toBe('1');
   });
 
   it('5. Ultra-Tall Aspect Ratio: automatically falls back from cover to contain for vertical strips (< 0.5:1)', async () => {
@@ -125,13 +125,13 @@ describe('UiImageViewer', () => {
     const img = container.querySelector('img') as HTMLImageElement;
     expect(img).not.toBeNull();
 
-    // 400 / 1000 = 0.4 (< 0.5)
     simulateImageLoad(img, 400, 1000);
     await waitForUpdate();
 
     const rootEl = container.querySelector('.spm-image-viewer') as HTMLElement;
     expect(rootEl.getAttribute('data-extreme-ratio')).toBe('true');
     expect(img.style.objectFit).toBe('contain');
+    expect(img.getAttribute('data-fit')).toBe('contain');
   });
 
   it('6. imageFit precedence: imageFit prop overrides fit prop', async () => {
@@ -146,10 +146,12 @@ describe('UiImageViewer', () => {
     await waitForUpdate();
 
     const img = container.querySelector('img') as HTMLImageElement;
-    simulateImageLoad(img, 1000, 1000); // 1:1 square
+    simulateImageLoad(img, 1000, 1000);
     await waitForUpdate();
 
-    expect(img.style.objectFit).toBe('cover');
+    expect(img.getAttribute('data-fit')).toBe('cover');
+    expect(img.style.objectFit).toBe('contain');
+    expect(img.getAttribute('data-scale')).toBe('1.8');
   });
 
   it('7. Interactive Zoom Toggle Button: clicking button toggles fit mode and calls onFitChange', async () => {
@@ -168,13 +170,16 @@ describe('UiImageViewer', () => {
     const zoomBtn = container.querySelector('[data-testid="zoom-toggle-btn"]') as HTMLButtonElement;
     expect(zoomBtn).not.toBeNull();
     expect(img.style.objectFit).toBe('contain');
+    expect(img.getAttribute('data-fit')).toBe('contain');
     expect(zoomBtn.textContent).toContain('Fill');
 
     // Click 1: Toggle to cover
     zoomBtn.click();
     await waitForUpdate();
 
-    expect(img.style.objectFit).toBe('cover');
+    expect(img.style.objectFit).toBe('contain');
+    expect(img.getAttribute('data-fit')).toBe('cover');
+    expect(img.getAttribute('data-scale')).toBe('1.8');
     expect(zoomBtn.textContent).toContain('Fit');
     expect(onFitChange).toHaveBeenCalledWith('cover');
 
@@ -183,6 +188,8 @@ describe('UiImageViewer', () => {
     await waitForUpdate();
 
     expect(img.style.objectFit).toBe('contain');
+    expect(img.getAttribute('data-fit')).toBe('contain');
+    expect(img.getAttribute('data-scale')).toBe('1');
     expect(zoomBtn.textContent).toContain('Fill');
     expect(onFitChange).toHaveBeenCalledWith('contain');
   });
@@ -208,8 +215,9 @@ describe('UiImageViewer', () => {
     img.click();
     await waitForUpdate();
 
-    expect(img.style.objectFit).toBe('cover');
-    expect(img.style.cursor).toBe('zoom-out');
+    expect(img.style.objectFit).toBe('contain');
+    expect(img.getAttribute('data-fit')).toBe('cover');
+    expect(img.style.cursor).toBe('grab');
     expect(onFitChange).toHaveBeenCalledWith('cover');
 
     // Click on image again -> zoom out (contain)
@@ -217,6 +225,7 @@ describe('UiImageViewer', () => {
     await waitForUpdate();
 
     expect(img.style.objectFit).toBe('contain');
+    expect(img.getAttribute('data-fit')).toBe('contain');
     expect(img.style.cursor).toBe('zoom-in');
     expect(onFitChange).toHaveBeenCalledWith('contain');
   });
@@ -261,7 +270,7 @@ describe('UiImageViewer', () => {
     const img1 = container.querySelector('img') as HTMLImageElement;
     img1.click(); // User overrides to cover
     await waitForUpdate();
-    expect(img1.style.objectFit).toBe('cover');
+    expect(img1.getAttribute('data-fit')).toBe('cover');
 
     // Update src to photo2 with cover
     root.render(
@@ -278,6 +287,7 @@ describe('UiImageViewer', () => {
 
     // Should fall back to contain
     expect(img2.style.objectFit).toBe('contain');
+    expect(img2.getAttribute('data-fit')).toBe('contain');
   });
 
   it('11. Interactive Multi-Level Zoom: Zoom In, Zoom Out, and Reset buttons update scale and trigger onScaleChange', async () => {
@@ -429,5 +439,40 @@ describe('UiImageViewer', () => {
 
     expect(img.style.transform).toBe('translate3d(0px, 0px, 0px) scale(1)');
     expect(onScaleChange).toHaveBeenCalledWith(1);
+  });
+
+  it('15. Fill Mode Mouse Drag Pan: allows panning when fit="cover" using expanded scale', async () => {
+    const root = createRoot(container);
+    root.render(
+      <UiImageViewer
+        src="https://example.com/fill-drag.jpg"
+        fit="cover"
+      />
+    );
+    await waitForUpdate();
+
+    const rootEl = container.querySelector('.spm-image-viewer') as HTMLElement;
+    const img = container.querySelector('img') as HTMLImageElement;
+
+    expect(rootEl.style.cursor).toBe('grab');
+    expect(img.style.objectFit).toBe('contain');
+    expect(img.getAttribute('data-scale')).toBe('1.8');
+
+    // Simulate MouseDown
+    rootEl.dispatchEvent(new MouseEvent('mousedown', { clientX: 200, clientY: 200, bubbles: true, cancelable: true }));
+    await waitForUpdate();
+    expect(rootEl.getAttribute('data-dragging')).toBe('true');
+    expect(rootEl.style.cursor).toBe('grabbing');
+
+    // Simulate MouseMove
+    rootEl.dispatchEvent(new MouseEvent('mousemove', { clientX: 240, clientY: 230, bubbles: true, cancelable: true }));
+    await waitForUpdate();
+    expect(img.style.transform).toBe('translate3d(40px, 30px, 0px) scale(1.8)');
+
+    // Simulate MouseUp
+    rootEl.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    await waitForUpdate();
+    expect(rootEl.getAttribute('data-dragging')).toBe('false');
+    expect(rootEl.style.cursor).toBe('grab');
   });
 });

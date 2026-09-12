@@ -44,10 +44,8 @@ export function UiImageViewer({
   });
   const hasDraggedRef = useRef<boolean>(false);
 
-  // Support both imageFit and fit prop naming (imageFit takes priority if provided, defaulting to 'contain')
   const baseFit: 'contain' | 'cover' = imageFit ?? fit ?? 'contain';
 
-  // Reset override, ratio, scale and position state when source changes
   useEffect(() => {
     setUserOverrideFit(null);
     setIsExtremeRatio(false);
@@ -56,7 +54,6 @@ export function UiImageViewer({
     setIsDragging(false);
   }, [src]);
 
-  // Check if image is already loaded (e.g. from cache or pre-rendered)
   useEffect(() => {
     if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth && imgRef.current.naturalHeight) {
       const ratio = imgRef.current.naturalWidth / imgRef.current.naturalHeight;
@@ -73,16 +70,19 @@ export function UiImageViewer({
     }
   };
 
-  // Determine effective fit mode:
-  // If user has explicitly toggled zoom, use their preference.
-  // Otherwise, if base fit is 'cover' and aspect ratio is extreme (> 2.2 or < 0.5), fallback to 'contain'.
   const effectiveFit: 'contain' | 'cover' =
     userOverrideFit ?? (isExtremeRatio && baseFit === 'cover' ? 'contain' : baseFit);
+
+  const effectiveScale = effectiveFit === 'cover' ? Math.max(scale, 1.8) : scale;
+  const isPannable = effectiveScale > 1 || effectiveFit === 'cover';
 
   const handleToggleFit = () => {
     if (!enableZoom) return;
     const nextFit: 'contain' | 'cover' = effectiveFit === 'cover' ? 'contain' : 'cover';
     setUserOverrideFit(nextFit);
+    if (nextFit === 'contain') {
+      setPosition({ x: 0, y: 0 });
+    }
     onFitChange?.(nextFit);
   };
 
@@ -134,7 +134,7 @@ export function UiImageViewer({
       }
       return nextScale;
     });
-    if (scale > 1 || e.deltaY < 0) {
+    if (effectiveScale > 1 || e.deltaY < 0) {
       if (e.cancelable) {
         e.preventDefault();
       }
@@ -148,7 +148,7 @@ export function UiImageViewer({
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!enableZoom || scale <= 1 || isControlTarget(e.target)) return;
+    if (!enableZoom || !isPannable || isControlTarget(e.target)) return;
     e.preventDefault();
     setIsDragging(true);
     hasDraggedRef.current = false;
@@ -161,7 +161,7 @@ export function UiImageViewer({
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging || scale <= 1) return;
+    if (!isDragging || !isPannable) return;
     e.preventDefault();
     const dx = e.clientX - dragStartRef.current.mouseX;
     const dy = e.clientY - dragStartRef.current.mouseY;
@@ -187,7 +187,7 @@ export function UiImageViewer({
   };
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!enableZoom || scale <= 1 || e.touches.length !== 1 || isControlTarget(e.target)) return;
+    if (!enableZoom || !isPannable || e.touches.length !== 1 || isControlTarget(e.target)) return;
     setIsDragging(true);
     hasDraggedRef.current = false;
     const touch = e.touches[0];
@@ -200,7 +200,7 @@ export function UiImageViewer({
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging || scale <= 1 || e.touches.length !== 1) return;
+    if (!isDragging || !isPannable || e.touches.length !== 1) return;
     const touch = e.touches[0];
     const dx = touch.clientX - dragStartRef.current.mouseX;
     const dy = touch.clientY - dragStartRef.current.mouseY;
@@ -250,7 +250,7 @@ export function UiImageViewer({
       className={`spm-image-viewer ${className}`.trim()}
       data-fit={effectiveFit}
       data-extreme-ratio={isExtremeRatio ? 'true' : 'false'}
-      data-scale={scale}
+      data-scale={effectiveScale}
       data-dragging={isDragging ? 'true' : 'false'}
       onWheel={handleWheel}
       onMouseDown={handleMouseDown}
@@ -269,7 +269,7 @@ export function UiImageViewer({
         background: background ?? 'var(--spm-bg-primary)',
         overflow: 'hidden',
         position: 'relative',
-        cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default',
+        cursor: isPannable ? (isDragging ? 'grabbing' : 'grab') : 'default',
         ...style,
       }}
     >
@@ -284,19 +284,21 @@ export function UiImageViewer({
             className="spm-image-viewer-img"
             data-testid="image-viewer-img"
             data-fit={effectiveFit}
-            data-scale={scale}
+            data-scale={effectiveScale}
             style={{
               maxWidth: '100%',
               maxHeight: '100%',
-              width: effectiveFit === 'cover' ? '100%' : 'auto',
-              height: effectiveFit === 'cover' ? '100%' : 'auto',
-              objectFit: effectiveFit,
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
               display: 'block',
-              cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : (enableZoom ? (effectiveFit === 'cover' ? 'zoom-out' : 'zoom-in') : 'default'),
+              cursor: isPannable
+                ? (isDragging ? 'grabbing' : 'grab')
+                : (enableZoom ? 'zoom-in' : 'default'),
               userSelect: 'none',
-              transform: `translate3d(${position.x}px, ${position.y}px, 0px) scale(${scale})`,
+              transform: `translate3d(${position.x}px, ${position.y}px, 0px) scale(${effectiveScale})`,
               transformOrigin: 'center center',
-              transition: isDragging ? 'none' : 'transform 0.15s ease-out, object-fit 0.2s ease',
+              transition: isDragging ? 'none' : 'transform 0.15s ease-out',
             }}
           />
 
