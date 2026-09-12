@@ -28,7 +28,7 @@ export function UiImageCard({
   linkUrl,
   title,
   id,
-  width = '160px',
+  width = '100%',
   aspectRatio = 'auto',
   imageFit = 'cover',
   showTitle = true,

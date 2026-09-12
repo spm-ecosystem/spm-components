@@ -466,6 +466,7 @@ export function UiModernGridPage({
                     imageUrl={item.imageUrl}
                     linkUrl={item.linkUrl}
                     title={item.title}
+                    width="100%"
                     aspectRatio={layoutMode === 'masonry' ? 'auto' : undefined}
                   />
                 );
@@ -525,6 +526,7 @@ export function UiModernGridPage({
                     imageUrl={item.imageUrl}
                     linkUrl={item.linkUrl}
                     title={item.title}
+                    width="100%"
                   />
                 );
 
