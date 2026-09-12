@@ -30,6 +30,8 @@ export interface UiHeroLandingProps {
 
   // Glassmorphic & Sky Theme Enhancements
   variant?: 'standard' | 'glassmorphic' | 'sky-glass';
+  showCard?: boolean;
+  counterImageUrlPrefix?: string;
   popularTags?: TagItem[];
   popularTagsPrefix?: string;
   statsText?: string;
@@ -78,6 +80,8 @@ export function UiHeroLanding({
   footerAttribution,
   extensionLinks,
   variant = 'standard',
+  showCard = false,
+  counterImageUrlPrefix,
   headerSlot,
   footerSlot,
   counterSlot,
@@ -106,8 +110,8 @@ export function UiHeroLanding({
       : 'var(--spm-hero-bg, linear-gradient(180deg, #cbe3fc 0%, #e2f0fd 40%, #eff6ff 100%))'
     : 'var(--spm-bg-primary)';
 
-  const textColor = isGlassmorphic ? (isDark ? '#f8fafc' : '#0f172a') : 'var(--spm-text-primary)';
-  const textMuted = isGlassmorphic ? (isDark ? '#94a3b8' : '#475569') : 'var(--spm-text-muted)';
+  const textColor = isGlassmorphic ? (isDark ? '#f8fafc' : '#2b3d52') : 'var(--spm-text-primary)';
+  const textMuted = isGlassmorphic ? (isDark ? '#94a3b8' : '#64748b') : 'var(--spm-text-muted)';
   const navBg = isGlassmorphic
     ? isDark
       ? 'rgba(15, 23, 42, 0.85)'
@@ -144,7 +148,7 @@ export function UiHeroLanding({
         background: 'var(--spm-bg-primary)',
       };
 
-  const glassCardStyle: React.CSSProperties = isGlassmorphic
+  const glassCardStyle: React.CSSProperties = isGlassmorphic && showCard
     ? {
         background: cardBg,
         backdropFilter: 'blur(20px)',
@@ -155,7 +159,12 @@ export function UiHeroLanding({
         padding: isCompact ? '20px 24px' : '36px 48px',
         boxSizing: 'border-box',
       }
-    : {};
+    : {
+        background: 'transparent',
+        border: 'none',
+        boxShadow: 'none',
+        padding: '0',
+      };
 
   const renderBrand = () => {
     if (brandSlot) {
@@ -272,29 +281,45 @@ export function UiHeroLanding({
           marginBottom: '20px',
         }}
       >
-        <div style={{ display: 'flex', gap: '4px' }}>
-          {digits.map((digit, idx) => (
-            <span
-              key={idx}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '28px',
-                height: '36px',
-                background: digitBg,
-                border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)'}`,
-                borderRadius: '6px',
-                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
-                fontWeight: 800,
-                fontSize: '16px',
-                fontFamily: 'monospace, sans-serif',
-                color: textColor,
-              }}
-            >
-              {digit}
-            </span>
-          ))}
+        <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+          {counterImageUrlPrefix ? (
+            digits.map((digit, idx) => (
+              <img
+                key={idx}
+                src={`${counterImageUrlPrefix}${digit}.gif`}
+                alt={digit}
+                style={{
+                  height: '24px',
+                  width: 'auto',
+                  display: 'inline-block',
+                  imageRendering: 'pixelated',
+                }}
+              />
+            ))
+          ) : (
+            digits.map((digit, idx) => (
+              <span
+                key={idx}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '28px',
+                  height: '36px',
+                  background: digitBg,
+                  border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)'}`,
+                  borderRadius: '6px',
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+                  fontWeight: 800,
+                  fontSize: '16px',
+                  fontFamily: 'monospace, sans-serif',
+                  color: textColor,
+                }}
+              >
+                {digit}
+              </span>
+            ))
+          )}
         </div>
         <span style={{ fontSize: '11px', color: textMuted, fontWeight: 500 }}>
           Total visitors so far
