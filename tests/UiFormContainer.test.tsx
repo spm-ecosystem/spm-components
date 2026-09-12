@@ -259,6 +259,7 @@ describe('UiFormContainer', () => {
 
     (tabButtons[1] as HTMLButtonElement).click();
     await waitForUpdate();
+    await waitForUpdate();
 
     // Verify active tab updated to Create Account
     expect(container.querySelector('h2')?.textContent).toBe('Join Us');

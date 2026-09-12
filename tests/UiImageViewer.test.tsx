@@ -104,6 +104,7 @@ describe('UiImageViewer', () => {
 
     simulateImageLoad(img, 3000, 1000);
     await waitForUpdate();
+    await waitForUpdate();
 
     const rootEl = container.querySelector('.spm-image-viewer') as HTMLElement;
     expect(rootEl.getAttribute('data-extreme-ratio')).toBe('true');

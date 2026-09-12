@@ -12,6 +12,29 @@ export interface UiSearchBarProps {
   onSearch?: (value: string) => void;
 }
 
+function parseUrlAndQuery(url: string | undefined): { actionUrl: string; queryFields: { name: string; value: string }[] } {
+  if (!url) return { actionUrl: '', queryFields: [] };
+
+  const queryFields: { name: string; value: string }[] = [];
+  const qIndex = url.indexOf('?');
+
+  if (qIndex === -1) {
+    return { actionUrl: url, queryFields: [] };
+  }
+
+  const actionUrl = url.substring(0, qIndex);
+  const queryString = url.substring(qIndex + 1);
+
+  if (queryString) {
+    const params = new URLSearchParams(queryString);
+    params.forEach((val, name) => {
+      queryFields.push({ name, value: val });
+    });
+  }
+
+  return { actionUrl, queryFields };
+}
+
 export function UiSearchBar({
   placeholder = 'Search…',
   defaultValue = '',
@@ -25,6 +48,8 @@ export function UiSearchBar({
 }: UiSearchBarProps) {
   const [value, setValue] = useState(defaultValue);
   const [focused, setFocused] = useState(false);
+
+  const { actionUrl, queryFields } = parseUrlAndQuery(submitUrl);
 
   const handleSubmit = (e: React.FormEvent) => {
     if (onSearch) {
@@ -50,9 +75,14 @@ export function UiSearchBar({
     parsedFields = hiddenFields;
   }
 
+  const fieldMap = new Map<string, string>();
+  queryFields.forEach(f => fieldMap.set(f.name, f.value));
+  parsedFields.forEach(f => fieldMap.set(f.name, f.value));
+  const allHiddenFields = Array.from(fieldMap.entries()).map(([name, value]) => ({ name, value }));
+
   return (
     <form
-      action={submitUrl}
+      action={actionUrl}
       method={method}
       onSubmit={handleSubmit}
       className={className}
@@ -65,7 +95,7 @@ export function UiSearchBar({
         ...style,
       }}
     >
-      {parsedFields.map((field, idx) => (
+      {allHiddenFields.map((field, idx) => (
         <input key={idx} type="hidden" name={field.name} value={field.value} />
       ))}
 
