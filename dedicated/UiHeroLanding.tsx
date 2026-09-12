@@ -102,6 +102,14 @@ export function UiHeroLanding({
     ? {
         background: 'var(--spm-hero-bg, linear-gradient(180deg, #cbe3fc 0%, #e2f0fd 40%, #eff6ff 100%))',
         color: 'var(--spm-text-primary, #1e293b)',
+        ['--spm-text-primary' as any]: 'var(--spm-glass-text-primary, #1e293b)',
+        ['--spm-text-muted' as any]: 'var(--spm-glass-text-muted, #64748b)',
+        ['--spm-bg-secondary' as any]: 'var(--spm-glass-search-bg, #ffffff)',
+        ['--spm-bg-surface' as any]: 'var(--spm-glass-surface-bg, #ffffff)',
+        ['--spm-bg-element' as any]: 'var(--spm-glass-element-bg, #ffffff)',
+        ['--spm-border' as any]: 'var(--spm-glass-border, rgba(0, 0, 0, 0.08))',
+        ['--spm-accent' as any]: 'var(--spm-glass-accent, #3b82f6)',
+        ['--spm-accent-fg' as any]: '#ffffff',
       }
     : {
         background: 'var(--spm-bg-primary)',
