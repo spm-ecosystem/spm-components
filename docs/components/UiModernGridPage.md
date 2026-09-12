@@ -8,6 +8,8 @@
 
 | Prop Name | Type | Default Value | Description |
 | :--- | :--- | :--- | :--- |
+| `layoutMode` | `'masonry' \| 'grid'` | `'masonry'` | Layout style mode. `'masonry'` uses multi-column css layout with intrinsic aspect ratios; `'grid'` uses CSS grid template columns. |
+| `masonryColumnWidth` | `string` | `'220px'` | Target column width for masonry layout (`--spm-masonry-column-width`). |
 | `pageTitle` | `string` | **Required** | Title displayed at top of gallery feed. |
 | `items` | `GridItem[]` | **Required** | Array of image thumbnail items (`{ imageUrl, linkUrl, title, id }`). |
 | `pageLinks` | `PageLink[]` | `[]` | Pagination links array (`{ label, url }`). |
@@ -27,6 +29,19 @@
 | `mobileGap` | `string` | `'8px'` | Grid gap spacing on mobile screens. |
 | `className` | `string` | `''` | Custom CSS class name appended to root element. |
 | `style` | `React.CSSProperties` | `{}` | Custom inline style overrides. |
+| `onLoadMore` | `() => Promise<{ items: any[]; hasMore: boolean }>` | `undefined` | Async callback for infinite scroll with automatic container auto-fill detection. |
+| `sidebarSlot` | `React.ReactNode` | `undefined` | Custom React node slot to override default tag sidebar content. |
+| `headerSlot` | `React.ReactNode` | `undefined` | Custom React node slot to replace standard page header. |
+| `toolbarSlot` | `React.ReactNode` | `undefined` | Custom React node slot inserted below header for layout action toolbars. |
+
+### Container Auto-Fill & Infinite Scroll (`onLoadMore`)
+
+When `onLoadMore` is provided, `UiModernGridPage` automatically switches to infinite scrolling mode. It attaches a scroll listener to `<main>` alongside a `ResizeObserver` for container auto-fill detection. If the initial batch of items does not fill the main container viewport (`scrollHeight <= clientHeight + 300px`), `onLoadMore` is automatically triggered repeatedly until the container is filled or `hasMore: false` is returned.
+
+### Layout Modes (`layoutMode`)
+
+- **`masonry`** (default): Applies multi-column layout (`display: block`, `columnWidth: var(--spm-masonry-column-width, 220px)`) on `<main>`, wrapping each item in a container with `breakInside: 'avoid'` to prevent column breaking. Works seamlessly with `aspectRatio="auto"` image cards.
+- **`grid`**: Applies a traditional responsive grid (`display: grid`, `gridTemplateColumns: var(--spm-grid-columns)`).
 
 ## Design Tokens (CSS Variables)
 

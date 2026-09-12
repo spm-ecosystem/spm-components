@@ -15,7 +15,11 @@
 | `height` | `string` | `'auto'` | Height constraint of page container. Defaults to `'auto'` for natural document page scrolling, or can be set to `'100vh'` / `'calc(100vh - 60px)'` for fixed viewport scrolling. |
 | `className` | `string` | `''` | Custom CSS class name appended to root element. |
 | `style` | `React.CSSProperties` | `{}` | Custom inline style overrides. |
-| `onLoadMore` | `() => Promise<{ tableRows: any[]; hasMore: boolean }>` | `undefined` | Optional async callback executed on reaching page end to load more rows. |
+| `onLoadMore` | `() => Promise<{ tableRows: any[]; hasMore: boolean }>` | `undefined` | Optional async callback executed on reaching page end to load more rows, supporting automatic container auto-fill detection. |
+
+### Container Auto-Fill & Infinite Scroll (`onLoadMore`)
+
+When `onLoadMore` is passed to `UiTableListPage` (or when `paginationMode` is set to `'infinite'`), infinite scrolling is automatically activated. The main scrollable container registers a scroll event listener alongside a `ResizeObserver`. If the rendered table rows do not fill the main container viewport (`scrollHeight <= clientHeight + 100px`), `UiTableListPage` triggers `onLoadMore` automatically to request additional row data until the scrollable region is filled or `hasMore: false` is returned.
 
 ### `TableColumnConfig` Schema
 

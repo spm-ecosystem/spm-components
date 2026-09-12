@@ -16,7 +16,14 @@
 | `className` | `string` | `''` | Custom CSS class name appended to root wrapper. |
 | `style` | `React.CSSProperties` | `{}` | Custom inline style overrides. |
 | `enableZoom` | `boolean` | `true` | Enables click-to-zoom on image and overlay toggle fit button. |
+| `minScale` | `number` | `1` | Minimum allowed zoom scale ratio. |
+| `maxScale` | `number` | `5` | Maximum allowed zoom scale ratio. |
 | `onFitChange` | `(fit: 'contain' \| 'cover') => void` | `undefined` | Callback fired when user toggles fit mode. |
+| `onScaleChange` | `(scale: number) => void` | `undefined` | Callback fired when zoom scale value changes. |
+
+### Pan, Zoom & Unclipped `objectFit: 'contain'` Behavior
+
+`UiImageViewer` enforces persistent `objectFit: 'contain'` on the image element (`<img style={{ objectFit: 'contain' }} />`) during panning and zooming operations. This guarantees that image aspect ratios remain unclipped and untruncated regardless of container size or zoom level. Panning and scaling are driven dynamically via GPU-accelerated CSS transforms (`transform: translate3d(x, y, 0) scale(effectiveScale)`), providing smooth 60fps pan/zoom interactions without triggering layout reflows or clipping edges.
 
 ## Design Tokens (CSS Variables)
 

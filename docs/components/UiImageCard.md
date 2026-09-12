@@ -26,7 +26,14 @@
 - `video`: 16:9 widescreen format (`aspectRatio: '16 / 9'`), ideal for video thumbnails and horizontal photography.
 - `portrait`: 3:4 vertical poster format (`aspectRatio: '3 / 4'`), standard for book covers and portrait art.
 - `wide`: 21:9 ultra-wide banner format (`aspectRatio: '21 / 9'`), suited for panoramic banners.
-- `auto`: Intrinsic image aspect ratio without container constraint (`aspectRatio: 'auto'`).
+- `auto`: Intrinsic image aspect ratio without container height constraints (`aspectRatio: 'auto'`), essential for Pinterest-style Masonry layouts.
+
+### Card Styling, Shadow & Hover Elevation
+
+`UiImageCard` applies modern card container styling with default border radius and hover elevation effects:
+- **Border Radius**: Uses `borderRadius: 'var(--spm-card-radius, var(--spm-radius, 16px))'`.
+- **Default Shadow**: Displays subtle depth with `boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'`.
+- **Hover Elevation**: On mouse hover, lifts card container with `transform: translateY(-4px)`, deepens shadow to `boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)'`, and updates border color to `var(--spm-accent)`.
 
 ### Broken Image Fallback Behavior
 
@@ -35,12 +42,13 @@ If the source `imageUrl` fails to load, returns a 404 HTTP status, or is invalid
 ## Design Tokens (CSS Variables)
 
 - `var(--spm-image-card-width)` - Custom variable controlling card width dynamically.
+- `var(--spm-card-radius)` - Border radius of card container (defaults to `16px` or `var(--spm-radius)`).
 - `var(--spm-bg-secondary)` - Card background color.
 - `var(--spm-border)` - Default card border color.
 - `var(--spm-text-primary)` - Title text color.
 - `var(--spm-text-secondary)` - Hover title text color.
 - `var(--spm-accent)` - Hover state border color.
-- `var(--spm-radius)` - Border radius of card container.
+- `var(--spm-radius)` - Fallback border radius for card container.
 
 ## Veneer Spec (.vnr) Example
 

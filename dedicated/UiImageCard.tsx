@@ -85,7 +85,7 @@ export function UiImageCard({
         className="spm-image-card-media"
         style={{
           width: '100%',
-          aspectRatio: calculatedRatio !== 'auto' ? calculatedRatio : undefined,
+          aspectRatio: calculatedRatio,
           overflow: 'hidden',
           background: 'var(--spm-bg-tertiary)',
         }}

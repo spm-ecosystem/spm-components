@@ -328,5 +328,27 @@ describe('UiModernGridPage', () => {
     expect(container.querySelector('#grid-header-slot')?.textContent).toBe('Grid Header Slot');
     expect(container.querySelector('#grid-toolbar-slot')?.textContent).toBe('Grid Toolbar Slot');
   });
+
+  it('applies display: block and columnWidth on main in masonry mode, wrapping children in breakInside avoid divs', async () => {
+    const root = createRoot(container);
+    root.render(
+      <UiModernGridPage
+        pageTitle="Masonry Test"
+        layoutMode="masonry"
+        items={sampleItems}
+      />
+    );
+    await waitForUpdate();
+
+    const mainEl = container.querySelector('.spm-modern-grid-main') as HTMLElement;
+    expect(mainEl).toBeTruthy();
+    expect(mainEl.style.display).toBe('block');
+    expect(mainEl.style.columnWidth).toBe('var(--spm-masonry-column-width, 220px)');
+
+    const wrapperDivs = mainEl.querySelectorAll(':scope > div');
+    expect(wrapperDivs.length).toBe(2);
+    expect((wrapperDivs[0] as HTMLElement).style.breakInside).toBe('avoid');
+    expect((wrapperDivs[1] as HTMLElement).style.breakInside).toBe('avoid');
+  });
 });
 
