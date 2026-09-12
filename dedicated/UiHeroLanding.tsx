@@ -57,6 +57,38 @@ export interface UiHeroLandingProps {
   style?: React.CSSProperties;
 }
 
+function parseCounterHtml(html: string): { imagesHtml: string; textHtml: string } {
+  if (!html) return { imagesHtml: '', textHtml: '' };
+
+  if (typeof document !== 'undefined') {
+    const container = document.createElement('div');
+    container.innerHTML = html;
+
+    const imgs = Array.from(container.querySelectorAll('img'));
+    const imagesHtml = imgs.map(img => img.outerHTML).join('');
+
+    imgs.forEach(img => {
+      const parent = img.parentElement;
+      img.remove();
+      if (parent && parent.tagName === 'A' && parent.children.length === 0 && !parent.textContent?.trim()) {
+        parent.remove();
+      }
+    });
+    container.querySelectorAll('br').forEach(br => br.remove());
+
+    const textHtml = container.innerHTML.trim();
+    return { imagesHtml, textHtml };
+  }
+
+  // SSR Fallback
+  const imgRegex = /<img[^>]*>/gi;
+  const matches = html.match(imgRegex);
+  const imagesHtml = matches ? matches.join('') : '';
+  const textHtml = html.replace(imgRegex, '').replace(/<br\s*\/?>/gi, '').trim();
+
+  return { imagesHtml, textHtml };
+}
+
 export function UiHeroLanding({
   siteName,
   logoUrl,
@@ -286,72 +318,157 @@ export function UiHeroLanding({
   };
 
   const renderVisitorCounter = () => {
+    const styleBlock = (
+      <style>{`
+        .spm-hero-counter-slot {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          width: 100%;
+        }
+        .spm-hero-counter-images {
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+          gap: 2px;
+          flex-wrap: wrap;
+        }
+        .spm-hero-counter-text {
+          display: block;
+          text-align: center;
+          margin-top: 8px;
+          width: 100%;
+        }
+        .spm-hero-counter-slot img, .spm-hero-counter-images img {
+          display: inline-block !important;
+          height: var(--spm-counter-image-height, 100px);
+          width: auto;
+          vertical-align: middle;
+          image-rendering: pixelated;
+          margin: 0 1px;
+        }
+        .spm-hero-counter-slot br {
+          display: none;
+        }
+        .spm-hero-counter-slot small {
+          display: block;
+          text-align: center;
+          font-size: 11px;
+          color: var(--spm-text-muted, #64748b);
+          margin-top: 10px;
+          width: 100%;
+        }
+      `}</style>
+    );
+
     if (counterSlot) {
       if (typeof counterSlot === 'string') {
+        const { imagesHtml, textHtml } = parseCounterHtml(counterSlot);
         return (
           <div
             className="spm-hero-counter-slot"
             style={{
-              display: 'block',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
               textAlign: isCentered ? 'center' : 'left',
+              width: '100%',
               marginBottom: '20px',
             }}
           >
-            <style>{`
-              .spm-hero-counter-slot img {
-                display: inline-block !important;
-                height: var(--spm-counter-image-height, 100px);
-                width: auto;
-                vertical-align: middle;
-                image-rendering: pixelated;
-                margin: 0 1px;
-              }
-              .spm-hero-counter-slot br {
-                display: none;
-              }
-              .spm-hero-counter-slot small {
-                display: block;
-                text-align: center;
-                font-size: 11px;
-                color: var(--spm-text-muted, #64748b);
-                margin-top: 10px;
-                width: 100%;
-              }
-            `}</style>
-            <div dangerouslySetInnerHTML={{ __html: counterSlot }} />
+            {styleBlock}
+            {imagesHtml && (
+              <div
+                className="spm-hero-counter-images"
+                dangerouslySetInnerHTML={{ __html: imagesHtml }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '2px',
+                  flexWrap: 'wrap',
+                }}
+              />
+            )}
+            {textHtml && (
+              <div
+                className="spm-hero-counter-text"
+                dangerouslySetInnerHTML={{ __html: textHtml }}
+                style={{
+                  display: 'block',
+                  textAlign: 'center',
+                  marginTop: imagesHtml ? '8px' : '0',
+                  width: '100%',
+                }}
+              />
+            )}
           </div>
         );
       }
       return (
-        <div className="spm-hero-counter-slot">
-          <style>{`
-            .spm-hero-counter-slot img {
-              display: inline-block !important;
-              height: var(--spm-counter-image-height, 100px);
-              width: auto;
-              vertical-align: middle;
-              image-rendering: pixelated;
-              margin: 0 1px;
-            }
-            .spm-hero-counter-slot br {
-              display: none;
-            }
-            .spm-hero-counter-slot small {
-              display: block;
-              text-align: center;
-              font-size: 11px;
-              color: var(--spm-text-muted, #64748b);
-              margin-top: 10px;
-              width: 100%;
-            }
-          `}</style>
+        <div
+          className="spm-hero-counter-slot"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: isCentered ? 'center' : 'left',
+            width: '100%',
+            marginBottom: '20px',
+          }}
+        >
+          {styleBlock}
           {counterSlot}
         </div>
       );
     }
 
     if (visitorCounterHtml) {
-      return <div className="spm-hero-counter-html" dangerouslySetInnerHTML={{ __html: visitorCounterHtml }} />;
+      const { imagesHtml, textHtml } = parseCounterHtml(visitorCounterHtml);
+      return (
+        <div
+          className="spm-hero-counter-slot spm-hero-counter-html"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: isCentered ? 'center' : 'left',
+            width: '100%',
+            marginBottom: '20px',
+          }}
+        >
+          {styleBlock}
+          {imagesHtml && (
+            <div
+              className="spm-hero-counter-images"
+              dangerouslySetInnerHTML={{ __html: imagesHtml }}
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '2px',
+                flexWrap: 'wrap',
+              }}
+            />
+          )}
+          {textHtml && (
+            <div
+              className="spm-hero-counter-text"
+              dangerouslySetInnerHTML={{ __html: textHtml }}
+              style={{
+                display: 'block',
+                textAlign: 'center',
+                marginTop: imagesHtml ? '8px' : '0',
+                width: '100%',
+              }}
+            />
+          )}
+        </div>
+      );
     }
 
     if (!visitorCount) return null;

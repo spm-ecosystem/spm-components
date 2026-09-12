@@ -164,4 +164,22 @@ describe('UiHeroLanding', () => {
     expect(input).toBeTruthy();
     expect(input.placeholder).toBe('Search…');
   });
+
+  it('agnostically separates counter images and counter text into distinct containers', async () => {
+    const root = createRoot(container);
+    const counterHtml = '<img src="7.gif" /><img src="2.gif" /><br />Total number of visitors so far: 72,678,548';
+    root.render(<UiHeroLanding counterSlot={counterHtml} />);
+    await waitForUpdate();
+
+    const counterSlotEl = container.querySelector('.spm-hero-counter-slot');
+    expect(counterSlotEl).toBeTruthy();
+
+    const imagesContainer = counterSlotEl?.querySelector('.spm-hero-counter-images');
+    expect(imagesContainer).toBeTruthy();
+    expect(imagesContainer?.querySelectorAll('img').length).toBe(2);
+
+    const textContainer = counterSlotEl?.querySelector('.spm-hero-counter-text');
+    expect(textContainer).toBeTruthy();
+    expect(textContainer?.textContent).toContain('Total number of visitors so far: 72,678,548');
+  });
 });
