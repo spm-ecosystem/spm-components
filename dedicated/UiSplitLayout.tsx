@@ -159,7 +159,7 @@ export function UiSplitLayout({
         searchSubmitUrl={searchSubmitUrl}
         searchParamName={searchParamName}
         width={sidebarWidth}
-        onClose={() => setDrawerOpen(false)}
+        onClose={isMobile ? () => setDrawerOpen(false) : undefined}
       />
     );
   };
