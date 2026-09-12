@@ -287,6 +287,36 @@ export function UiHeroLanding({
 
   const renderVisitorCounter = () => {
     if (counterSlot) {
+      if (typeof counterSlot === 'string') {
+        return (
+          <div
+            className="spm-hero-counter-slot"
+            style={{
+              display: 'block',
+              textAlign: isCentered ? 'center' : 'left',
+              marginBottom: '20px',
+            }}
+          >
+            <style>{`
+              .spm-hero-counter-slot img {
+                display: inline-block !important;
+                height: var(--spm-counter-image-height, 100px);
+                width: auto;
+                vertical-align: middle;
+                image-rendering: pixelated;
+                margin: 0 1px;
+              }
+              .spm-hero-counter-slot small {
+                display: block;
+                font-size: 11px;
+                color: var(--spm-text-muted, #64748b);
+                margin-top: 6px;
+              }
+            `}</style>
+            <div dangerouslySetInnerHTML={{ __html: counterSlot }} />
+          </div>
+        );
+      }
       return <div className="spm-hero-counter-slot">{counterSlot}</div>;
     }
 
