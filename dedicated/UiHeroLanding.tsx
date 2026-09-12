@@ -24,7 +24,7 @@ export interface UiHeroLandingProps {
   searchPlaceholder?: string;
   searchSubmitUrl?: string;
   searchParamName?: string;
-  primaryLinks?: NavLink[];
+  primaryLinks?: NavLink[] | string;
   primaryLinksPosition?: 'top' | 'bottom';
   align?: HeroAlignVariant;
 
@@ -33,7 +33,7 @@ export interface UiHeroLandingProps {
   showCard?: boolean;
   counterImageUrlPrefix?: string;
   counterImageHeight?: string | number;
-  popularTags?: TagItem[];
+  popularTags?: TagItem[] | string;
   popularTagsPrefix?: string;
   statsText?: string;
   visitorCount?: string | number;
@@ -41,7 +41,7 @@ export interface UiHeroLandingProps {
   showThemeToggle?: boolean;
   userProfileUrl?: string;
   footerAttribution?: string;
-  extensionLinks?: { label: string; url: string }[];
+  extensionLinks?: { label: string; url: string }[] | string;
 
   // Slots
   headerSlot?: React.ReactNode;
@@ -57,6 +57,62 @@ export interface UiHeroLandingProps {
   style?: React.CSSProperties;
 }
 
+function parseLinksArray(val: any): NavLink[] {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (!trimmed) return [];
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {
+      try {
+        const sanitized = trimmed.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":');
+        const parsed = JSON.parse(sanitized);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (err) {
+        // ignore
+      }
+    }
+  }
+  return [];
+}
+
+function parseExtensionLinks(val: any): NavLink[] {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (!trimmed) return [];
+    if (trimmed.startsWith('[')) {
+      const parsed = parseLinksArray(trimmed);
+      if (parsed.length > 0) return parsed;
+    }
+    if (typeof document !== 'undefined') {
+      const div = document.createElement('div');
+      div.innerHTML = trimmed;
+      const anchors = Array.from(div.querySelectorAll('a'));
+      if (anchors.length > 0) {
+        return anchors.map(a => ({
+          label: a.textContent?.trim() || a.getAttribute('href') || 'Link',
+          url: a.getAttribute('href') || '#'
+        }));
+      }
+      const text = div.textContent?.trim();
+      if (text) {
+        return [{ label: text, url: '#' }];
+      }
+    } else {
+      const match = trimmed.match(/<a[^>]*href=["']([^"']+)["'][^>]*>(.*?)<\/a>/i);
+      if (match) {
+        return [{ label: match[2].replace(/<[^>]+>/g, '').trim(), url: match[1] }];
+      }
+    }
+  }
+  return [];
+}
+
 function parseCounterHtml(html: string): { imagesHtml: string; textHtml: string } {
   if (!html) return { imagesHtml: '', textHtml: '' };
 
@@ -66,6 +122,8 @@ function parseCounterHtml(html: string): { imagesHtml: string; textHtml: string 
 
     const imgs = Array.from(container.querySelectorAll('img'));
     const imagesHtml = imgs.map(img => img.outerHTML).join('');
+
+    container.querySelectorAll('p').forEach(p => p.remove());
 
     imgs.forEach(img => {
       const parent = img.parentElement;
@@ -84,7 +142,7 @@ function parseCounterHtml(html: string): { imagesHtml: string; textHtml: string 
   const imgRegex = /<img[^>]*>/gi;
   const matches = html.match(imgRegex);
   const imagesHtml = matches ? matches.join('') : '';
-  const textHtml = html.replace(imgRegex, '').replace(/<br\s*\/?>/gi, '').trim();
+  const textHtml = html.replace(/<p[^>]*>[\s\S]*?<\/p>/gi, '').replace(imgRegex, '').replace(/<br\s*\/?>/gi, '').trim();
 
   return { imagesHtml, textHtml };
 }
@@ -127,6 +185,10 @@ export function UiHeroLanding({
   style = {},
 }: UiHeroLandingProps) {
   const [isDark, setIsDark] = React.useState(false);
+
+  const parsedPrimaryLinks = React.useMemo(() => parseLinksArray(primaryLinks), [primaryLinks]);
+  const parsedPopularTags = React.useMemo(() => parseLinksArray(popularTags), [popularTags]);
+  const parsedExtensionLinks = React.useMemo(() => parseExtensionLinks(extensionLinks), [extensionLinks]);
 
   const isSplit = align === 'split-horizontal';
   const isCompact = align === 'compact-banner';
@@ -253,14 +315,22 @@ export function UiHeroLanding({
               display: 'block',
               filter: isGlassmorphic ? 'drop-shadow(0 4px 12px rgba(0,0,0,0.08))' : 'none',
             }}
+            onError={e => {
+              const img = e.currentTarget as HTMLImageElement;
+              img.style.display = 'none';
+              const span = img.nextElementSibling as HTMLElement;
+              if (span) span.style.display = 'inline-block';
+            }}
           />
-        ) : (
+        ) : null}
+        {siteName && (
           <span
             style={{
               fontSize: isCompact ? '28px' : '42px',
               fontWeight: 900,
               color: 'var(--spm-text-primary)',
               letterSpacing: '-0.03em',
+              display: logoUrl ? 'none' : 'inline-block',
             }}
           >
             {siteName}
@@ -282,7 +352,7 @@ export function UiHeroLanding({
           justifyContent: isCentered ? 'center' : 'flex-start',
           flexWrap: 'wrap',
           gap: '12px',
-          marginBottom: navPosition === 'bottom' && primaryLinks.length > 0 ? '24px' : '0',
+          marginBottom: navPosition === 'bottom' && parsedPrimaryLinks.length > 0 ? '24px' : '0',
         }}
       >
         {ctaUrl && ctaLabel && (
@@ -589,7 +659,7 @@ export function UiHeroLanding({
             gap: '8px',
             maxWidth: '540px',
             width: '100%',
-            marginBottom: (popularTags && popularTags.length > 0) || statsText || visitorCount ? '12px' : '20px',
+            marginBottom: (parsedPopularTags && parsedPopularTags.length > 0) || statsText || visitorCount ? '12px' : '20px',
           }}
         >
           {searchSubmitUrl && (
@@ -614,7 +684,7 @@ export function UiHeroLanding({
         </div>
       )}
 
-      {popularTags && popularTags.length > 0 && (
+      {parsedPopularTags && parsedPopularTags.length > 0 && (
         <div
           className="spm-hero-popular-tags"
           style={{
@@ -623,7 +693,7 @@ export function UiHeroLanding({
             flexWrap: 'wrap',
             gap: '8px',
             justifyContent: isCentered ? 'center' : 'flex-start',
-            marginBottom: statsText || visitorCount ? '12px' : '20px',
+            marginBottom: statsText || visitorCount || counterSlot ? '12px' : '20px',
             fontSize: '12px',
           }}
         >
@@ -632,7 +702,7 @@ export function UiHeroLanding({
               {popularTagsPrefix}
             </span>
           )}
-          {popularTags.map((tag, i) => (
+          {parsedPopularTags.map((tag, i) => (
             <a
               key={i}
               href={tag.url}
@@ -693,7 +763,7 @@ export function UiHeroLanding({
 
       {renderActions()}
 
-      {navPosition === 'bottom' && primaryLinks.length > 0 && (
+      {navPosition === 'bottom' && parsedPrimaryLinks.length > 0 && (
         <nav
           style={{
             display: 'flex',
@@ -704,7 +774,7 @@ export function UiHeroLanding({
             marginTop: '8px',
           }}
         >
-          {primaryLinks.map((link, i) => (
+          {parsedPrimaryLinks.map((link, i) => (
             <a
               key={i}
               href={link.url}
@@ -739,7 +809,7 @@ export function UiHeroLanding({
         </div>
       )}
 
-      {extensionLinks && extensionLinks.length > 0 && (
+      {parsedExtensionLinks && parsedExtensionLinks.length > 0 && (
         <div
           className="spm-hero-extension-links"
           style={{
@@ -753,7 +823,7 @@ export function UiHeroLanding({
             flexWrap: 'wrap',
           }}
         >
-          {extensionLinks.map((ext, idx) => (
+          {parsedExtensionLinks.map((ext, idx) => (
             <React.Fragment key={idx}>
               {idx > 0 && <span>•</span>}
               <a
@@ -864,7 +934,7 @@ export function UiHeroLanding({
       )}
 
       {/* Header Slot or Top Navigation Header Bar */}
-      {(headerSlot || (navPosition === 'top' && primaryLinks.length > 0)) && (
+      {(headerSlot || (navPosition === 'top' && parsedPrimaryLinks.length > 0)) && (
         <header
           className="spm-hero-header-slot"
           style={{
@@ -895,7 +965,7 @@ export function UiHeroLanding({
               }}
             >
               <nav style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                {primaryLinks.map((link, i) => (
+                {parsedPrimaryLinks.map((link, i) => (
                   <a
                     key={i}
                     href={link.url}
