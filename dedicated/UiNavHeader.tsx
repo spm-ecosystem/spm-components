@@ -28,9 +28,16 @@ function isLinkActive(url: string): boolean {
   try {
     const current = new URL(window.location.href);
     const target = new URL(url, window.location.origin);
-    return current.pathname === target.pathname &&
-      current.searchParams.get('page') === target.searchParams.get('page') &&
-      current.searchParams.get('s') === target.searchParams.get('s');
+    if (current.pathname !== target.pathname) return false;
+
+    const targetKeys = Array.from(target.searchParams.keys());
+    const currentKeys = Array.from(current.searchParams.keys());
+
+    if (targetKeys.length !== currentKeys.length) return false;
+
+    return targetKeys.every(
+      key => current.searchParams.get(key) === target.searchParams.get(key)
+    );
   } catch {
     return false;
   }
@@ -57,11 +64,14 @@ export function UiNavHeader({
   const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
     const media = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`);
     const update = () => setIsMobile(media.matches);
     update();
-    media.addEventListener('change', update);
-    return () => media.removeEventListener('change', update);
+    if (media.addEventListener) {
+      media.addEventListener('change', update);
+      return () => media.removeEventListener('change', update);
+    }
   }, [mobileBreakpoint]);
 
   useEffect(() => {
@@ -285,7 +295,7 @@ export function UiNavHeader({
                 color: 'var(--spm-text-primary)',
                 fontWeight: 700,
                 fontSize: '15px',
-                flex: isMinimal ? '1' : '1 1 0%',
+                flex: isMinimal ? '1' : '0 0 auto',
                 justifyContent: isMinimal ? 'center' : 'flex-start',
                 minWidth: 0,
                 whiteSpace: 'nowrap',
@@ -306,16 +316,16 @@ export function UiNavHeader({
               <span>{siteName}</span>
             </a>
 
-            {/* CENTER: Primary Navigation Links */}
+            {/* COMBINED: Primary & Secondary Navigation Links */}
             {!isMinimal && (
               <div
                 className="spm-nav-container"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
+                  flexWrap: 'nowrap',
                   gap: 'var(--spm-nav-gap, 4px)',
-                  flex: '2 1 0%',
+                  flex: 1,
                   minWidth: 0,
                   overflowX: 'auto',
                   scrollbarWidth: 'none',
@@ -326,7 +336,7 @@ export function UiNavHeader({
                   const active = isLinkActive(link.url);
                   return (
                     <a
-                      key={i}
+                      key={`primary-${i}`}
                       href={link.url}
                       style={{
                         display: 'inline-flex',
@@ -343,32 +353,19 @@ export function UiNavHeader({
                         transition: 'color 0.15s, border-color 0.15s, background-color 0.15s',
                         whiteSpace: 'nowrap',
                         boxSizing: 'border-box',
+                        flexShrink: 0,
                       }}
                     >
                       {link.label}
                     </a>
                   );
                 })}
-              </div>
-            )}
 
-            {/* RIGHT: Secondary Action Links & Custom Extra HTML */}
-            {!isMinimal && (resolvedSecondaryLinks.length > 0 || extraHtml) && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'flex-end',
-                  gap: 'var(--spm-nav-gap, 8px)',
-                  flex: '1 1 0%',
-                  minWidth: 0,
-                }}
-              >
                 {resolvedSecondaryLinks.map((link, i) => {
                   const active = isLinkActive(link.url);
                   return (
                     <a
-                      key={i}
+                      key={`secondary-${i}`}
                       href={link.url}
                       style={{
                         display: 'inline-flex',
@@ -383,6 +380,8 @@ export function UiNavHeader({
                         background: active ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
                         transition: 'color 0.15s, background-color 0.15s',
                         whiteSpace: 'nowrap',
+                        boxSizing: 'border-box',
+                        flexShrink: 0,
                       }}
                     >
                       {link.label}
@@ -393,6 +392,7 @@ export function UiNavHeader({
                 {extraHtml && (
                   <div
                     className="spm-nav-extra-html"
+                    style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center' }}
                     dangerouslySetInnerHTML={{
                       __html: DOMPurify.sanitize(extraHtml, {
                         FORBID_TAGS: ['script', 'iframe', 'object', 'embed'],
