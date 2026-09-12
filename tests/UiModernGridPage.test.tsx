@@ -329,7 +329,7 @@ describe('UiModernGridPage', () => {
     expect(container.querySelector('#grid-toolbar-slot')?.textContent).toBe('Grid Toolbar Slot');
   });
 
-  it('applies display: block and columnWidth on main in masonry mode, wrapping children in breakInside avoid divs', async () => {
+  it('applies columnWidth on .spm-masonry-layout in masonry mode, wrapping children in breakInside avoid divs', async () => {
     const root = createRoot(container);
     root.render(
       <UiModernGridPage
@@ -342,10 +342,12 @@ describe('UiModernGridPage', () => {
 
     const mainEl = container.querySelector('.spm-modern-grid-main') as HTMLElement;
     expect(mainEl).toBeTruthy();
-    expect(mainEl.style.display).toBe('block');
-    expect(mainEl.style.columnWidth).toBe('var(--spm-masonry-column-width, 220px)');
 
-    const wrapperDivs = mainEl.querySelectorAll(':scope > div');
+    const masonryLayout = container.querySelector('.spm-masonry-layout') as HTMLElement;
+    expect(masonryLayout).toBeTruthy();
+    expect(masonryLayout.style.columnWidth).toBe('var(--spm-masonry-column-width, 220px)');
+
+    const wrapperDivs = masonryLayout.querySelectorAll(':scope > div');
     expect(wrapperDivs.length).toBe(2);
     expect((wrapperDivs[0] as HTMLElement).style.breakInside).toBe('avoid');
     expect((wrapperDivs[1] as HTMLElement).style.breakInside).toBe('avoid');

@@ -52,6 +52,7 @@ export function UiImageViewer({
     setScale(1);
     setPosition({ x: 0, y: 0 });
     setIsDragging(false);
+    hasDraggedRef.current = false;
   }, [src]);
 
   useEffect(() => {

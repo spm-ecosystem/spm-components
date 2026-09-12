@@ -435,33 +435,27 @@ export function UiModernGridPage({
         <main
           ref={mainRef as any}
           className="spm-modern-grid-main"
-          style={
-            layoutMode === 'masonry'
-              ? {
-                  padding: 'var(--spm-grid-padding, 24px)',
-                  display: 'block',
-                  columnWidth: 'var(--spm-masonry-column-width, 220px)',
-                  columnGap: 'var(--spm-grid-gap, 16px)',
-                  flex: 1,
-                  overflowY: 'auto',
-                }
-              : {
-                  padding: 'var(--spm-grid-padding, 24px)',
-                  display: 'grid',
-                  gridTemplateColumns: 'var(--spm-grid-columns, repeat(auto-fill, minmax(200px, 1fr)))',
-                  gap: 'var(--spm-grid-gap, 16px)',
-                  alignContent: 'start',
-                  flex: 1,
-                  overflowY: 'auto',
-                }
-          }
+          style={{
+            padding: 'var(--spm-grid-padding, 24px)',
+            flex: 1,
+            overflowY: 'auto',
+            boxSizing: 'border-box',
+          }}
         >
           {gridItems.length === 0 ? (
-            <div style={{ color: 'var(--spm-text-muted)', fontSize: '14px', gridColumn: '1 / -1', margin: 'auto' }}>
+            <div style={{ color: 'var(--spm-text-muted)', fontSize: '14px', margin: 'auto' }}>
               No items found.
             </div>
-          ) : (
-            <>
+          ) : layoutMode === 'masonry' ? (
+            <div
+              className="spm-masonry-layout"
+              style={{
+                columnWidth: 'var(--spm-masonry-column-width, 220px)',
+                columnGap: 'var(--spm-grid-gap, 16px)',
+                width: '100%',
+                height: 'auto',
+              }}
+            >
               {gridItems.map((item, index) => {
                 const child = renderItem ? (
                   renderItem(item, index)
@@ -476,28 +470,24 @@ export function UiModernGridPage({
                   />
                 );
 
-                if (layoutMode === 'masonry') {
-                  return (
-                    <div
-                      key={item.id || index}
-                      style={{
-                        breakInside: 'avoid',
-                        ['WebkitColumnBreakInside' as any]: 'avoid',
-                        marginBottom: 'var(--spm-grid-gap, 16px)',
-                        display: 'inline-block',
-                        width: '100%',
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      {child}
-                    </div>
-                  );
-                }
-
-                return <React.Fragment key={item.id || index}>{child}</React.Fragment>;
+                return (
+                  <div
+                    key={item.id || index}
+                    style={{
+                      breakInside: 'avoid',
+                      ['WebkitColumnBreakInside' as any]: 'avoid',
+                      marginBottom: 'var(--spm-grid-gap, 16px)',
+                      display: 'block',
+                      width: '100%',
+                      boxSizing: 'border-box',
+                    }}
+                  >
+                    {child}
+                  </div>
+                );
               })}
               {loadingMore && (
-                <div style={{ gridColumn: '1 / -1', columnSpan: 'all', display: 'flex', justifyContent: 'center', padding: '24px 0', width: '100%' }}>
+                <div style={{ columnSpan: 'all', display: 'flex', justifyContent: 'center', padding: '24px 0', width: '100%' }}>
                   <div style={{
                     width: '24px',
                     height: '24px',
@@ -513,7 +503,51 @@ export function UiModernGridPage({
                   `}</style>
                 </div>
               )}
-            </>
+            </div>
+          ) : (
+            <div
+              className="spm-grid-layout"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'var(--spm-grid-columns, repeat(auto-fill, minmax(200px, 1fr)))',
+                gap: 'var(--spm-grid-gap, 16px)',
+                alignContent: 'start',
+                width: '100%',
+              }}
+            >
+              {gridItems.map((item, index) => {
+                const child = renderItem ? (
+                  renderItem(item, index)
+                ) : (
+                  <UiImageCard
+                    key={item.id || index}
+                    id={item.id}
+                    imageUrl={item.imageUrl}
+                    linkUrl={item.linkUrl}
+                    title={item.title}
+                  />
+                );
+
+                return <React.Fragment key={item.id || index}>{child}</React.Fragment>;
+              })}
+              {loadingMore && (
+                <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: '24px 0', width: '100%' }}>
+                  <div style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    border: '2px solid var(--spm-border)',
+                    borderTopColor: 'var(--spm-accent)',
+                    animation: 'spm-spin 0.6s linear infinite'
+                  }} />
+                  <style>{`
+                    @keyframes spm-spin {
+                      to { transform: rotate(360deg); }
+                    }
+                  `}</style>
+                </div>
+              )}
+            </div>
           )}
         </main>
       </div>
