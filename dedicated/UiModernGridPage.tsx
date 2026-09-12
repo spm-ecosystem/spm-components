@@ -31,6 +31,8 @@ export interface TagGroupConfig {
 }
 
 export interface UiModernGridPageProps {
+  layoutMode?: 'masonry' | 'grid';
+  masonryColumnWidth?: string;
   pageTitle?: string;
   items?: GridItem[] | any[];
   pageLinks?: PageLink[];
@@ -65,6 +67,8 @@ export interface UiModernGridPageProps {
 }
 
 export function UiModernGridPage({
+  layoutMode = 'masonry',
+  masonryColumnWidth = '220px',
   pageTitle = 'Gallery',
   items = [],
   pageLinks,
@@ -105,12 +109,16 @@ export function UiModernGridPage({
   const [loadingMore, setLoadingMore] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const hasMoreRef = React.useRef(true);
+  const isLoadingRef = React.useRef(false);
+
   const prevLink = pageLinks?.find(link => link.label === '<' || link.label === '‹' || link.label.toLowerCase().includes('prev') || link.label.toLowerCase().includes('previous'));
   const nextLink = pageLinks?.find(link => link.label === '>' || link.label === '›' || link.label.toLowerCase().includes('next'));
   const mainRef = React.useRef<HTMLElement>(null);
 
   useEffect(() => {
     setGridItems(items);
+    hasMoreRef.current = true;
   }, [items]);
 
   useEffect(() => {
@@ -129,40 +137,69 @@ export function UiModernGridPage({
     const mainEl = mainRef.current;
     if (!mainEl || !onLoadMore) return;
 
-    let isLoading = false;
-    let localHasMore = true;
+    const threshold = 300;
 
-    const handleScroll = async () => {
-      if (isLoading || !localHasMore) return;
+    const checkAndLoad = async () => {
+      if (isLoadingRef.current || !hasMoreRef.current) return;
 
-      const threshold = 300;
       const offset = mainEl.scrollHeight - mainEl.scrollTop - mainEl.clientHeight;
+      const notFilling = mainEl.scrollHeight <= mainEl.clientHeight + threshold;
 
-      if (offset <= threshold) {
-        isLoading = true;
+      if (offset <= threshold || notFilling) {
+        isLoadingRef.current = true;
         setLoadingMore(true);
         try {
           const res = await onLoadMore();
-          if (res && res.items && res.items.length > 0) {
-            setGridItems((prev) => {
-              const existingIds = new Set(prev.map(x => x.id));
-              const newItems = res.items.filter(x => !existingIds.has(x.id));
-              return [...prev, ...newItems];
-            });
+          if (res) {
+            if (res.items && res.items.length > 0) {
+              setGridItems((prev) => {
+                const existingIds = new Set(prev.map(x => x.id));
+                const newItems = res.items.filter(x => (x && x.id !== undefined ? !existingIds.has(x.id) : true));
+                if (newItems.length === 0) {
+                  hasMoreRef.current = false;
+                }
+                return [...prev, ...newItems];
+              });
+            } else {
+              hasMoreRef.current = false;
+            }
+            if (res.hasMore === false) {
+              hasMoreRef.current = false;
+            }
+          } else {
+            hasMoreRef.current = false;
           }
-          localHasMore = res.hasMore;
         } catch (err) {
           console.error('[SPM Layout] Failed to load more:', err);
         } finally {
-          isLoading = false;
+          isLoadingRef.current = false;
           setLoadingMore(false);
         }
       }
     };
 
+    checkAndLoad();
+
+    const handleScroll = () => {
+      checkAndLoad();
+    };
     mainEl.addEventListener('scroll', handleScroll);
-    return () => mainEl.removeEventListener('scroll', handleScroll);
-  }, [onLoadMore]);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        checkAndLoad();
+      });
+      resizeObserver.observe(mainEl);
+    }
+
+    return () => {
+      mainEl.removeEventListener('scroll', handleScroll);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+    };
+  }, [onLoadMore, gridItems.length]);
 
   const showSidebar = !(isMobile && hideSidebarOnMobile);
   const showHeader = !isMobile || mobileShowHeader;
@@ -246,6 +283,7 @@ export function UiModernGridPage({
         ['--spm-grid-columns' as any]: gridColumnsToken,
         ['--spm-grid-gap' as any]: gridGapToken,
         ['--spm-grid-padding' as any]: gridPaddingToken,
+        ['--spm-masonry-column-width' as any]: masonryColumnWidth,
         ...style,
       }}
     >
@@ -393,19 +431,30 @@ export function UiModernGridPage({
           </div>
         )}
 
-        {/* Tokenized Grid Main */}
+        {/* Tokenized Grid / Masonry Main */}
         <main
           ref={mainRef as any}
           className="spm-modern-grid-main"
-          style={{
-            padding: 'var(--spm-grid-padding, 24px)',
-            display: 'grid',
-            gridTemplateColumns: 'var(--spm-grid-columns, repeat(auto-fill, minmax(200px, 1fr)))',
-            gap: 'var(--spm-grid-gap, 16px)',
-            alignContent: 'start',
-            flex: 1,
-            overflowY: 'auto',
-          }}
+          style={
+            layoutMode === 'masonry'
+              ? {
+                  padding: 'var(--spm-grid-padding, 24px)',
+                  display: 'block',
+                  columnWidth: 'var(--spm-masonry-column-width, 220px)',
+                  columnGap: 'var(--spm-grid-gap, 16px)',
+                  flex: 1,
+                  overflowY: 'auto',
+                }
+              : {
+                  padding: 'var(--spm-grid-padding, 24px)',
+                  display: 'grid',
+                  gridTemplateColumns: 'var(--spm-grid-columns, repeat(auto-fill, minmax(200px, 1fr)))',
+                  gap: 'var(--spm-grid-gap, 16px)',
+                  alignContent: 'start',
+                  flex: 1,
+                  overflowY: 'auto',
+                }
+          }
         >
           {gridItems.length === 0 ? (
             <div style={{ color: 'var(--spm-text-muted)', fontSize: '14px', gridColumn: '1 / -1', margin: 'auto' }}>
@@ -414,21 +463,41 @@ export function UiModernGridPage({
           ) : (
             <>
               {gridItems.map((item, index) => {
-                if (renderItem) {
-                  return <React.Fragment key={item.id || index}>{renderItem(item, index)}</React.Fragment>;
-                }
-                return (
+                const child = renderItem ? (
+                  renderItem(item, index)
+                ) : (
                   <UiImageCard
                     key={item.id || index}
                     id={item.id}
                     imageUrl={item.imageUrl}
                     linkUrl={item.linkUrl}
                     title={item.title}
+                    aspectRatio={layoutMode === 'masonry' ? 'auto' : undefined}
                   />
                 );
+
+                if (layoutMode === 'masonry') {
+                  return (
+                    <div
+                      key={item.id || index}
+                      style={{
+                        breakInside: 'avoid',
+                        ['WebkitColumnBreakInside' as any]: 'avoid',
+                        marginBottom: 'var(--spm-grid-gap, 16px)',
+                        display: 'inline-block',
+                        width: '100%',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      {child}
+                    </div>
+                  );
+                }
+
+                return <React.Fragment key={item.id || index}>{child}</React.Fragment>;
               })}
               {loadingMore && (
-                <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
+                <div style={{ gridColumn: '1 / -1', columnSpan: 'all', display: 'flex', justifyContent: 'center', padding: '24px 0', width: '100%' }}>
                   <div style={{
                     width: '24px',
                     height: '24px',

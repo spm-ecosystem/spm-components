@@ -151,7 +151,7 @@ export function UiNavHeader({
         style={{
           display: 'flex',
           flexDirection: 'column',
-          background: 'rgba(18, 18, 21, 0.92)',
+          background: 'var(--spm-bg-secondary, rgba(18, 18, 21, 0.92))',
           border: '1px solid var(--spm-border)',
           borderRadius: 'var(--spm-nav-radius, var(--spm-card-radius, var(--spm-radius, 8px)))',
           boxShadow: '0 4px 16px -2px rgba(0, 0, 0, 0.4)',

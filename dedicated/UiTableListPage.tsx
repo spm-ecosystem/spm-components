@@ -65,11 +65,15 @@ export function UiTableListPage({
   const [loadingMore, setLoadingMore] = React.useState(false);
   const [sortConfig, setSortConfig] = React.useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   
+  const hasMoreRef = React.useRef(true);
+  const isLoadingRef = React.useRef(false);
+
   const [internalSelectedKeys, setInternalSelectedKeys] = React.useState<(string | number)[]>([]);
   const selectedKeys = controlledSelectedKeys !== undefined ? controlledSelectedKeys : internalSelectedKeys;
 
   React.useEffect(() => {
     setRows(tableRows);
+    hasMoreRef.current = true;
   }, [tableRows]);
 
   const handleSelectionToggle = (itemKey: string | number, _item: any) => {
@@ -313,27 +317,73 @@ export function UiTableListPage({
   React.useEffect(() => {
     if (resolvedPaginationMode !== 'infinite' || !onLoadMore || !mainRef.current) return;
 
-    const el = mainRef.current;
-    const handleScroll = async () => {
-      if (loadingMore) return;
-      if (el.scrollHeight - el.scrollTop - el.clientHeight < 100) {
+    const mainEl = mainRef.current;
+    const threshold = 100;
+
+    const checkAndLoad = async () => {
+      if (isLoadingRef.current || !hasMoreRef.current) return;
+
+      const offset = mainEl.scrollHeight - mainEl.scrollTop - mainEl.clientHeight;
+      const notFilling = mainEl.scrollHeight <= mainEl.clientHeight + threshold;
+
+      if (offset <= threshold || notFilling) {
+        isLoadingRef.current = true;
         setLoadingMore(true);
         try {
           const res = await onLoadMore();
-          if (res.tableRows && res.tableRows.length > 0) {
-            setRows((prev) => [...prev, ...res.tableRows]);
+          if (res) {
+            if (res.tableRows && res.tableRows.length > 0) {
+              setRows((prev) => {
+                const existingIds = new Set(prev.map((x) => x.id ?? x.key));
+                const newRows = res.tableRows.filter((x) => {
+                  const identifier = x.id ?? x.key;
+                  return identifier !== undefined ? !existingIds.has(identifier) : true;
+                });
+                if (newRows.length === 0) {
+                  hasMoreRef.current = false;
+                }
+                return [...prev, ...newRows];
+              });
+            } else {
+              hasMoreRef.current = false;
+            }
+            if (res.hasMore === false) {
+              hasMoreRef.current = false;
+            }
+          } else {
+            hasMoreRef.current = false;
           }
         } catch (e) {
-          console.error('Failed to load more items:', e);
+          console.error('[SPM Layout] Failed to load more items:', e);
         } finally {
+          isLoadingRef.current = false;
           setLoadingMore(false);
         }
       }
     };
 
-    el.addEventListener('scroll', handleScroll);
-    return () => el.removeEventListener('scroll', handleScroll);
-  }, [onLoadMore, loadingMore, resolvedPaginationMode]);
+    checkAndLoad();
+
+    const handleScroll = () => {
+      checkAndLoad();
+    };
+    mainEl.addEventListener('scroll', handleScroll);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        checkAndLoad();
+      });
+      resizeObserver.observe(mainEl);
+    }
+
+    return () => {
+      mainEl.removeEventListener('scroll', handleScroll);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+    };
+  }, [onLoadMore, rows.length, resolvedPaginationMode]);
 
   const isFixedHeight = height !== 'auto' && height !== '100%';
 

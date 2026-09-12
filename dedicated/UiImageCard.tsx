@@ -29,14 +29,14 @@ export function UiImageCard({
   title,
   id,
   width = '160px',
-  aspectRatio = 'square',
+  aspectRatio = 'auto',
   imageFit = 'cover',
   showTitle = true,
   className = '',
   style = {},
   loading = 'lazy',
 }: UiImageCardProps) {
-  const calculatedRatio = RATIO_MAP[aspectRatio] || '1 / 1';
+  const calculatedRatio = RATIO_MAP[aspectRatio] || 'auto';
   const [imgSrc, setImgSrc] = useState(imageUrl);
 
   useEffect(() => {
@@ -60,29 +60,32 @@ export function UiImageCard({
         display: 'flex',
         flexDirection: 'column',
         width: `var(--spm-image-card-width, ${width})`,
-        borderRadius: 'var(--spm-radius)',
+        borderRadius: 'var(--spm-card-radius, var(--spm-radius, 16px))',
         overflow: 'hidden',
         border: '1px solid var(--spm-border)',
         background: 'var(--spm-bg-secondary)',
         textDecoration: 'none',
-        transition: 'border-color 0.15s, transform 0.15s',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        transition: 'border-color 0.2s, transform 0.2s, box-shadow 0.2s',
         flexShrink: 0,
         ...style,
       }}
       onMouseEnter={e => {
         (e.currentTarget as HTMLElement).style.borderColor = 'var(--spm-accent)';
-        (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
+        (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)';
+        (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.3)';
       }}
       onMouseLeave={e => {
         (e.currentTarget as HTMLElement).style.borderColor = 'var(--spm-border)';
         (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+        (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
       }}
     >
       <div
         className="spm-image-card-media"
         style={{
           width: '100%',
-          aspectRatio: calculatedRatio,
+          aspectRatio: calculatedRatio !== 'auto' ? calculatedRatio : undefined,
           overflow: 'hidden',
           background: 'var(--spm-bg-tertiary)',
         }}
@@ -92,8 +95,8 @@ export function UiImageCard({
           alt={title}
           style={{
             width: '100%',
-            height: '100%',
-            objectFit: isFallback ? 'contain' : imageFit,
+            height: calculatedRatio === 'auto' ? 'auto' : '100%',
+            objectFit: isFallback ? 'contain' : (calculatedRatio === 'auto' ? 'contain' : imageFit),
             display: 'block',
             padding: isFallback ? '24px' : '0',
             boxSizing: 'border-box',
