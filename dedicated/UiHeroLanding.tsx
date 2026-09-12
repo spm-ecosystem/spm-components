@@ -89,6 +89,8 @@ export function UiHeroLanding({
   className = '',
   style = {},
 }: UiHeroLandingProps) {
+  const [isDark, setIsDark] = React.useState(false);
+
   const isSplit = align === 'split-horizontal';
   const isCompact = align === 'compact-banner';
   const isCentered = align === 'centered';
@@ -98,16 +100,43 @@ export function UiHeroLanding({
   const textAlign = isCentered ? 'center' : 'left';
   const alignItems = isCentered ? 'center' : 'flex-start';
 
+  const heroBg = isGlassmorphic
+    ? isDark
+      ? 'linear-gradient(180deg, #0b1329 0%, #1e293b 50%, #090d16 100%)'
+      : 'var(--spm-hero-bg, linear-gradient(180deg, #cbe3fc 0%, #e2f0fd 40%, #eff6ff 100%))'
+    : 'var(--spm-bg-primary)';
+
+  const textColor = isGlassmorphic ? (isDark ? '#f8fafc' : '#0f172a') : 'var(--spm-text-primary)';
+  const textMuted = isGlassmorphic ? (isDark ? '#94a3b8' : '#475569') : 'var(--spm-text-muted)';
+  const navBg = isGlassmorphic
+    ? isDark
+      ? 'rgba(15, 23, 42, 0.85)'
+      : 'rgba(255, 255, 255, 0.85)'
+    : 'var(--spm-bg-secondary)';
+  const cardBg = isGlassmorphic
+    ? isDark
+      ? 'rgba(15, 23, 42, 0.65)'
+      : 'rgba(255, 255, 255, 0.55)'
+    : 'transparent';
+  const cardBorder = isGlassmorphic
+    ? isDark
+      ? '1px solid rgba(255, 255, 255, 0.12)'
+      : '1px solid rgba(255, 255, 255, 0.7)'
+    : 'none';
+  const searchBg = isGlassmorphic ? (isDark ? 'rgba(30, 41, 59, 0.9)' : '#ffffff') : 'var(--spm-bg-secondary)';
+  const chipBg = isGlassmorphic ? (isDark ? 'rgba(30, 41, 59, 0.8)' : '#ffffff') : 'var(--spm-bg-element)';
+  const digitBg = isGlassmorphic ? (isDark ? '#1e293b' : '#ffffff') : 'var(--spm-bg-surface)';
+
   const glassmorphicStyle: React.CSSProperties = isGlassmorphic
     ? {
-        background: 'var(--spm-hero-bg, linear-gradient(180deg, #cbe3fc 0%, #e2f0fd 40%, #eff6ff 100%))',
-        color: 'var(--spm-text-primary, #1e293b)',
-        ['--spm-text-primary' as any]: 'var(--spm-glass-text-primary, #1e293b)',
-        ['--spm-text-muted' as any]: 'var(--spm-glass-text-muted, #64748b)',
-        ['--spm-bg-secondary' as any]: 'var(--spm-glass-search-bg, #ffffff)',
-        ['--spm-bg-surface' as any]: 'var(--spm-glass-surface-bg, #ffffff)',
-        ['--spm-bg-element' as any]: 'var(--spm-glass-element-bg, #ffffff)',
-        ['--spm-border' as any]: 'var(--spm-glass-border, rgba(0, 0, 0, 0.08))',
+        background: heroBg,
+        color: textColor,
+        ['--spm-text-primary' as any]: textColor,
+        ['--spm-text-muted' as any]: textMuted,
+        ['--spm-bg-secondary' as any]: searchBg,
+        ['--spm-bg-surface' as any]: cardBg,
+        ['--spm-bg-element' as any]: chipBg,
+        ['--spm-border' as any]: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)',
         ['--spm-accent' as any]: 'var(--spm-glass-accent, #3b82f6)',
         ['--spm-accent-fg' as any]: '#ffffff',
       }
@@ -117,12 +146,12 @@ export function UiHeroLanding({
 
   const glassCardStyle: React.CSSProperties = isGlassmorphic
     ? {
-        background: 'var(--spm-glass-card-bg, rgba(255, 255, 255, 0.45))',
+        background: cardBg,
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         borderRadius: '24px',
-        border: '1px solid rgba(255, 255, 255, 0.6)',
-        boxShadow: '0 12px 40px rgba(59, 130, 246, 0.12)',
+        border: cardBorder,
+        boxShadow: isDark ? '0 12px 40px rgba(0, 0, 0, 0.4)' : '0 12px 40px rgba(59, 130, 246, 0.12)',
         padding: isCompact ? '20px 24px' : '36px 48px',
         boxSizing: 'border-box',
       }
@@ -253,21 +282,21 @@ export function UiHeroLanding({
                 justifyContent: 'center',
                 width: '28px',
                 height: '36px',
-                background: 'var(--spm-bg-surface, #ffffff)',
-                border: '1px solid var(--spm-border, rgba(0, 0, 0, 0.12))',
+                background: digitBg,
+                border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)'}`,
                 borderRadius: '6px',
                 boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
                 fontWeight: 800,
                 fontSize: '16px',
                 fontFamily: 'monospace, sans-serif',
-                color: 'var(--spm-text-primary, #1e293b)',
+                color: textColor,
               }}
             >
               {digit}
             </span>
           ))}
         </div>
-        <span style={{ fontSize: '11px', color: 'var(--spm-text-muted, #64748b)', fontWeight: 500 }}>
+        <span style={{ fontSize: '11px', color: textMuted, fontWeight: 500 }}>
           Total visitors so far
         </span>
       </div>
@@ -400,7 +429,7 @@ export function UiHeroLanding({
           }}
         >
           {popularTagsPrefix && (
-            <span className="spm-hero-tags-prefix" style={{ fontWeight: 600, color: 'var(--spm-text-muted, #64748b)' }}>
+            <span className="spm-hero-tags-prefix" style={{ fontWeight: 600, color: textMuted }}>
               {popularTagsPrefix}
             </span>
           )}
@@ -412,11 +441,11 @@ export function UiHeroLanding({
               style={{
                 padding: '4px 12px',
                 borderRadius: '999px',
-                background: 'var(--spm-bg-element, rgba(255, 255, 255, 0.8))',
-                border: '1px solid var(--spm-border, rgba(0, 0, 0, 0.08))',
-                color: 'var(--spm-text-primary, #334155)',
+                background: chipBg,
+                border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)'}`,
+                color: textColor,
                 fontSize: '12px',
-                fontWeight: 500,
+                fontWeight: 600,
                 textDecoration: 'none',
                 transition: 'background 0.15s, color 0.15s, transform 0.15s',
                 boxShadow: isGlassmorphic ? '0 2px 6px rgba(0,0,0,0.04)' : 'none',
@@ -429,8 +458,8 @@ export function UiHeroLanding({
               }}
               onMouseLeave={e => {
                 const el = e.currentTarget as HTMLAnchorElement;
-                el.style.background = 'var(--spm-bg-element, rgba(255, 255, 255, 0.8))';
-                el.style.color = 'var(--spm-text-primary, #334155)';
+                el.style.background = chipBg;
+                el.style.color = textColor;
                 el.style.transform = 'translateY(0)';
               }}
             >
@@ -632,13 +661,13 @@ export function UiHeroLanding({
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 width: '100%',
-                background: isGlassmorphic ? 'rgba(255, 255, 255, 0.55)' : 'var(--spm-bg-secondary)',
+                background: navBg,
                 backdropFilter: isGlassmorphic ? 'blur(16px)' : 'none',
                 WebkitBackdropFilter: isGlassmorphic ? 'blur(16px)' : 'none',
                 borderRadius: '999px',
                 padding: '8px 20px',
-                border: '1px solid rgba(255, 255, 255, 0.4)',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+                border: isDark ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(255, 255, 255, 0.6)',
+                boxShadow: isDark ? '0 4px 20px rgba(0, 0, 0, 0.3)' : '0 4px 20px rgba(0, 0, 0, 0.05)',
                 boxSizing: 'border-box',
               }}
             >
@@ -650,14 +679,14 @@ export function UiHeroLanding({
                     style={{
                       padding: '6px 14px',
                       borderRadius: '999px',
-                      color: 'var(--spm-text-primary, #334155)',
+                      color: textColor,
                       fontSize: '13px',
                       fontWeight: 600,
                       textDecoration: 'none',
                       transition: 'background 0.15s, color 0.15s',
                     }}
                     onMouseEnter={e => {
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)';
+                      e.currentTarget.style.background = isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.06)';
                     }}
                     onMouseLeave={e => {
                       e.currentTarget.style.background = 'transparent';
@@ -671,31 +700,35 @@ export function UiHeroLanding({
               {showThemeToggle && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   {userProfileUrl && (
-                    <a href={userProfileUrl} style={{ display: 'flex', alignItems: 'center', color: '#475569' }}>
+                    <a href={userProfileUrl} style={{ display: 'flex', alignItems: 'center', color: textColor }}>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
                       </svg>
                     </a>
                   )}
-                  <div
+                  <button
+                    type="button"
+                    onClick={() => setIsDark(!isDark)}
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '6px',
-                      background: 'rgba(255, 255, 255, 0.8)',
-                      padding: '4px 10px',
+                      background: isDark ? 'rgba(30, 41, 59, 0.9)' : '#ffffff',
+                      padding: '5px 12px',
                       borderRadius: '999px',
-                      border: '1px solid rgba(0,0,0,0.08)',
+                      border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)'}`,
                       fontSize: '12px',
-                      fontWeight: 600,
-                      color: '#334155',
+                      fontWeight: 700,
+                      color: textColor,
                       cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                      transition: 'all 0.15s ease',
                     }}
                   >
                     <span>Theme</span>
-                    <span>🌙</span>
-                  </div>
+                    <span>{isDark ? '☀️' : '🌙'}</span>
+                  </button>
                 </div>
               )}
             </div>
