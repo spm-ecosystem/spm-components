@@ -32,6 +32,7 @@ export interface UiHeroLandingProps {
   variant?: 'standard' | 'glassmorphic' | 'sky-glass';
   showCard?: boolean;
   counterImageUrlPrefix?: string;
+  counterImageHeight?: string | number;
   popularTags?: TagItem[];
   popularTagsPrefix?: string;
   statsText?: string;
@@ -82,6 +83,7 @@ export function UiHeroLanding({
   variant = 'standard',
   showCard = false,
   counterImageUrlPrefix,
+  counterImageHeight = '44px',
   headerSlot,
   footerSlot,
   counterSlot,
@@ -281,7 +283,7 @@ export function UiHeroLanding({
           marginBottom: '20px',
         }}
       >
-        <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
           {counterImageUrlPrefix ? (
             digits.map((digit, idx) => (
               <img
@@ -289,10 +291,11 @@ export function UiHeroLanding({
                 src={`${counterImageUrlPrefix}${digit}.gif`}
                 alt={digit}
                 style={{
-                  height: '24px',
+                  height: typeof counterImageHeight === 'number' ? `${counterImageHeight}px` : counterImageHeight,
                   width: 'auto',
                   display: 'inline-block',
                   imageRendering: 'pixelated',
+                  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12))',
                 }}
               />
             ))
