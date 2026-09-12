@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { UiTagBadge } from './UiTagBadge';
 import { UiSearchBar } from './UiSearchBar';
 
@@ -16,6 +16,13 @@ export interface TagItem {
   count?: string;
   type?: string;
   url?: string;
+  addUrl?: string;
+  removeUrl?: string;
+}
+
+export interface TagGroupSpec {
+  title: string;
+  typeKey: string;
 }
 
 export interface ButtonItem {
@@ -27,6 +34,7 @@ export interface ButtonItem {
 export interface UiScrollPanelProps {
   // Content slots - all optional, all JSON-driven
   tags?: TagItem[];
+  tagGroups?: TagGroupSpec[];
   buttons?: ButtonItem[];
   statisticsHtml?: string;
   // Search config
@@ -52,8 +60,25 @@ function getButtonVariant(label: string): 'nav' | 'primary' | 'ghost' {
   return 'ghost';
 }
 
+function matchesTypeKey(tagType: string | undefined, typeKey: string): boolean {
+  if (!tagType) return false;
+  const rawTag = tagType.trim().toLowerCase();
+  const rawKey = typeKey.trim().toLowerCase();
+  if (rawTag === rawKey) return true;
+
+  const cleanTag = rawTag.replace(/^tag-type-/i, '').replace(/\s+tag$/i, '').replace(/^tag\s+/i, '').trim();
+  const cleanKey = rawKey.replace(/^tag-type-/i, '').replace(/\s+tag$/i, '').replace(/^tag\s+/i, '').trim();
+
+  if (cleanTag === cleanKey) return true;
+  if (cleanTag.length > 0 && cleanKey.length > 0) {
+    return cleanTag.includes(cleanKey) || cleanKey.includes(cleanTag);
+  }
+  return false;
+}
+
 export function UiScrollPanel({
   tags = [],
+  tagGroups,
   buttons = [],
   statisticsHtml,
   showSearch = false,
@@ -74,31 +99,44 @@ export function UiScrollPanel({
     return null;
   }
 
-  // Dynamic tag grouping by enterprise category
-  const groupedTags = useMemo(() => {
-    const groups: Record<string, TagItem[]> = {};
-    tags.forEach(t => {
-      let rawType = t.type ? t.type.trim().toLowerCase() : '';
-      let categoryName = 'TAGS';
-      if (rawType.includes('module')) {
-        categoryName = 'MODULES';
-      } else if (rawType.includes('tech')) {
-        categoryName = 'TECHNOLOGY';
-      } else if (rawType.includes('category')) {
-        categoryName = 'CATEGORIES';
-      } else if (rawType.includes('status')) {
-        categoryName = 'SYSTEM STATUS';
-      } else if (rawType.includes('meta')) {
-        categoryName = 'METADATA';
-      } else if (t.type) {
-        categoryName = t.type.toUpperCase();
-      }
+  // Dynamic tag grouping
+  const groupedSections = useMemo(() => {
+    if (tagGroups && tagGroups.length > 0) {
+      return tagGroups
+        .map(group => {
+          const groupTags = tags.filter(t => matchesTypeKey(t.type, group.typeKey));
+          return {
+            title: group.title,
+            tags: groupTags,
+          };
+        })
+        .filter(section => section.tags.length > 0);
+    }
 
-      if (!groups[categoryName]) groups[categoryName] = [];
-      groups[categoryName].push(t);
+    const groupsMap = new Map<string, TagItem[]>();
+    tags.forEach(t => {
+      let rawType = t.type ? t.type.trim() : '';
+      let categoryName = 'TAGS';
+      if (rawType) {
+        const cleaned = rawType
+          .replace(/^tag-type-/i, '')
+          .replace(/\s+tag$/i, '')
+          .replace(/^tag\s+/i, '')
+          .replace(/[-_]/g, ' ')
+          .trim();
+        categoryName = cleaned ? cleaned.toUpperCase() : 'TAGS';
+      }
+      if (!groupsMap.has(categoryName)) {
+        groupsMap.set(categoryName, []);
+      }
+      groupsMap.get(categoryName)!.push(t);
     });
-    return groups;
-  }, [tags]);
+
+    return Array.from(groupsMap.entries()).map(([title, groupTags]) => ({
+      title,
+      tags: groupTags,
+    }));
+  }, [tags, tagGroups]);
 
   const navButtons     = buttons.filter(b => getButtonVariant(b.label) === 'nav');
   const primaryButtons = buttons.filter(b => getButtonVariant(b.label) === 'primary');
@@ -134,6 +172,8 @@ export function UiScrollPanel({
               label={t.name}
               count={t.count}
               href={t.url}
+              addUrl={t.addUrl}
+              removeUrl={t.removeUrl}
               style={{
                 wordBreak: 'break-word',
                 overflowWrap: 'anywhere',
@@ -209,9 +249,9 @@ export function UiScrollPanel({
         display: 'flex',
         flexDirection: 'column',
         maxHeight: '100%',
-        ...style,
         wordBreak: 'break-word',
         overflowWrap: 'anywhere',
+        ...style,
       }}
     >
       {onClose && (
@@ -234,7 +274,17 @@ export function UiScrollPanel({
       )}
 
       {hasSearch && (
-        <div style={{ marginBottom: '16px' }}>
+        <div style={{ marginBottom: '20px' }}>
+          <p style={{
+            margin: '0 0 8px 0',
+            fontSize: '10px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            color: 'var(--spm-text-muted, #94a3b8)',
+            fontWeight: 600,
+          }}>
+            SEARCH
+          </p>
           <UiSearchBar
             placeholder={searchPlaceholder}
             submitUrl={searchSubmitUrl}
@@ -257,8 +307,8 @@ export function UiScrollPanel({
 
       {hasTags && (
         <div>
-          {Object.entries(groupedTags).map(([catTitle, groupTags]) =>
-            renderSection(catTitle, groupTags as TagItem[])
+          {groupedSections.map(sec =>
+            renderSection(sec.title, sec.tags)
           )}
         </div>
       )}

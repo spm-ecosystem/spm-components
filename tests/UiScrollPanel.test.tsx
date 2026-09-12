@@ -184,7 +184,7 @@ describe('UiScrollPanel', () => {
   });
 
   describe('Content Rendering & Interaction', () => {
-    it('renders tags categorized into appropriate sections, including fallback for untyped tags', async () => {
+    it('renders tags categorized into appropriate dynamic sections, including fallback for untyped tags', async () => {
       const tags = [
         { name: 'module_1', type: 'modules' },
         { name: 'tech_1', type: 'technology' },
@@ -204,10 +204,47 @@ describe('UiScrollPanel', () => {
       expect(headings).toContain('MODULES');
       expect(headings).toContain('TECHNOLOGY');
       expect(headings).toContain('CATEGORIES');
+      expect(headings).toContain('GENERAL');
+      expect(headings).toContain('META');
       expect(headings).toContain('TAGS');
-      expect(headings).toContain('METADATA');
 
       expect(container.textContent).toContain('untyped_tag');
+    });
+
+    it('renders tags grouped dynamically when tagGroups prop is provided', async () => {
+      const tags = [
+        { name: 'module_1', type: 'modules' },
+        { name: 'meta_1', type: 'meta' },
+        { name: 'ignored_tag', type: 'other' },
+      ];
+      const tagGroups = [
+        { title: 'System Modules', typeKey: 'modules' },
+        { title: 'Metadata Information', typeKey: 'meta' },
+      ];
+      const root = createRoot(container);
+      root.render(<UiScrollPanel tags={tags} tagGroups={tagGroups} />);
+      await waitForUpdate();
+
+      const headings = Array.from(container.querySelectorAll('aside p')).map(p => p.textContent);
+      expect(headings).toContain('System Modules');
+      expect(headings).toContain('Metadata Information');
+      expect(headings).not.toContain('OTHER');
+      expect(container.textContent).toContain('module_1');
+      expect(container.textContent).toContain('meta_1');
+    });
+
+    it('passes addUrl and removeUrl to tag badges', async () => {
+      const tags = [
+        { name: 'tag_actions', type: 'general', addUrl: '/add?tag=1', removeUrl: '/remove?tag=1' },
+      ];
+      const root = createRoot(container);
+      root.render(<UiScrollPanel tags={tags} />);
+      await waitForUpdate();
+
+      const addLink = container.querySelector('a[href="/add?tag=1"]');
+      const removeLink = container.querySelector('a[href="/remove?tag=1"]');
+      expect(addLink).toBeTruthy();
+      expect(removeLink).toBeTruthy();
     });
 
     it('renders search bar when showSearch and searchSubmitUrl are provided', async () => {
