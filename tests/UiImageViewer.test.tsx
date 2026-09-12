@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { UiImageViewer } from '../dedicated/UiImageViewer';
 
-const waitForUpdate = () => new Promise((resolve) => setTimeout(resolve, 50));
+const waitForUpdate = () => new Promise((resolve) => setTimeout(resolve, 100));
 
 function simulateImageLoad(img: HTMLImageElement, width: number, height: number) {
   Object.defineProperty(img, 'naturalWidth', { value: width, configurable: true });
