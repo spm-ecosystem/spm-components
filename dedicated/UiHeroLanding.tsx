@@ -311,16 +311,43 @@ export function UiHeroLanding({
               }
               .spm-hero-counter-slot small {
                 display: block;
+                text-align: center;
                 font-size: 11px;
                 color: var(--spm-text-muted, #64748b);
-                margin-top: 6px;
+                margin-top: 10px;
+                width: 100%;
               }
             `}</style>
             <div dangerouslySetInnerHTML={{ __html: counterSlot }} />
           </div>
         );
       }
-      return <div className="spm-hero-counter-slot">{counterSlot}</div>;
+      return (
+        <div className="spm-hero-counter-slot">
+          <style>{`
+            .spm-hero-counter-slot img {
+              display: inline-block !important;
+              height: var(--spm-counter-image-height, 100px);
+              width: auto;
+              vertical-align: middle;
+              image-rendering: pixelated;
+              margin: 0 1px;
+            }
+            .spm-hero-counter-slot br {
+              display: none;
+            }
+            .spm-hero-counter-slot small {
+              display: block;
+              text-align: center;
+              font-size: 11px;
+              color: var(--spm-text-muted, #64748b);
+              margin-top: 10px;
+              width: 100%;
+            }
+          `}</style>
+          {counterSlot}
+        </div>
+      );
     }
 
     if (visitorCounterHtml) {

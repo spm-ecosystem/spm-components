@@ -138,4 +138,20 @@ describe('UiHeroLanding', () => {
     expect(container.querySelector('#test-counter')?.textContent).toBe('Counter 123');
     expect(container.querySelector('#test-filter')?.textContent).toBe('Filter');
   });
+
+  it('renders counterSlot HTML string with properly formatted small text styling', async () => {
+    const root = createRoot(container);
+    const counterHtml = '<div><img src="chibi1.png" /><small>Total Visitors: 42</small></div>';
+    root.render(<UiHeroLanding counterSlot={counterHtml} />);
+    await waitForUpdate();
+
+    const counterSlotEl = container.querySelector('.spm-hero-counter-slot');
+    expect(counterSlotEl).toBeTruthy();
+    expect(counterSlotEl?.querySelector('small')?.textContent).toBe('Total Visitors: 42');
+    const styleEl = counterSlotEl?.querySelector('style');
+    expect(styleEl?.textContent).toContain('.spm-hero-counter-slot small');
+    expect(styleEl?.textContent).toContain('text-align: center;');
+    expect(styleEl?.textContent).toContain('margin-top: 10px;');
+    expect(styleEl?.textContent).toContain('width: 100%;');
+  });
 });
