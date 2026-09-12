@@ -643,6 +643,15 @@ export function UiHeroLanding({
             text-align: center !important;
             padding: 24px 16px !important;
           }
+          .spm-hero-top-nav {
+            overflow-x: auto !important;
+            justify-content: flex-start !important;
+            padding: 8px 12px !important;
+            border-radius: 16px !important;
+          }
+          .spm-hero-top-nav nav {
+            flex-wrap: nowrap !important;
+          }
         }
       `}</style>
 
