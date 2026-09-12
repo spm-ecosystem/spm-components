@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { UiTagBadge } from './UiTagBadge';
 import { UiSearchBar } from './UiSearchBar';
 
@@ -47,6 +47,7 @@ export interface UiScrollPanelProps {
   className?: string;
   style?: React.CSSProperties;
   onClose?: () => void;
+  collapsible?: boolean;
 }
 
 // Classify buttons by label so primary actions stand out
@@ -89,15 +90,9 @@ export function UiScrollPanel({
   className = '',
   style = {},
   onClose,
+  collapsible = false,
 }: UiScrollPanelProps) {
-  const hasSearch = Boolean(showSearch && searchSubmitUrl);
-  const hasButtons = Boolean(buttons && buttons.length > 0);
-  const hasTags = Boolean(tags && tags.length > 0);
-  const hasStats = Boolean(statisticsHtml && statisticsHtml.trim().length > 0);
-
-  if (!hasSearch && !hasButtons && !hasTags && !hasStats) {
-    return null;
-  }
+  const [isClosed, setIsClosed] = useState(false);
 
   // Dynamic tag grouping
   const groupedSections = useMemo(() => {
@@ -137,6 +132,15 @@ export function UiScrollPanel({
       tags: groupTags,
     }));
   }, [tags, tagGroups]);
+
+  const hasSearch = Boolean(showSearch && searchSubmitUrl);
+  const hasButtons = Boolean(buttons && buttons.length > 0);
+  const hasTags = Boolean(tags && tags.length > 0);
+  const hasStats = Boolean(statisticsHtml && statisticsHtml.trim().length > 0);
+
+  if (isClosed || (!hasSearch && !hasButtons && !hasTags && !hasStats)) {
+    return null;
+  }
 
   const navButtons     = buttons.filter(b => getButtonVariant(b.label) === 'nav');
   const primaryButtons = buttons.filter(b => getButtonVariant(b.label) === 'primary');
@@ -231,6 +235,8 @@ export function UiScrollPanel({
     );
   };
 
+  const showCloseButton = Boolean(onClose || collapsible);
+
   return (
     <aside
       className={`spm-scroll-panel ${className}`.trim()}
@@ -254,11 +260,18 @@ export function UiScrollPanel({
         ...style,
       }}
     >
-      {onClose && (
+      {showCloseButton && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
           <button
             type="button"
-            onClick={onClose}
+            className="spm-scrollpanel-close"
+            onClick={() => {
+              onClose?.();
+              if (collapsible) {
+                setIsClosed(true);
+              }
+            }}
+            aria-label="Close panel"
             style={{
               background: 'transparent',
               border: 'none',
