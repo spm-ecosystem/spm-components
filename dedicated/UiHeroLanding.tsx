@@ -107,30 +107,57 @@ export function UiHeroLanding({
 
   const heroBg = isGlassmorphic
     ? isDark
-      ? 'linear-gradient(180deg, #0b1329 0%, #1e293b 50%, #090d16 100%)'
-      : 'var(--spm-hero-bg, linear-gradient(180deg, #cbe3fc 0%, #e2f0fd 40%, #eff6ff 100%))'
+      ? 'var(--spm-hero-bg-dark, linear-gradient(180deg, #09090b 0%, #121216 50%, #18181c 100%))'
+      : 'var(--spm-hero-bg, var(--spm-bg-primary, linear-gradient(180deg, #09090b 0%, #121216 50%, #18181c 100%)))'
     : 'var(--spm-bg-primary)';
 
-  const textColor = isGlassmorphic ? (isDark ? '#f8fafc' : '#2b3d52') : 'var(--spm-text-primary)';
-  const textMuted = isGlassmorphic ? (isDark ? '#94a3b8' : '#64748b') : 'var(--spm-text-muted)';
+  const textColor = isGlassmorphic
+    ? isDark
+      ? 'var(--spm-glass-text-primary-dark, #f4f4f5)'
+      : 'var(--spm-glass-text-primary, var(--spm-text-primary, #f4f4f5))'
+    : 'var(--spm-text-primary)';
+
+  const textMuted = isGlassmorphic
+    ? isDark
+      ? 'var(--spm-glass-text-muted-dark, #a1a1aa)'
+      : 'var(--spm-glass-text-muted, var(--spm-text-muted, #a1a1aa))'
+    : 'var(--spm-text-muted)';
+
   const navBg = isGlassmorphic
     ? isDark
-      ? 'rgba(15, 23, 42, 0.85)'
-      : 'rgba(255, 255, 255, 0.85)'
+      ? 'var(--spm-glass-nav-bg-dark, rgba(18, 18, 22, 0.85))'
+      : 'var(--spm-glass-nav-bg, var(--spm-bg-secondary, rgba(18, 18, 22, 0.85)))'
     : 'var(--spm-bg-secondary)';
+
   const cardBg = isGlassmorphic
     ? isDark
-      ? 'rgba(15, 23, 42, 0.65)'
-      : 'rgba(255, 255, 255, 0.55)'
+      ? 'var(--spm-glass-card-bg-dark, rgba(18, 18, 22, 0.65))'
+      : 'var(--spm-glass-card-bg, var(--spm-bg-surface, rgba(18, 18, 22, 0.65)))'
     : 'transparent';
+
   const cardBorder = isGlassmorphic
     ? isDark
-      ? '1px solid rgba(255, 255, 255, 0.12)'
-      : '1px solid rgba(255, 255, 255, 0.7)'
+      ? '1px solid var(--spm-glass-border, rgba(255, 255, 255, 0.12))'
+      : '1px solid var(--spm-glass-border, var(--spm-border, rgba(255, 255, 255, 0.12)))'
     : 'none';
-  const searchBg = isGlassmorphic ? (isDark ? 'rgba(30, 41, 59, 0.9)' : '#ffffff') : 'var(--spm-bg-secondary)';
-  const chipBg = isGlassmorphic ? (isDark ? 'rgba(30, 41, 59, 0.8)' : '#ffffff') : 'var(--spm-bg-element)';
-  const digitBg = isGlassmorphic ? (isDark ? '#1e293b' : '#ffffff') : 'var(--spm-bg-surface)';
+
+  const searchBg = isGlassmorphic
+    ? isDark
+      ? 'var(--spm-glass-search-bg-dark, rgba(24, 24, 27, 0.9))'
+      : 'var(--spm-glass-search-bg, var(--spm-bg-secondary, rgba(24, 24, 27, 0.85)))'
+    : 'var(--spm-bg-secondary)';
+
+  const chipBg = isGlassmorphic
+    ? isDark
+      ? 'var(--spm-glass-chip-bg-dark, rgba(27, 27, 31, 0.8))'
+      : 'var(--spm-glass-chip-bg, var(--spm-bg-element, rgba(27, 27, 31, 0.8)))'
+    : 'var(--spm-bg-element)';
+
+  const digitBg = isGlassmorphic
+    ? isDark
+      ? 'var(--spm-glass-digit-bg-dark, #121216)'
+      : 'var(--spm-glass-digit-bg, var(--spm-bg-surface, #121216))'
+    : 'var(--spm-bg-surface)';
 
   const glassmorphicStyle: React.CSSProperties = isGlassmorphic
     ? {
@@ -141,8 +168,8 @@ export function UiHeroLanding({
         ['--spm-bg-secondary' as any]: searchBg,
         ['--spm-bg-surface' as any]: cardBg,
         ['--spm-bg-element' as any]: chipBg,
-        ['--spm-border' as any]: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)',
-        ['--spm-accent' as any]: 'var(--spm-glass-accent, #3b82f6)',
+        ['--spm-border' as any]: isDark ? 'rgba(255, 255, 255, 0.15)' : 'var(--spm-border, rgba(255, 255, 255, 0.1))',
+        ['--spm-accent' as any]: 'var(--spm-glass-accent, var(--spm-accent, #7c6af5))',
         ['--spm-accent-fg' as any]: '#ffffff',
       }
     : {
