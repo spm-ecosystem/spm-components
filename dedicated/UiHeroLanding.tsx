@@ -83,7 +83,7 @@ export function UiHeroLanding({
   variant = 'standard',
   showCard = false,
   counterImageUrlPrefix,
-  counterImageHeight = '44px',
+  counterImageHeight = '68px',
   headerSlot,
   footerSlot,
   counterSlot,
