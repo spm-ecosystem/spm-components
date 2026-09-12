@@ -279,4 +279,155 @@ describe('UiImageViewer', () => {
     // Should fall back to contain
     expect(img2.style.objectFit).toBe('contain');
   });
+
+  it('11. Interactive Multi-Level Zoom: Zoom In, Zoom Out, and Reset buttons update scale and trigger onScaleChange', async () => {
+    const onScaleChange = vi.fn();
+    const root = createRoot(container);
+    root.render(
+      <UiImageViewer
+        src="https://example.com/zoom.jpg"
+        onScaleChange={onScaleChange}
+        minScale={1}
+        maxScale={3}
+      />
+    );
+    await waitForUpdate();
+
+    const zoomInBtn = container.querySelector('[data-testid="zoom-in-btn"]') as HTMLButtonElement;
+    const zoomOutBtn = container.querySelector('[data-testid="zoom-out-btn"]') as HTMLButtonElement;
+    const resetBtn = container.querySelector('[data-testid="zoom-reset-btn"]') as HTMLButtonElement;
+    const img = container.querySelector('img') as HTMLImageElement;
+
+    expect(zoomInBtn).not.toBeNull();
+    expect(zoomOutBtn).not.toBeNull();
+    expect(resetBtn).not.toBeNull();
+    expect(img.style.transform).toBe('translate3d(0px, 0px, 0px) scale(1)');
+
+    // Click Zoom In (+ 0.5 -> 1.5)
+    zoomInBtn.click();
+    await waitForUpdate();
+    expect(img.style.transform).toBe('translate3d(0px, 0px, 0px) scale(1.5)');
+    expect(onScaleChange).toHaveBeenCalledWith(1.5);
+
+    // Click Zoom In (+ 0.5 -> 2)
+    zoomInBtn.click();
+    await waitForUpdate();
+    expect(img.style.transform).toBe('translate3d(0px, 0px, 0px) scale(2)');
+    expect(onScaleChange).toHaveBeenCalledWith(2);
+
+    // Click Zoom Out (- 0.5 -> 1.5)
+    zoomOutBtn.click();
+    await waitForUpdate();
+    expect(img.style.transform).toBe('translate3d(0px, 0px, 0px) scale(1.5)');
+    expect(onScaleChange).toHaveBeenCalledWith(1.5);
+
+    // Click Reset -> scale resets to 1
+    resetBtn.click();
+    await waitForUpdate();
+    expect(img.style.transform).toBe('translate3d(0px, 0px, 0px) scale(1)');
+    expect(onScaleChange).toHaveBeenCalledWith(1);
+  });
+
+  it('12. Mouse Drag Pan: allows panning when scale > 1 and updates cursor to grab/grabbing', async () => {
+    const root = createRoot(container);
+    root.render(
+      <UiImageViewer
+        src="https://example.com/drag.jpg"
+      />
+    );
+    await waitForUpdate();
+
+    const zoomInBtn = container.querySelector('[data-testid="zoom-in-btn"]') as HTMLButtonElement;
+    zoomInBtn.click(); // scale 1.5
+    await waitForUpdate();
+
+    const rootEl = container.querySelector('.spm-image-viewer') as HTMLElement;
+    const img = container.querySelector('img') as HTMLImageElement;
+
+    expect(rootEl.style.cursor).toBe('grab');
+
+    // Simulate MouseDown
+    rootEl.dispatchEvent(new MouseEvent('mousedown', { clientX: 100, clientY: 100, bubbles: true, cancelable: true }));
+    await waitForUpdate();
+    expect(rootEl.getAttribute('data-dragging')).toBe('true');
+    expect(rootEl.style.cursor).toBe('grabbing');
+
+    // Simulate MouseMove
+    rootEl.dispatchEvent(new MouseEvent('mousemove', { clientX: 150, clientY: 120, bubbles: true, cancelable: true }));
+    await waitForUpdate();
+    expect(img.style.transform).toBe('translate3d(50px, 20px, 0px) scale(1.5)');
+
+    // Simulate MouseUp
+    rootEl.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    await waitForUpdate();
+    expect(rootEl.getAttribute('data-dragging')).toBe('false');
+    expect(rootEl.style.cursor).toBe('grab');
+  });
+
+  it('13. Touch Pan Support: touch events allow panning when zoomed in', async () => {
+    const root = createRoot(container);
+    root.render(
+      <UiImageViewer
+        src="https://example.com/touch.jpg"
+      />
+    );
+    await waitForUpdate();
+
+    const zoomInBtn = container.querySelector('[data-testid="zoom-in-btn"]') as HTMLButtonElement;
+    zoomInBtn.click(); // scale 1.5
+    await waitForUpdate();
+
+    const rootEl = container.querySelector('.spm-image-viewer') as HTMLElement;
+    const img = container.querySelector('img') as HTMLImageElement;
+
+    // Simulate TouchStart
+    const touchStart = new CustomEvent('touchstart', { bubbles: true }) as any;
+    touchStart.touches = [{ clientX: 200, clientY: 200 }];
+    rootEl.dispatchEvent(touchStart);
+    await waitForUpdate();
+
+    // Simulate TouchMove
+    const touchMove = new CustomEvent('touchmove', { bubbles: true }) as any;
+    touchMove.touches = [{ clientX: 230, clientY: 210 }];
+    rootEl.dispatchEvent(touchMove);
+    await waitForUpdate();
+
+    expect(img.style.transform).toBe('translate3d(30px, 10px, 0px) scale(1.5)');
+
+    // Simulate TouchEnd
+    rootEl.dispatchEvent(new CustomEvent('touchend', { bubbles: true }));
+    await waitForUpdate();
+    expect(rootEl.getAttribute('data-dragging')).toBe('false');
+  });
+
+  it('14. Smooth Wheel Zooming: wheel event adjusts scale smoothly and triggers onScaleChange', async () => {
+    const onScaleChange = vi.fn();
+    const root = createRoot(container);
+    root.render(
+      <UiImageViewer
+        src="https://example.com/wheel.jpg"
+        onScaleChange={onScaleChange}
+      />
+    );
+    await waitForUpdate();
+
+    const rootEl = container.querySelector('.spm-image-viewer') as HTMLElement;
+    const img = container.querySelector('img') as HTMLImageElement;
+
+    // Scroll up (zoom in)
+    const wheelUp = new WheelEvent('wheel', { deltaY: -100, bubbles: true, cancelable: true });
+    rootEl.dispatchEvent(wheelUp);
+    await waitForUpdate();
+
+    expect(img.style.transform).toBe('translate3d(0px, 0px, 0px) scale(1.25)');
+    expect(onScaleChange).toHaveBeenCalledWith(1.25);
+
+    // Scroll down (zoom out)
+    const wheelDown = new WheelEvent('wheel', { deltaY: 100, bubbles: true, cancelable: true });
+    rootEl.dispatchEvent(wheelDown);
+    await waitForUpdate();
+
+    expect(img.style.transform).toBe('translate3d(0px, 0px, 0px) scale(1)');
+    expect(onScaleChange).toHaveBeenCalledWith(1);
+  });
 });
