@@ -182,4 +182,20 @@ describe('UiHeroLanding', () => {
     expect(textContainer).toBeTruthy();
     expect(textContainer?.textContent).toContain('Total number of visitors so far: 72,678,548');
   });
+
+  it('renders extensionLinks cleanly with neutral link styling', async () => {
+    const root = createRoot(container);
+    const extensionLinks = [
+      { label: 'Have you tried our search plugin available for Firefox?', url: 'index.php?page=opensearch' },
+    ];
+    root.render(<UiHeroLanding extensionLinks={extensionLinks} />);
+    await waitForUpdate();
+
+    const extLinksContainer = container.querySelector('.spm-hero-extension-links');
+    expect(extLinksContainer).toBeTruthy();
+    const link = extLinksContainer?.querySelector('a') as HTMLAnchorElement;
+    expect(link).toBeTruthy();
+    expect(link.textContent).toBe('Have you tried our search plugin available for Firefox?');
+    expect(link.getAttribute('href')).toBe('index.php?page=opensearch');
+  });
 });

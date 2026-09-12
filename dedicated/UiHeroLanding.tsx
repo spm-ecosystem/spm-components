@@ -745,22 +745,30 @@ export function UiHeroLanding({
           style={{
             fontSize: '11px',
             color: 'var(--spm-text-muted, #64748b)',
-            marginTop: '6px',
+            marginTop: '8px',
             display: 'flex',
             alignItems: 'center',
-            gap: '4px',
+            justifyContent: isCentered ? 'center' : 'flex-start',
+            gap: '6px',
+            flexWrap: 'wrap',
           }}
         >
-          <span>Get the search extension for</span>
           {extensionLinks.map((ext, idx) => (
             <React.Fragment key={idx}>
-              {idx > 0 && <span>/</span>}
+              {idx > 0 && <span>•</span>}
               <a
                 href={ext.url}
                 style={{
-                  color: 'var(--spm-accent, #3b82f6)',
+                  color: 'var(--spm-text-muted, #64748b)',
                   textDecoration: 'underline',
                   fontWeight: 500,
+                  transition: 'color 0.15s ease',
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLAnchorElement).style.color = 'var(--spm-accent, #3b82f6)';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLAnchorElement).style.color = 'var(--spm-text-muted, #64748b)';
                 }}
               >
                 {ext.label}
@@ -793,7 +801,9 @@ export function UiHeroLanding({
       style={{
         position: 'relative',
         width: '100%',
+        maxWidth: '100%',
         minHeight: isCompact ? 'auto' : '100vh',
+        maxHeight: isGlassmorphic && !isCompact ? '100vh' : undefined,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -807,6 +817,11 @@ export function UiHeroLanding({
       }}
     >
       <style>{`
+        :host {
+          display: block;
+          width: 100%;
+          box-sizing: border-box;
+        }
         @media (max-width: 768px) {
           .spm-hero-landing {
             padding: 16px 12px !important;
